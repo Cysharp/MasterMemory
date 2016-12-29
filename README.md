@@ -1,6 +1,6 @@
 MasterMemory
 ===
-Readonly In-Memory Database for .NET, .NET Core and Unity Edit
+Embedded Readonly In-Memory Document Database for .NET, .NET Core and Unity
 
 Work in progress.
 
