@@ -15,7 +15,7 @@ Features
 ---
 
 * O(log n) index key search
-* allows composite primary/secondary key
+* allows multikey index
 * zero index memory space for primary key
 * secondary key index(use memory space)
 * range search
