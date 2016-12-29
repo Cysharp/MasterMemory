@@ -11,7 +11,7 @@ MasterMemory's objective has two areas.
 * **memory efficient**, Do not create index in PrimaryKey search, only use underlying data memory.
 * **startup speed**, MasterMemory adopts [ZeroFormatter](https://github.com/neuecc/ZeroFormatter/) as an internal data structure so enable infinitely fast deserialize.
 
-Functions
+Features
 ---
 
 * O(log n) index key search
