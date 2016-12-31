@@ -18,13 +18,14 @@ namespace MasterMemory
         {
         }
 
-        public static Database Open(string filePath)
+        public static Database Open(byte[] bytes)
         {
             throw new NotImplementedException();
         }
 
-        public void Save(string filePath)
+        public byte[] Save()
         {
+            throw new NotImplementedException();
         }
     }
 

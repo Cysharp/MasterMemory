@@ -49,9 +49,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Database.cs" />
+    <Compile Include="Internal\ExpandableArray.cs" />
+    <Compile Include="LookupView.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="Internal\KeyTupleComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RangeView.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

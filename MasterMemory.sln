@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory", "src\MasterM
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{60662102-4523-441E-8D6C-D87A3246C648}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BDAFF1CB-8E53-412B-B389-42A15343C7A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.Tests", "tests\MasterMemory.Tests\MasterMemory.Tests.csproj", "{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,11 +21,16 @@ Global
 		{F1164FFB-91C6-444F-B3B6-34B354996E14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1164FFB-91C6-444F-B3B6-34B354996E14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1164FFB-91C6-444F-B3B6-34B354996E14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F1164FFB-91C6-444F-B3B6-34B354996E14} = {60662102-4523-441E-8D6C-D87A3246C648}
+		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F} = {BDAFF1CB-8E53-412B-B389-42A15343C7A3}
 	EndGlobalSection
 EndGlobal

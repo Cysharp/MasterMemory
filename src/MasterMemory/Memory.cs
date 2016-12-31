@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MasterMemory.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,51 +9,79 @@ using ZeroFormatter.Formatters;
 
 namespace MasterMemory
 {
+    public enum SelectSide
+    {
+        Lower, Upper
+    }
+
     /// <summary>
     /// Represents primary indexed memory.
     /// </summary>
-    public class Memory<T, TPrimaryIndex>
+    public sealed class Memory<T, TKey>
     {
+        readonly object gate = new object();
+        Dictionary<string, object> dynamicIndexMemoriesCache;
+
         // don't serialize, only for debug view.
         public string Key { get; private set; }
 
+        public int Count { get; set; }
+
         // ZeroFormatter delayed list.
-        protected readonly IList<T> orderedData;
-        readonly Func<T, TPrimaryIndex> primaryIndexSelector;
-        readonly IComparer<TPrimaryIndex>[] comparers;
+        readonly IList<T> orderedData;
+        readonly Func<T, TKey> indexSelector;
+        readonly IComparer<TKey>[] comparers;
 
-        public Memory(string key, IEnumerable<T> datasource, Func<T, TPrimaryIndex> primaryIndexSelector)
+        // TODO:internal
+
+
+        public Memory(string key, IEnumerable<T> datasource, Func<T, TKey> indexSelector)
         {
-            // TODO:improve performance to use primitive array.
-            this.orderedData = datasource.OrderBy(x => primaryIndexSelector(x)).ToArray();
-            this.primaryIndexSelector = primaryIndexSelector;
-            this.comparers = new[] { Comparer<TPrimaryIndex>.Default };
+            IComparer<TKey> comparer;
+            if (typeof(TKey).GetInterfaces().Contains(typeof(IKeyTuple)))
+            {
+                // Type is KeyTuple.
+                var args = typeof(TKey).GetGenericArguments();
+                var t = KeyTupleComparer.Types[args.Length].MakeGenericType(args);
+                comparer = (IComparer<TKey>)Activator.CreateInstance(t, new object[] { -1 });
 
-            // typeof(TPrimaryIndex).GetInterfaces().contain
+                this.comparers = new IComparer<TKey>[args.Length];
+                for (int i = 0; i < args.Length; i++)
+                {
+                    this.comparers[i] = (IComparer<TKey>)Activator.CreateInstance(t, new object[] { (i + 1) });
+                }
+            }
+            else
+            {
+                comparer = Comparer<TKey>.Default;
+                this.comparers = new[] { comparer };
+            }
+
+            this.orderedData = FastSort(datasource, indexSelector, comparer);
+            this.indexSelector = indexSelector;
         }
 
-        public Memory(string key, ArraySegment<byte> bytes, Func<T, TPrimaryIndex> primaryIndexSelector)
+        public Memory(string key, ArraySegment<byte> bytes, Func<T, TKey> indexSelector)
         {
             // TODO:NullTracker
             var array = bytes.Array;
             int size;
             this.orderedData = ZeroFormatter.Formatters.Formatter<DefaultResolver, IList<T>>.Default.Deserialize(ref array, bytes.Offset, new DirtyTracker(), out size);
-            this.primaryIndexSelector = primaryIndexSelector;
-            this.comparers = new[] { Comparer<TPrimaryIndex>.Default };
+            this.indexSelector = indexSelector;
+            this.comparers = new[] { Comparer<TKey>.Default };
         }
 
         // get the first found value.
-        protected bool FindIndex(int lower, int upper, TPrimaryIndex key, IComparer<TPrimaryIndex> comparer, out int foundIndex)
+        int FindIndex(int lower, int upper, TKey key, IComparer<TKey> comparer)
         {
             while (upper - lower > 1)
             {
                 var index = lower + ((upper - lower) / 2);
-                var compare = comparer.Compare(primaryIndexSelector(orderedData[index]), key);
+                var compare = comparer.Compare(indexSelector(orderedData[index]), key);
                 if (compare == 0)
                 {
                     lower = upper = index;
-                    foundIndex = lower;
-                    return true;
+                    return lower;
                 }
                 if (compare >= 1)
                 {
@@ -64,43 +93,73 @@ namespace MasterMemory
                 }
             }
 
-            foundIndex = -1;
-            return false;
+            return -1;
         }
 
-        protected int GetLeftIndex(int index, IComparer<TPrimaryIndex> comparer)
+        int FindLeftIndex(int lower, int upper, TKey key, IComparer<TKey> comparer)
         {
-            var pk = primaryIndexSelector(orderedData[index]);
-            var minusOne = primaryIndexSelector(orderedData[index - 1]);
-
-            // TODO:....
-            if (comparer.Compare(pk, minusOne) == 0)
+            while (true)
             {
-                return -1;
+                var index = FindIndex(lower, upper, key, comparer);
+                if (index == -1) return -1;
+                if (index == 0) return 0;
+
+                var l = orderedData[index - 1];
+                if (comparer.Compare(indexSelector(l), key) == 0)
+                {
+                    return index;
+                }
+                else
+                {
+                    upper = index; // search again.
+                }
+            }
+        }
+
+        int FindRightIndex(int lower, int upper, TKey key, IComparer<TKey> comparer)
+        {
+            while (true)
+            {
+                var index = FindIndex(lower, upper, key, comparer);
+                if (index == -1) return -1;
+                if (index == orderedData.Count - 1) return index;
+
+                var r = orderedData[index + 1];
+                if (comparer.Compare(indexSelector(r), key) == 0)
+                {
+                    return index;
+                }
+                else
+                {
+                    lower = index; // search again.
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get first(single) value.
+        /// </summary>
+        public T Find(TKey key)
+        {
+            if (comparers.Length == 1)
+            {
+                var index = FindIndex(0, orderedData.Count, key, comparers[0]);
+                if (index == -1)
+                {
+                    throw new KeyNotFoundException("Key:" + key);
+                }
+                return orderedData[index];
             }
             else
             {
-                return -1;
+                // multi key
+
+                foreach (var comparer in comparers)
+                {
+
+                }
+                throw new NotImplementedException();
             }
-            //if (pk == minusOne)
-            //{
-            //}
-        }
-
-        //protected int GetRightIndex()
-        //{
-        //}
-
-        public T Find(TPrimaryIndex key)
-        {
-            // TODO:Comparers...
-            int index;
-            if (!FindIndex(-1, orderedData.Count, key, comparers[0], out index))
-            {
-                throw new KeyNotFoundException("Key:" + key);
-            }
-
-            return orderedData[index];
         }
 
         // get the nearest value.
@@ -110,25 +169,32 @@ namespace MasterMemory
         }
 
         // TODO:Return IRangeView
-        public T[] FindRange(TPrimaryIndex index)
+        public RangeView<T> FindRange(TKey key, bool ascendant = true)
         {
-            throw new NotImplementedException();
+            // TODO:Comparers
+
+            var left = FindLeftIndex(0, orderedData.Count, key, comparers[0]);
+            if (left == -1) new RangeView<T>(orderedData, 0, 0, ascendant); // empty
+
+            var right = FindRightIndex(0, orderedData.Count, key, comparers[0]);
+
+            return new MasterMemory.RangeView<T>(orderedData, left, right, ascendant);
         }
 
-        public T[] FindRange(TPrimaryIndex index, TPrimaryIndex left, TPrimaryIndex right)
+        public RangeView<T> FindRange(TKey left, TKey right)
         {
             throw new NotImplementedException();
 
 
         }
 
-        internal virtual void Serialize()
+        internal void Serialize()
         {
 
         }
 
         // static? needs serializer?
-        internal static Memory<T, TPrimaryIndex> Deserialize()
+        internal static Memory<T, TKey> Deserialize()
         {
             throw new NotImplementedException();
         }
@@ -137,23 +203,63 @@ namespace MasterMemory
         {
             return "Memory:" + Key + ", Count:" + orderedData.Count;
         }
-    }
 
 
-    // TODO:...
-    public class Memory<T, TPrimaryIndex, TSecondaryIndex1> : Memory<T, TPrimaryIndex>
-    {
-        public Memory(string key, ArraySegment<byte> bytes, Func<T, TPrimaryIndex> primaryIndexSelector) : base(key, bytes, primaryIndexSelector)
+
+
+
+        public Memory<T, TSecondaryIndex> DynamicIndex<TSecondaryIndex>(string indexName, Func<T, TSecondaryIndex> secondaryIndexSelector)
         {
+            object memory;
+            lock (gate)
+            {
+                if (dynamicIndexMemoriesCache == null)
+                {
+                    dynamicIndexMemoriesCache = new Dictionary<string, object>();
+                }
+
+                if (!dynamicIndexMemoriesCache.TryGetValue(indexName, out memory))
+                {
+                    memory = dynamicIndexMemoriesCache[indexName] = new Memory<T, TSecondaryIndex>(indexName, this.orderedData, secondaryIndexSelector);
+                }
+            }
+
+            return (Memory<T, TSecondaryIndex>)memory;
         }
 
-        public Memory(string key, IEnumerable<T> datasource, Func<T, TPrimaryIndex> primaryIndexSelector) : base(key, datasource, primaryIndexSelector)
+        // don't use OrderBy
+        T[] FastSort(IEnumerable<T> datasource, Func<T, TKey> indexSelector, IComparer<TKey> comparer)
         {
-        }
+            var collection = datasource as ICollection<T>;
+            if (collection != null)
+            {
+                var array = new T[collection.Count];
+                var sortSource = new TKey[collection.Count];
+                var i = 0;
+                foreach (var item in collection)
+                {
+                    array[i] = item;
+                    sortSource[i] = indexSelector(item);
+                    i++;
+                }
+                Array.Sort(sortSource, array, 0, collection.Count, comparer);
+                return array;
+            }
+            else
+            {
+                var array = new ExpandableArray<T>();
+                var sortSource = new ExpandableArray<TKey>();
+                foreach (var item in collection)
+                {
+                    array.Add(item);
+                    sortSource.Add(indexSelector(item));
+                }
 
-        internal override void Serialize()
-        {
-            base.Serialize();
+                Array.Sort(sortSource.items, array.items, 0, array.count, comparer);
+
+                Array.Resize(ref array.items, array.count);
+                return array.items;
+            }
         }
     }
 }
