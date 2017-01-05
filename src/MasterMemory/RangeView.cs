@@ -1,26 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MasterMemory
 {
-    // TODO:impl all.
-
     public struct RangeView<T> : IEnumerable<T>, IList<T>, IReadOnlyList<T>
     {
         readonly IList<T> orderedData;
         readonly int left;
         readonly int right;
         readonly bool ascendant;
+        readonly bool hasValue;
 
         public int Count
         {
             get
             {
-                return right - left;
+                return (!hasValue) ? 0 : (right - left) + 1;
             }
         }
 
@@ -48,6 +44,10 @@ namespace MasterMemory
         {
             get
             {
+                if (!hasValue) throw new ArgumentOutOfRangeException("view is empty");
+                if (index < 0) throw new ArgumentOutOfRangeException("index < 0");
+                if (Count <= index) throw new ArgumentOutOfRangeException("count <= index");
+
                 if (ascendant)
                 {
                     return orderedData[left + index];
@@ -61,25 +61,40 @@ namespace MasterMemory
 
         public RangeView(IList<T> orderedData, int left, int right, bool ascendant)
         {
+            if (right < left) throw new ArgumentException("right < left," + "right:" + right + " left:" + left);
             this.orderedData = orderedData;
             this.left = left;
             this.right = right;
             this.ascendant = ascendant;
+            this.hasValue = orderedData.Count != 0;
+        }
+
+        public static RangeView<T> Empty()
+        {
+            return default(RangeView<T>);
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < Count; i++)
+            {
+                yield return this[i];
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
         }
 
         int IList<T>.IndexOf(T item)
         {
-            throw new NotImplementedException();
+            var comaprer = EqualityComparer<T>.Default;
+            for (int i = 0; i < Count; i++)
+            {
+                if (comaprer.Equals(this[i], item)) return i;
+            }
+            return -1;
         }
 
         void IList<T>.Insert(int index, T item)
@@ -104,12 +119,17 @@ namespace MasterMemory
 
         bool ICollection<T>.Contains(T item)
         {
-            throw new NotImplementedException();
+            return ((IList<T>)this).IndexOf(item) != -1;
         }
 
         void ICollection<T>.CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            var index = 0;
+            var c = Count;
+            for (int i = arrayIndex; index < c; i++)
+            {
+                array[i] = this[index++];
+            }
         }
 
         bool ICollection<T>.Remove(T item)
@@ -119,7 +139,7 @@ namespace MasterMemory
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
         }
     }
 }

@@ -49,7 +49,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Database.cs" />
+    <Compile Include="Internal\BinarySearch.cs" />
     <Compile Include="Internal\ExpandableArray.cs" />
+    <Compile Include="DictionaryView.cs" />
+    <Compile Include="KeyTupleMemory.cs" />
     <Compile Include="LookupView.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="Internal\KeyTupleComparer.cs" />

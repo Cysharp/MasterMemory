@@ -2,40 +2,49 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ZeroFormatter;
 using ZeroFormatter.Formatters;
 
 namespace MasterMemory
 {
-    public enum SelectSide
+    public interface IMemoryFinder<TKey, TElement>
     {
-        Lower, Upper
+        bool TryFind(TKey key, out TElement value);
+        TElement Find(TKey key);
+        TElement FindOrDefault(TKey key, TElement defaultValue = default(TElement));
+        TElement FindClosest(TKey key, bool selectLower = true);
+        RangeView<TElement> FindMany(TKey key, bool ascendant = true);
+
+        // drop of initial release.
+        // RangeView<TElement> FindRange(TKey left, TKey right, bool ascendant = true);
+
+        RangeView<TElement> FindAll(bool ascendant = true);
+
+        LookupView<TKey, TElement> ToLookupView();
+        DictionaryView<TKey, TElement> ToDictionaryView();
     }
 
     /// <summary>
-    /// Represents primary indexed memory.
+    /// Represents key indexed memory like Dictionary/ILookup.
     /// </summary>
-    public sealed class Memory<T, TKey>
+    public class Memory<TKey, TElement> : IMemoryFinder<TKey, TElement>
     {
         readonly object gate = new object();
         Dictionary<string, object> dynamicIndexMemoriesCache;
-
-        // don't serialize, only for debug view.
-        public string Key { get; private set; }
+        readonly bool rootMemory;
 
         public int Count { get; set; }
 
-        // ZeroFormatter delayed list.
-        readonly IList<T> orderedData;
-        readonly Func<T, TKey> indexSelector;
+        readonly IList<TElement> orderedData;
+        readonly Func<TElement, TKey> indexSelector;
         readonly IComparer<TKey>[] comparers;
 
-        // TODO:internal
+        public Memory(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector)
+            : this(datasource, indexSelector, true)
+        {
+        }
 
-
-        public Memory(string key, IEnumerable<T> datasource, Func<T, TKey> indexSelector)
+        public Memory(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector, bool rootMemory)
         {
             IComparer<TKey> comparer;
             if (typeof(TKey).GetInterfaces().Contains(typeof(IKeyTuple)))
@@ -59,157 +68,187 @@ namespace MasterMemory
 
             this.orderedData = FastSort(datasource, indexSelector, comparer);
             this.indexSelector = indexSelector;
+            this.rootMemory = rootMemory;
         }
 
-        public Memory(string key, ArraySegment<byte> bytes, Func<T, TKey> indexSelector)
+        // TODO
+        //internal Memory(string key, ArraySegment<byte> bytes, Func<TElement, TKey> indexSelector)
+        //{
+        //    // TODO:NullTracker
+        //    var array = bytes.Array;
+        //    int size;
+        //    this.orderedData = ZeroFormatter.Formatters.Formatter<DefaultResolver, IList<TElement>>.Default.Deserialize(ref array, bytes.Offset, new DirtyTracker(), out size);
+        //    this.indexSelector = indexSelector;
+        //    this.comparers = new[] { Comparer<TKey>.Default };
+        //}
+
+        /// <summary>Get the first(single) value.</summary>
+        public bool TryFind(TKey key, out TElement value)
         {
-            // TODO:NullTracker
-            var array = bytes.Array;
-            int size;
-            this.orderedData = ZeroFormatter.Formatters.Formatter<DefaultResolver, IList<T>>.Default.Deserialize(ref array, bytes.Offset, new DirtyTracker(), out size);
-            this.indexSelector = indexSelector;
-            this.comparers = new[] { Comparer<TKey>.Default };
+            return InternalTryFind(key, comparers.Length, out value);
         }
 
-        // get the first found value.
-        int FindIndex(int lower, int upper, TKey key, IComparer<TKey> comparer)
+        internal bool InternalTryFind(TKey key, int comparerCount, out TElement value)
         {
-            while (upper - lower > 1)
+            if (comparerCount == 1)
             {
-                var index = lower + ((upper - lower) / 2);
-                var compare = comparer.Compare(indexSelector(orderedData[index]), key);
-                if (compare == 0)
+                var index = BinarySearch.FindFirst(orderedData, key, indexSelector, comparers[0]);
+                if (index == -1)
                 {
-                    lower = upper = index;
-                    return lower;
+                    value = default(TElement);
+                    return false;
                 }
-                if (compare >= 1)
-                {
-                    upper = index;
-                }
-                else
-                {
-                    lower = index;
-                }
+                value = orderedData[index];
+                return true;
             }
-
-            return -1;
-        }
-
-        int FindLeftIndex(int lower, int upper, TKey key, IComparer<TKey> comparer)
-        {
-            while (true)
+            else
             {
-                var index = FindIndex(lower, upper, key, comparer);
-                if (index == -1) return -1;
-                if (index == 0) return 0;
+                var lo = 0;
+                var hi = orderedData.Count;
+                for (int i = 0; i < comparerCount; i++)
+                {
+                    var comparer = comparers[i];
 
-                var l = orderedData[index - 1];
-                if (comparer.Compare(indexSelector(l), key) == 0)
-                {
-                    return index;
+                    var newlo = BinarySearch.LowerBound(orderedData, lo, hi, key, indexSelector, comparer);
+                    if (newlo == -1)
+                    {
+                        value = default(TElement);
+                        return false;
+                    }
+                    var newhi = BinarySearch.UpperBound(orderedData, lo, hi, key, indexSelector, comparer);
+                    lo = newlo;
+                    hi = newhi + 1;
                 }
-                else
+
+                if (lo == -1)
                 {
-                    upper = index; // search again.
+                    value = default(TElement);
+                    return false;
                 }
+                value = orderedData[lo];
+                return true;
             }
         }
 
-        int FindRightIndex(int lower, int upper, TKey key, IComparer<TKey> comparer)
+        /// <summary>Get the first(single) value.</summary>
+        public TElement Find(TKey key)
         {
-            while (true)
+            TElement value;
+            if (TryFind(key, out value))
             {
-                var index = FindIndex(lower, upper, key, comparer);
-                if (index == -1) return -1;
-                if (index == orderedData.Count - 1) return index;
+                return value;
+            }
+            else
+            {
+                throw new KeyNotFoundException("Key:" + key);
+            }
+        }
 
-                var r = orderedData[index + 1];
-                if (comparer.Compare(indexSelector(r), key) == 0)
-                {
-                    return index;
-                }
-                else
-                {
-                    lower = index; // search again.
-                }
+        /// <summary>Get the first(single) value.</summary>
+        public TElement FindOrDefault(TKey key, TElement defaultValue = default(TElement))
+        {
+            TElement value;
+            if (TryFind(key, out value))
+            {
+                return value;
+            }
+            else
+            {
+                return defaultValue;
             }
         }
 
         /// <summary>
-        /// Get first(single) value.
+        /// Get the closest value. e.g. [1,2,6,7,8]: FindNearest(3) -> 2, FindNearest(5) -> 6.
+        /// If same distance on both side, follow selectLower argument.
         /// </summary>
-        public T Find(TKey key)
+        /// <returns></returns>
+        public TElement FindClosest(TKey key, bool selectLower = true)
         {
+            if (orderedData.Count == 0) throw new ArgumentOutOfRangeException("Empty data is not supported.");
+
             if (comparers.Length == 1)
             {
-                var index = FindIndex(0, orderedData.Count, key, comparers[0]);
-                if (index == -1)
-                {
-                    throw new KeyNotFoundException("Key:" + key);
-                }
+                var index = BinarySearch.FindClosest(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0], selectLower);
                 return orderedData[index];
             }
             else
             {
-                // multi key
+                var lo = 0;
+                var hi = orderedData.Count;
 
-                foreach (var comparer in comparers)
+                for (int i = 0; i < comparers.Length; i++)
                 {
+                    var comparer = comparers[i];
 
+                    if (i == comparers.Length - 1)
+                    {
+                        var index = BinarySearch.FindClosest(orderedData, lo, hi, key, indexSelector, comparer, selectLower);
+                        return orderedData[index];
+                    }
+                    else
+                    {
+                        var newlo = BinarySearch.LowerBound(orderedData, lo, hi, key, indexSelector, comparer);
+                        if (newlo == -1)
+                        {
+                            newlo = lo;
+                        }
+                        var newhi = BinarySearch.UpperBound(orderedData, lo, hi, key, indexSelector, comparer);
+                        if (newhi == -1)
+                        {
+                            newhi = hi - 1;
+                        }
+                        lo = newlo;
+                        hi = newhi + 1;
+                    }
                 }
-                throw new NotImplementedException();
+
+                throw new InvalidProgramException();
             }
         }
 
-        // get the nearest value.
-        public T FindNearest()
+        /// <summary>
+        /// Get the range value, useful when key is not unique.
+        /// </summary>
+        public RangeView<TElement> FindMany(TKey key, bool ascendant = true)
         {
-            throw new NotImplementedException();
+            if (comparers.Length == 1)
+            {
+                var lo = BinarySearch.LowerBound(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0]);
+                if (lo == -1) return RangeView<TElement>.Empty();
+                var hi = BinarySearch.UpperBound(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0]);
+
+                return new RangeView<TElement>(orderedData, lo, hi, ascendant);
+            }
+            else
+            {
+                var lo = 0;
+                var hi = orderedData.Count;
+                foreach (var comparer in comparers)
+                {
+                    var newlo = BinarySearch.LowerBound(orderedData, lo, hi, key, indexSelector, comparer);
+                    if (newlo == -1)
+                    {
+                        return RangeView<TElement>.Empty();
+                    }
+                    var newhi = BinarySearch.UpperBound(orderedData, lo, hi, key, indexSelector, comparer);
+                    lo = newlo;
+                    hi = newhi + 1;
+                }
+
+                return new RangeView<TElement>(orderedData, lo, hi - 1, ascendant);
+            }
         }
 
-        // TODO:Return IRangeView
-        public RangeView<T> FindRange(TKey key, bool ascendant = true)
+        public RangeView<TElement> FindAll(bool ascendant = true)
         {
-            // TODO:Comparers
-
-            var left = FindLeftIndex(0, orderedData.Count, key, comparers[0]);
-            if (left == -1) new RangeView<T>(orderedData, 0, 0, ascendant); // empty
-
-            var right = FindRightIndex(0, orderedData.Count, key, comparers[0]);
-
-            return new MasterMemory.RangeView<T>(orderedData, left, right, ascendant);
+            return new MasterMemory.RangeView<TElement>(orderedData, 0, orderedData.Count - 1, ascendant);
         }
 
-        public RangeView<T> FindRange(TKey left, TKey right)
+        public IMemoryFinder<TSecondaryIndex, TElement> SecondaryIndex<TSecondaryIndex>(string indexName, Func<TElement, TSecondaryIndex> secondaryIndexSelector)
         {
-            throw new NotImplementedException();
+            if (!rootMemory) throw new Exception("Can't create dynamic index on secondary indexed memory.");
 
-
-        }
-
-        internal void Serialize()
-        {
-
-        }
-
-        // static? needs serializer?
-        internal static Memory<T, TKey> Deserialize()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string ToString()
-        {
-            return "Memory:" + Key + ", Count:" + orderedData.Count;
-        }
-
-
-
-
-
-        public Memory<T, TSecondaryIndex> DynamicIndex<TSecondaryIndex>(string indexName, Func<T, TSecondaryIndex> secondaryIndexSelector)
-        {
             object memory;
             lock (gate)
             {
@@ -220,20 +259,25 @@ namespace MasterMemory
 
                 if (!dynamicIndexMemoriesCache.TryGetValue(indexName, out memory))
                 {
-                    memory = dynamicIndexMemoriesCache[indexName] = new Memory<T, TSecondaryIndex>(indexName, this.orderedData, secondaryIndexSelector);
+                    memory = dynamicIndexMemoriesCache[indexName] = new Memory<TSecondaryIndex, TElement>(this.orderedData, secondaryIndexSelector, false);
                 }
             }
 
-            return (Memory<T, TSecondaryIndex>)memory;
+            return (Memory<TSecondaryIndex, TElement>)memory;
         }
 
-        // don't use OrderBy
-        T[] FastSort(IEnumerable<T> datasource, Func<T, TKey> indexSelector, IComparer<TKey> comparer)
+        public override string ToString()
         {
-            var collection = datasource as ICollection<T>;
+            return "IndexType:" + typeof(TKey).Name + " Count:" + Count;
+        }
+
+        // don't use OrderBy for performance reason.
+        TElement[] FastSort(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
+        {
+            var collection = datasource as ICollection<TElement>;
             if (collection != null)
             {
-                var array = new T[collection.Count];
+                var array = new TElement[collection.Count];
                 var sortSource = new TKey[collection.Count];
                 var i = 0;
                 foreach (var item in collection)
@@ -247,9 +291,9 @@ namespace MasterMemory
             }
             else
             {
-                var array = new ExpandableArray<T>();
+                var array = new ExpandableArray<TElement>();
                 var sortSource = new ExpandableArray<TKey>();
-                foreach (var item in collection)
+                foreach (var item in datasource)
                 {
                     array.Add(item);
                     sortSource.Add(indexSelector(item));
@@ -260,6 +304,16 @@ namespace MasterMemory
                 Array.Resize(ref array.items, array.count);
                 return array.items;
             }
+        }
+
+        public LookupView<TKey, TElement> ToLookupView()
+        {
+            return new LookupView<TKey, TElement>(this);
+        }
+
+        public DictionaryView<TKey, TElement> ToDictionaryView()
+        {
+            return new DictionaryView<TKey, TElement>(this);
         }
     }
 }
