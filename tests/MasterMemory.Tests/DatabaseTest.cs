@@ -61,7 +61,6 @@ namespace MasterMemory.Tests
         [Fact]
         public void MultiDb()
         {
-
             var builder = new DatabaseBuilder();
             builder.Add("Sample1", CreateData(), x => x.Id);
             builder.Add("Sample2", CreateData(), x => x.Id);

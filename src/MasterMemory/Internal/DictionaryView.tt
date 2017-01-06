@@ -1,0 +1,300 @@
+﻿<#@ template  debug="true" hostSpecific="true" #>
+<#@ output extension=".cs" #>
+<#@ Assembly Name="System.Core" #>
+<#@ Assembly Name="System.Windows.Forms" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #> 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using ZeroFormatter;
+
+namespace MasterMemory.Internal
+{
+    public class DictionaryView<TKey, TElement> : IDictionary<TKey, TElement>, IReadOnlyDictionary<TKey, TElement>
+    {
+        readonly Memory<TKey, TElement> innerMemory;
+
+        public DictionaryView(Memory<TKey, TElement> innerMemory)
+        {
+            this.innerMemory = innerMemory;
+        }
+
+        public TElement this[TKey key]
+        {
+            get
+            {
+                TElement v;
+                if (TryGetValue(key, out v))
+                {
+                    return v;
+                }
+                else
+                {
+                    throw new KeyNotFoundException("NotFound Key:" + key);
+                }
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                return innerMemory.Count;
+            }
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            TElement v;
+            return TryGetValue(key, out v);
+        }
+
+        public bool TryGetValue(TKey key, out TElement value)
+        {
+            return innerMemory.TryFind(key, out value);
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public ICollection<TKey> Keys
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public ICollection<TElement> Values
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TElement>.Keys
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        IEnumerable<TElement> IReadOnlyDictionary<TKey, TElement>.Values
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public void Add(KeyValuePair<TKey, TElement> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Add(TKey key, TElement value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Contains(KeyValuePair<TKey, TElement> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void CopyTo(KeyValuePair<TKey, TElement>[] array, int arrayIndex)
+        {
+            throw new NotSupportedException();
+        }
+
+        public IEnumerator<KeyValuePair<TKey, TElement>> GetEnumerator()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Remove(KeyValuePair<TKey, TElement> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Remove(TKey key)
+        {
+            throw new NotSupportedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+<# for(var i = 2; i <= 7; i++) { 
+        var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
+#>
+<# for(var j = 1; j <= i - 1; j++) {
+       var keyType = (j == 1) ? "TKey1" : "KeyTuple<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
+       var indexCount = string.Join("", Enumerable.Range(1, j));
+       
+       var deconstructKeys = (j == 1) ? "key" : string.Join(", ", Enumerable.Range(1, j).Select(x => "key.Item" + x));
+       var defaultOthers = string.Join(", ", Enumerable.Range(j + 1, i - j).Select(x => "default(TKey" + x + ")"));
+       var createKeyTuple = deconstructKeys + ", " + defaultOthers;
+#>
+
+    public class DictionaryView<#= indexCount #><<#= typeKeyList #>, TElement> : IDictionary<<#= keyType #>, TElement>, IReadOnlyDictionary<<#= keyType #>, TElement>
+    {
+        readonly KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory;
+
+        internal DictionaryView<#= indexCount #>(KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory)
+        {
+            this.innerMemory = innerMemory;
+        }
+
+        public TElement this[<#= keyType #> key]
+        {
+            get
+            {
+                TElement v;
+                if (TryGetValue(key, out v))
+                {
+                    return v;
+                }
+                else
+                {
+                    throw new KeyNotFoundException("NotFound Key:" + key);
+                }
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                return innerMemory.Count;
+            }
+        }
+
+        public bool ContainsKey(<#= keyType #> key)
+        {
+            TElement v;
+            return TryGetValue(key, out v);
+        }
+
+        public bool TryGetValue(<#= keyType #> key, out TElement value)
+        {
+            return innerMemory.TryFind(key, out value);
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public ICollection<<#= keyType #>> Keys
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public ICollection<TElement> Values
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        IEnumerable<<#= keyType #>> IReadOnlyDictionary<<#= keyType #>, TElement>.Keys
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        IEnumerable<TElement> IReadOnlyDictionary<<#= keyType #>, TElement>.Values
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public void Add(KeyValuePair<<#= keyType #>, TElement> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Add(<#= keyType #> key, TElement value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Contains(KeyValuePair<<#= keyType #>, TElement> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void CopyTo(KeyValuePair<<#= keyType #>, TElement>[] array, int arrayIndex)
+        {
+            throw new NotSupportedException();
+        }
+
+        public IEnumerator<KeyValuePair<<#= keyType #>, TElement>> GetEnumerator()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Remove(KeyValuePair<<#= keyType #>, TElement> item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Remove(<#= keyType #> key)
+        {
+            throw new NotSupportedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+<# } } #>
+}

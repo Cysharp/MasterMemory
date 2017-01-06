@@ -1,0 +1,156 @@
+﻿<#@ template  debug="true" hostSpecific="true" #>
+<#@ output extension=".cs" #>
+<#@ Assembly Name="System.Core" #>
+<#@ Assembly Name="System.Windows.Forms" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #> 
+<#
+    
+#>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ZeroFormatter;
+using MasterMemory.Internal;
+
+namespace MasterMemory.Internal
+{
+<# for(var i = 2; i <= 7; i++) { 
+        var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
+#>
+<# for(var j = 1; j <= i - 1; j++) {
+       var keyType = (j == 1) ? "TKey1" : "KeyTuple<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
+       var indexCount = string.Join("", Enumerable.Range(1, j));
+       
+       var deconstructKeys = (j == 1) ? "key" : string.Join(", ", Enumerable.Range(1, j).Select(x => "key.Item" + x));
+       var defaultOthers = string.Join(", ", Enumerable.Range(j + 1, i - j).Select(x => "default(TKey" + x + ")"));
+       var createKeyTuple = deconstructKeys + ", " + defaultOthers;
+#>
+
+    internal class KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> : IMemoryFinder<<#= keyType #>, TElement>
+    {
+        readonly Memory<KeyTuple<<#= typeKeyList #>>, TElement> memory;
+        const int ComparerCount = <#= j #>;
+
+        public int Count
+        {
+            get
+            {
+                return memory.Count;
+            }
+        }
+
+        public KeyTuple<#= indexCount #>Memory(Memory<KeyTuple<<#= typeKeyList #>>, TElement> memory)
+        {
+            this.memory = memory;
+        }
+
+        public TElement Find(<#= keyType #> key)
+        {
+            return memory.InternalFind(CreateKey(key), ComparerCount);
+        }
+
+        public RangeView<TElement> FindAll(bool ascendant = true)
+        {
+            return memory.FindAll(ascendant);
+        }
+
+        public RangeView<TElement> FindMany(<#= keyType #> key, bool ascendant = true)
+        {
+            return memory.InternalFindMany(CreateKey(key), ascendant, ComparerCount);
+        }
+
+        public TElement FindClosest(<#= keyType #> key, bool selectLower = true)
+        {
+            return memory.InternalFindClosest(CreateKey(key), selectLower, ComparerCount);
+        }
+
+        public TElement FindOrDefault(<#= keyType #> key, TElement defaultValue = default(TElement))
+        {
+            return memory.InternalFindOrDefault(CreateKey(key), defaultValue, ComparerCount);
+        }
+
+        public bool TryFind(<#= keyType #> key, out TElement value)
+        {
+            return memory.InternalTryFind(CreateKey(key), ComparerCount, out value);
+        }
+
+        public ILookup<<#= keyType #>, TElement> ToLookupView()
+        {
+            return new LookupView<#= indexCount #><<#= typeKeyList #>, TElement>(this);
+        }
+
+        public IReadOnlyDictionary<<#= keyType #>, TElement> ToDictionaryView()
+        {
+            return new DictionaryView<#= indexCount #><<#= typeKeyList #>, TElement>(this);
+        }
+
+        KeyTuple<<#= typeKeyList #>> CreateKey(<#= keyType #> key)
+        {
+            return KeyTuple.Create(<#= createKeyTuple #>);
+        }
+    }            
+
+<# } } #>
+}
+
+namespace MasterMemory
+{
+    public static class MemoryUseIndexExtensions
+    {
+<# for(var i = 2; i <= 7; i++) { 
+        var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
+#>
+<# for(var j = 1; j <= i - 1; j++) {
+       var resultType = (j == 1) ? "TKey1" : "KeyTuple<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
+       var indexCount = string.Join("", Enumerable.Range(1, j));
+#>
+
+        public static IMemoryFinder<<#= resultType #>, TElement> UseIndex<#= indexCount #><<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory)
+        {
+            return new KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement>(memory as Memory<KeyTuple<<#= typeKeyList #>>, TElement>);
+        }
+
+<# } } #>
+    }
+
+    public static class KeyTupleConstructExtensions
+    {
+<# for(var i = 2; i <= 7; i++) { 
+        var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
+        var argList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x + " " + "item" + x));
+        var itemList = string.Join(", ", Enumerable.Range(1, i).Select(x => "item" + x));
+#>
+
+        public static bool TryFind<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, out TElement value)
+        {
+            return memory.TryFind(KeyTuple.Create(<#= itemList #>), out value);
+        }
+
+        public static TElement Find<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>)
+        {
+            return memory.Find(KeyTuple.Create(<#= itemList #>));
+        }
+
+        public static TElement FindOrDefault<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, TElement defaultValue = default(TElement))
+        {
+            return memory.FindOrDefault(KeyTuple.Create(<#= itemList #>), defaultValue);
+        }
+
+        public static TElement FindClosest<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, bool selectLower = true)
+        {
+            return memory.FindClosest(KeyTuple.Create(<#= itemList #>), selectLower);
+        }
+
+        public static RangeView<TElement> FindMany<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, bool ascendant = true)
+        {
+            return memory.FindMany(KeyTuple.Create(<#= itemList #>), ascendant);
+        }
+
+<# } #>
+    }
+}

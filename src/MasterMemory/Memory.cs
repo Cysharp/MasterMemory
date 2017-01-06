@@ -37,6 +37,7 @@ namespace MasterMemory
 
     public interface IMemoryFinder<TKey, TElement>
     {
+        int Count { get; }
         bool TryFind(TKey key, out TElement value);
         TElement Find(TKey key);
         TElement FindOrDefault(TKey key, TElement defaultValue = default(TElement));
@@ -48,8 +49,8 @@ namespace MasterMemory
 
         RangeView<TElement> FindAll(bool ascendant = true);
 
-        LookupView<TKey, TElement> ToLookupView();
-        DictionaryView<TKey, TElement> ToDictionaryView();
+        ILookup<TKey, TElement> ToLookupView();
+        IReadOnlyDictionary<TKey, TElement> ToDictionaryView();
     }
 
     /// <summary>
@@ -90,7 +91,7 @@ namespace MasterMemory
             }
             else
             {
-                comparer = Comparer<TKey>.Default;
+                comparer = MasterMemoryComparer<TKey>.Default;
                 this.comparers = new[] { comparer };
             }
 
@@ -123,7 +124,7 @@ namespace MasterMemory
             }
             else
             {
-                comparer = Comparer<TKey>.Default;
+                comparer = MasterMemoryComparer<TKey>.Default;
                 this.comparers = new[] { comparer };
             }
 
@@ -158,12 +159,17 @@ namespace MasterMemory
                     var comparer = comparers[i];
 
                     var newlo = BinarySearch.LowerBound(orderedData, lo, hi, key, indexSelector, comparer);
-                    if (newlo == -1)
+                    if (newlo == -1 || !(lo <= newlo) && (newlo < hi))
                     {
                         value = default(TElement);
                         return false;
                     }
                     var newhi = BinarySearch.UpperBound(orderedData, lo, hi, key, indexSelector, comparer);
+                    if (newhi == -1 || !(lo <= newhi) && (newhi < hi))
+                    {
+                        value = default(TElement);
+                        return false;
+                    }
                     lo = newlo;
                     hi = newhi + 1;
                 }
@@ -181,8 +187,13 @@ namespace MasterMemory
         /// <summary>Get the first(single) value.</summary>
         public TElement Find(TKey key)
         {
+            return InternalFind(key, comparers.Length);
+        }
+
+        internal TElement InternalFind(TKey key, int comparerCount)
+        {
             TElement value;
-            if (TryFind(key, out value))
+            if (InternalTryFind(key, comparerCount, out value))
             {
                 return value;
             }
@@ -195,8 +206,13 @@ namespace MasterMemory
         /// <summary>Get the first(single) value.</summary>
         public TElement FindOrDefault(TKey key, TElement defaultValue = default(TElement))
         {
+            return InternalFindOrDefault(key, defaultValue, comparers.Length);
+        }
+
+        internal TElement InternalFindOrDefault(TKey key, TElement defaultValue, int comparerCount)
+        {
             TElement value;
-            if (TryFind(key, out value))
+            if (InternalTryFind(key, comparerCount, out value))
             {
                 return value;
             }
@@ -213,9 +229,14 @@ namespace MasterMemory
         /// <returns></returns>
         public TElement FindClosest(TKey key, bool selectLower = true)
         {
+            return InternalFindClosest(key, selectLower, comparers.Length);
+        }
+
+        internal TElement InternalFindClosest(TKey key, bool selectLower, int comparerCount)
+        {
             if (orderedData.Count == 0) throw new ArgumentOutOfRangeException("Empty data is not supported.");
 
-            if (comparers.Length == 1)
+            if (comparerCount == 1)
             {
                 var index = BinarySearch.FindClosest(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0], selectLower);
                 return orderedData[index];
@@ -225,11 +246,11 @@ namespace MasterMemory
                 var lo = 0;
                 var hi = orderedData.Count;
 
-                for (int i = 0; i < comparers.Length; i++)
+                for (int i = 0; i < comparerCount; i++)
                 {
                     var comparer = comparers[i];
 
-                    if (i == comparers.Length - 1)
+                    if (i == comparerCount - 1)
                     {
                         var index = BinarySearch.FindClosest(orderedData, lo, hi, key, indexSelector, comparer, selectLower);
                         return orderedData[index];
@@ -237,15 +258,16 @@ namespace MasterMemory
                     else
                     {
                         var newlo = BinarySearch.LowerBound(orderedData, lo, hi, key, indexSelector, comparer);
-                        if (newlo == -1)
+                        if (newlo == -1 || !(lo <= newlo) && (newlo < hi))
                         {
                             newlo = lo;
                         }
                         var newhi = BinarySearch.UpperBound(orderedData, lo, hi, key, indexSelector, comparer);
-                        if (newhi == -1)
+                        if (newhi == -1 || !(lo <= newhi) && (newhi < hi))
                         {
                             newhi = hi - 1;
                         }
+
                         lo = newlo;
                         hi = newhi + 1;
                     }
@@ -260,7 +282,12 @@ namespace MasterMemory
         /// </summary>
         public RangeView<TElement> FindMany(TKey key, bool ascendant = true)
         {
-            if (comparers.Length == 1)
+            return InternalFindMany(key, ascendant, comparers.Length);
+        }
+
+        internal RangeView<TElement> InternalFindMany(TKey key, bool ascendant, int comparerCount)
+        {
+            if (comparerCount == 1)
             {
                 var lo = BinarySearch.LowerBound(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0]);
                 if (lo == -1) return RangeView<TElement>.Empty();
@@ -272,14 +299,20 @@ namespace MasterMemory
             {
                 var lo = 0;
                 var hi = orderedData.Count;
-                foreach (var comparer in comparers)
+                for (int i = 0; i < comparerCount; i++)
                 {
+                    var comparer = comparers[i];
+
                     var newlo = BinarySearch.LowerBound(orderedData, lo, hi, key, indexSelector, comparer);
-                    if (newlo == -1)
+                    if (newlo == -1 || !(lo <= newlo) && (newlo < hi))
                     {
                         return RangeView<TElement>.Empty();
                     }
                     var newhi = BinarySearch.UpperBound(orderedData, lo, hi, key, indexSelector, comparer);
+                    if (newhi == -1 || !(lo <= newhi) && (newhi < hi))
+                    {
+                        return RangeView<TElement>.Empty();
+                    }
                     lo = newlo;
                     hi = newhi + 1;
                 }
@@ -291,6 +324,16 @@ namespace MasterMemory
         public RangeView<TElement> FindAll(bool ascendant = true)
         {
             return new MasterMemory.RangeView<TElement>(orderedData, 0, orderedData.Count - 1, ascendant);
+        }
+
+        public ILookup<TKey, TElement> ToLookupView()
+        {
+            return new LookupView<TKey, TElement>(this);
+        }
+
+        public IReadOnlyDictionary<TKey, TElement> ToDictionaryView()
+        {
+            return new DictionaryView<TKey, TElement>(this);
         }
 
         public IMemoryFinder<TSecondaryIndex, TElement> SecondaryIndex<TSecondaryIndex>(string indexName, Func<TElement, TSecondaryIndex> secondaryIndexSelector)
@@ -312,6 +355,12 @@ namespace MasterMemory
             }
 
             return (Memory<TSecondaryIndex, TElement>)memory;
+        }
+
+        public int Serialize(ref byte[] bytes, int offset)
+        {
+            var formatter = Formatter<DefaultResolver, IList<TElement>>.Default;
+            return formatter.Serialize(ref bytes, offset, orderedData);
         }
 
         public override string ToString()
@@ -352,22 +401,6 @@ namespace MasterMemory
                 Array.Resize(ref array.items, array.count);
                 return array.items;
             }
-        }
-
-        public LookupView<TKey, TElement> ToLookupView()
-        {
-            return new LookupView<TKey, TElement>(this);
-        }
-
-        public DictionaryView<TKey, TElement> ToDictionaryView()
-        {
-            return new DictionaryView<TKey, TElement>(this);
-        }
-
-        public int Serialize(ref byte[] bytes, int offset)
-        {
-            var formatter = Formatter<DefaultResolver, IList<TElement>>.Default;
-            return formatter.Serialize(ref bytes, offset, orderedData);
         }
     }
 }

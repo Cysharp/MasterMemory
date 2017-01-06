@@ -50,17 +50,55 @@
   <ItemGroup>
     <Compile Include="Database.cs" />
     <Compile Include="Internal\BinarySearch.cs" />
+    <Compile Include="Internal\DictionaryView.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DictionaryView.tt</DependentUpon>
+    </Compile>
     <Compile Include="Internal\ExpandableArray.cs" />
-    <Compile Include="DictionaryView.cs" />
-    <Compile Include="KeyTupleMemory.cs" />
-    <Compile Include="LookupView.cs" />
+    <Compile Include="Internal\KeyTupleComparer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>KeyTupleComparer.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Internal\KeyTupleMemory.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>KeyTupleMemory.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Internal\LookupView.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LookupView.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MasterMemoryComparer.cs" />
     <Compile Include="Memory.cs" />
-    <Compile Include="Internal\KeyTupleComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RangeView.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Internal\DictionaryView.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DictionaryView.cs</LastGenOutput>
+    </Content>
+    <Content Include="Internal\KeyTupleComparer.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>KeyTupleComparer.cs</LastGenOutput>
+    </Content>
+    <Content Include="Internal\KeyTupleMemory.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>KeyTupleMemory.cs</LastGenOutput>
+    </Content>
+    <Content Include="Internal\LookupView.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>LookupView.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

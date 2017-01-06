@@ -1,0 +1,116 @@
+﻿<#@ template  debug="true" hostSpecific="true" #>
+<#@ output extension=".cs" #>
+<#@ Assembly Name="System.Core" #>
+<#@ Assembly Name="System.Windows.Forms" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #> 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using ZeroFormatter;
+
+namespace MasterMemory.Internal
+{
+    public class LookupView<TKey, TElement> : ILookup<TKey, TElement>
+    {
+        readonly Memory<TKey, TElement> innerMemory;
+
+        internal LookupView(Memory<TKey, TElement> innerMemory)
+        {
+            this.innerMemory = innerMemory;
+        }
+
+        public IEnumerable<TElement> this[TKey key]
+        {
+            get
+            {
+                return this.innerMemory.FindMany(key);
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                return this.innerMemory.Count;
+            }
+        }
+
+        public bool Contains(TKey key)
+        {
+            TElement v;
+            return innerMemory.TryFind(key, out v);
+        }
+
+        public IEnumerator<IGrouping<TKey, TElement>> GetEnumerator()
+        {
+            throw new NotSupportedException("LookupView does not support iterate all.");
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+<# for(var i = 2; i <= 7; i++) { 
+        var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
+#>
+<# for(var j = 1; j <= i - 1; j++) {
+       var keyType = (j == 1) ? "TKey1" : "KeyTuple<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
+       var indexCount = string.Join("", Enumerable.Range(1, j));
+       
+       var deconstructKeys = (j == 1) ? "key" : string.Join(", ", Enumerable.Range(1, j).Select(x => "key.Item" + x));
+       var defaultOthers = string.Join(", ", Enumerable.Range(j + 1, i - j).Select(x => "default(TKey" + x + ")"));
+       var createKeyTuple = deconstructKeys + ", " + defaultOthers;
+#>
+
+    public class LookupView<#= indexCount #><<#= typeKeyList #>, TElement> : ILookup<<#= keyType #>, TElement>
+    {
+        readonly KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory;
+
+        internal LookupView<#= indexCount #>(KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory)
+        {
+            this.innerMemory = innerMemory;
+        }
+
+        public IEnumerable<TElement> this[<#= keyType #> key]
+        {
+            get
+            {
+                return this.innerMemory.FindMany(key);
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                return this.innerMemory.Count;
+            }
+        }
+
+        public bool Contains(<#= keyType #> key)
+        {
+            TElement v;
+            return innerMemory.TryFind(key, out v);
+        }
+
+        public IEnumerator<IGrouping<<#= keyType #>, TElement>> GetEnumerator()
+        {
+            throw new NotSupportedException("LookupView does not support iterate all.");
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+<# } } #>
+}
