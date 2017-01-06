@@ -58,7 +58,7 @@ namespace MasterMemory
 
         internal Database(IEnumerable<KeyValuePair<string, ISerializableMemory>> memories)
         {
-            this.memories = new Dictionary<string, ISerializableMemory>(StringComparer.InvariantCultureIgnoreCase);
+            this.memories = new Dictionary<string, ISerializableMemory>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in memories)
             {
                 this.memories.Add(item.Key, item.Value);
@@ -77,7 +77,7 @@ namespace MasterMemory
             var memoryCount = BinaryUtil.ReadInt32(ref bytes, 0);
             var stringFormatter = ZeroFormatter.Formatters.Formatter<DefaultResolver, string>.Default;
 
-            var memories = new Dictionary<string, ISerializableMemory>(memoryCount, StringComparer.InvariantCultureIgnoreCase);
+            var memories = new Dictionary<string, ISerializableMemory>(memoryCount, StringComparer.OrdinalIgnoreCase);
             var offset = 4;
 
             string prevKeyName = null;
@@ -156,7 +156,7 @@ namespace MasterMemory
 
     public class DatabaseBuilder
     {
-        readonly Dictionary<string, ISerializableMemory> memories = new Dictionary<string, ISerializableMemory>(StringComparer.InvariantCultureIgnoreCase);
+        readonly Dictionary<string, ISerializableMemory> memories = new Dictionary<string, ISerializableMemory>(StringComparer.OrdinalIgnoreCase);
 
         public DatabaseBuilder()
         {

@@ -1,4 +1,5 @@
 ﻿using MasterMemory.Internal;
+using System.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,10 +77,10 @@ namespace MasterMemory
         public Memory(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector, bool rootMemory)
         {
             IComparer<TKey> comparer;
-            if (typeof(TKey).GetInterfaces().Contains(typeof(IKeyTuple)))
+            if (typeof(TKey).GetTypeInfo().GetInterfaces().Contains(typeof(IKeyTuple)))
             {
                 // Type is KeyTuple.
-                var args = typeof(TKey).GetGenericArguments();
+                var args = typeof(TKey).GetTypeInfo().GetGenericArguments();
                 var t = KeyTupleComparer.Types[args.Length].MakeGenericType(args);
                 comparer = (IComparer<TKey>)Activator.CreateInstance(t, new object[] { -1 });
 
@@ -109,10 +110,10 @@ namespace MasterMemory
 
             // TODO:
             IComparer<TKey> comparer;
-            if (typeof(TKey).GetInterfaces().Contains(typeof(IKeyTuple)))
+            if (typeof(TKey).GetTypeInfo().GetInterfaces().Contains(typeof(IKeyTuple)))
             {
                 // Type is KeyTuple.
-                var args = typeof(TKey).GetGenericArguments();
+                var args = typeof(TKey).GetTypeInfo().GetGenericArguments();
                 var t = KeyTupleComparer.Types[args.Length].MakeGenericType(args);
                 comparer = (IComparer<TKey>)Activator.CreateInstance(t, new object[] { -1 });
 

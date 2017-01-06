@@ -1,0 +1,22 @@
+﻿
+{
+	"version": "0.1.0",
+	"buildOptions": {
+		"allowUnsafe": false,
+		"outputName": "MasterMemory",
+			"compile": [
+				"../MasterMemory/*.cs",
+				"../MasterMemory/*/*.cs"
+			],
+		"define": [ "NET_CORE" ]
+	},
+	"dependencies": {
+		"System.Collections": "4.0.11",
+		"System.Linq": "4.1.0",
+		"ZeroFormatter": "1.5.7"
+	},
+	"frameworks": {
+		"netstandard1.6": {
+		}
+	}
+}
