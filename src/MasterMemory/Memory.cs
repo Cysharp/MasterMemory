@@ -4,9 +4,37 @@ using System.Collections.Generic;
 using System.Linq;
 using ZeroFormatter;
 using ZeroFormatter.Formatters;
+using ZeroFormatter.Internal;
 
 namespace MasterMemory
 {
+    public interface ISerializableMemory
+    {
+        int Serialize(ref byte[] bytes, int offset);
+    }
+
+    internal sealed class ArraySegmentMemory : ISerializableMemory
+    {
+        readonly ArraySegment<byte> buffer;
+
+        public ArraySegmentMemory(ArraySegment<byte> buffer)
+        {
+            this.buffer = buffer;
+        }
+
+        public int Serialize(ref byte[] bytes, int offset)
+        {
+            BinaryUtil.EnsureCapacity(ref bytes, offset, buffer.Count);
+            Buffer.BlockCopy(buffer.Array, buffer.Offset, bytes, offset, buffer.Count);
+            return buffer.Count;
+        }
+
+        public Memory<TKey, TElement> ToMemory<TKey, TElement>(DirtyTracker tracker, Func<TElement, TKey> indexSelector)
+        {
+            return new Memory<TKey, TElement>(buffer.Array, buffer.Offset, tracker, indexSelector);
+        }
+    }
+
     public interface IMemoryFinder<TKey, TElement>
     {
         bool TryFind(TKey key, out TElement value);
@@ -27,7 +55,7 @@ namespace MasterMemory
     /// <summary>
     /// Represents key indexed memory like Dictionary/ILookup.
     /// </summary>
-    public class Memory<TKey, TElement> : IMemoryFinder<TKey, TElement>
+    public class Memory<TKey, TElement> : IMemoryFinder<TKey, TElement>, ISerializableMemory
     {
         readonly object gate = new object();
         Dictionary<string, object> dynamicIndexMemoriesCache;
@@ -71,16 +99,36 @@ namespace MasterMemory
             this.rootMemory = rootMemory;
         }
 
-        // TODO
-        //internal Memory(string key, ArraySegment<byte> bytes, Func<TElement, TKey> indexSelector)
-        //{
-        //    // TODO:NullTracker
-        //    var array = bytes.Array;
-        //    int size;
-        //    this.orderedData = ZeroFormatter.Formatters.Formatter<DefaultResolver, IList<TElement>>.Default.Deserialize(ref array, bytes.Offset, new DirtyTracker(), out size);
-        //    this.indexSelector = indexSelector;
-        //    this.comparers = new[] { Comparer<TKey>.Default };
-        //}
+        internal Memory(byte[] bytes, int offset, DirtyTracker tracker, Func<TElement, TKey> indexSelector)
+        {
+            var formatter = ZeroFormatter.Formatters.Formatter<DefaultResolver, IList<TElement>>.Default;
+            int size;
+            this.orderedData = formatter.Deserialize(ref bytes, offset, tracker, out size);
+            this.indexSelector = indexSelector;
+
+            // TODO:
+            IComparer<TKey> comparer;
+            if (typeof(TKey).GetInterfaces().Contains(typeof(IKeyTuple)))
+            {
+                // Type is KeyTuple.
+                var args = typeof(TKey).GetGenericArguments();
+                var t = KeyTupleComparer.Types[args.Length].MakeGenericType(args);
+                comparer = (IComparer<TKey>)Activator.CreateInstance(t, new object[] { -1 });
+
+                this.comparers = new IComparer<TKey>[args.Length];
+                for (int i = 0; i < args.Length; i++)
+                {
+                    this.comparers[i] = (IComparer<TKey>)Activator.CreateInstance(t, new object[] { (i + 1) });
+                }
+            }
+            else
+            {
+                comparer = Comparer<TKey>.Default;
+                this.comparers = new[] { comparer };
+            }
+
+            this.rootMemory = true;
+        }
 
         /// <summary>Get the first(single) value.</summary>
         public bool TryFind(TKey key, out TElement value)
@@ -314,6 +362,12 @@ namespace MasterMemory
         public DictionaryView<TKey, TElement> ToDictionaryView()
         {
             return new DictionaryView<TKey, TElement>(this);
+        }
+
+        public int Serialize(ref byte[] bytes, int offset)
+        {
+            var formatter = Formatter<DefaultResolver, IList<TElement>>.Default;
+            return formatter.Serialize(ref bytes, offset, orderedData);
         }
     }
 }

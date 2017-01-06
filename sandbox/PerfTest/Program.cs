@@ -30,9 +30,8 @@ namespace TestPerfLiteDB
             RunTest("Dictionary", new Dictionary_Test(5000));
             RunTest("ConcurrentDictionary", new ConcurrentDictionary_Test(5000));
 
-            RunTest("MasterMemory", new MasterMemory_Test(5000));
-
-            // TODO:Add ZeroFormatterd MasterMemory
+            RunTest("MasterMemory: Plain", new MasterMemory_Test(5000));
+            RunTest("MasterMemory: Loaded", new MasterMemoryDatabase_Test(5000));
 
             Console.ReadKey();
         }
@@ -49,14 +48,13 @@ namespace TestPerfLiteDB
             test.Run("Bulk", test.Bulk, true);
             test.Run("CreateIndex", test.CreateIndex,true);
             test.Run("Query", test.Query, false);
-
             test.Run("Query", test.Query, false);
             test.Run("Query", test.Query, false);
             test.Run("Query", test.Query, false);
-
+            
             try
             {
-                Console.WriteLine("FileLength     : " + Math.Round((double)test.FileLength / (double)1024, 2).ToString().PadLeft(5, ' ') + " kb");
+                 Console.WriteLine("FileLength     : " + Math.Round((double)test.FileLength / (double)1024, 2).ToString().PadLeft(5, ' ') + " kb");
             }
             catch (System.IO.FileNotFoundException)
             {

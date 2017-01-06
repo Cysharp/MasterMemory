@@ -14,11 +14,11 @@ namespace TestPerfLiteDB
     public class TestDoc
     {
         [Index(0)]
-        public int id { get; set; }
+        public virtual int id { get; set; }
         [Index(1)]
-        public string name { get; set; }
+        public virtual string name { get; set; }
         [Index(2)]
-        public string lorem { get; set; }
+        public virtual string lorem { get; set; }
     }
 
     static class Helper

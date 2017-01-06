@@ -5,12 +5,17 @@ using ZeroFormatter;
 
 namespace MasterMemory.Tests
 {
+    [ZeroFormattable]
     public class Sample
     {
-        public int Id { get; set; }
-        public int Age { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        [Index(0)]
+        public virtual int Id { get; set; }
+        [Index(1)]
+        public virtual int Age { get; set; }
+        [Index(2)]
+        public virtual string FirstName { get; set; }
+        [Index(3)]
+        public virtual string LastName { get; set; }
 
         public override string ToString()
         {
@@ -89,7 +94,7 @@ namespace MasterMemory.Tests
         }
 
         [Fact]
-        public void FindNearest()
+        public void FindClosest()
         {
             var data = CreateData();
             var memory = CreateMemory(data);
@@ -149,7 +154,7 @@ namespace MasterMemory.Tests
         }
 
         [Fact]
-        public void FindNearestMultiKey()
+        public void FindClosestMultiKey()
         {
             var data = CreateData();
             var memory = CreateMemory(data);
