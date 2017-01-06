@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerfTest", "sandbox\PerfTes
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MasterMemory.NETCore", "src\MasterMemory.NETCore\MasterMemory.NETCore.xproj", "{1BCAC024-12FD-42FB-BBF8-C9BAC0D99183}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MasterMemory.NETCore.Tests", "tests\MasterMemory.NETCore.Tests\MasterMemory.NETCore.Tests.xproj", "{35FE1FD9-D56C-45D4-8407-6604A4E3E055}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{1BCAC024-12FD-42FB-BBF8-C9BAC0D99183}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BCAC024-12FD-42FB-BBF8-C9BAC0D99183}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BCAC024-12FD-42FB-BBF8-C9BAC0D99183}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35FE1FD9-D56C-45D4-8407-6604A4E3E055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35FE1FD9-D56C-45D4-8407-6604A4E3E055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35FE1FD9-D56C-45D4-8407-6604A4E3E055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35FE1FD9-D56C-45D4-8407-6604A4E3E055}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,5 +54,6 @@ Global
 		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F} = {BDAFF1CB-8E53-412B-B389-42A15343C7A3}
 		{36EF0213-98F0-40F5-978F-EAEFF0F8FC42} = {FFAA235C-D30F-4958-BC4E-60CD08979464}
 		{1BCAC024-12FD-42FB-BBF8-C9BAC0D99183} = {60662102-4523-441E-8D6C-D87A3246C648}
+		{35FE1FD9-D56C-45D4-8407-6604A4E3E055} = {BDAFF1CB-8E53-412B-B389-42A15343C7A3}
 	EndGlobalSection
 EndGlobal
