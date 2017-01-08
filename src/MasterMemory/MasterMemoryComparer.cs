@@ -37,22 +37,4 @@ namespace MasterMemory
             }
         }
     }
-
-    public static class UnityTypeHint
-    {
-        public static void KeyTupleRegister<T1, T2>()
-        {
-            var comparers = MasterMemoryComparer<KeyTuple<T1, T2>>.DefaultArray;
-            if (comparers.Length != 1) return;
-
-            comparers = new IComparer<KeyTuple<T1, T2>>[]
-            {
-                new KeyTupleComparer<T1, T2>(1),
-                new KeyTupleComparer<T1, T2>(2),
-                new KeyTupleComparer<T1, T2>(-1),
-            };
-
-            MasterMemoryComparer<KeyTuple<T1, T2>>.DefaultArray = comparers;
-        }
-    }
 }

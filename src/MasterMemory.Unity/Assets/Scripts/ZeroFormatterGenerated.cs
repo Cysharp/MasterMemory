@@ -97,8 +97,8 @@ namespace ZeroFormatter.DynamicObjectSegments.MasterMemory.Tests
         readonly int __binaryLastIndex;
         readonly byte[] __extraFixedBytes;
 
-        readonly CacheSegment<TTypeResolver, string> _FirstName;
-        readonly CacheSegment<TTypeResolver, string> _LastName;
+        CacheSegment<TTypeResolver, string> _FirstName;
+        CacheSegment<TTypeResolver, string> _LastName;
 
         // 0
         public override int Id
@@ -186,8 +186,8 @@ namespace ZeroFormatter.DynamicObjectSegments.MasterMemory.Tests
 
                 offset += ObjectSegmentHelper.SerializeFixedLength<TTypeResolver, int>(ref targetBytes, startOffset, offset, 0, __binaryLastIndex, __originalBytes, __extraFixedBytes, __tracker);
                 offset += ObjectSegmentHelper.SerializeFixedLength<TTypeResolver, int>(ref targetBytes, startOffset, offset, 1, __binaryLastIndex, __originalBytes, __extraFixedBytes, __tracker);
-                offset += ObjectSegmentHelper.SerializeCacheSegment<TTypeResolver, string>(ref targetBytes, startOffset, offset, 2, _FirstName);
-                offset += ObjectSegmentHelper.SerializeCacheSegment<TTypeResolver, string>(ref targetBytes, startOffset, offset, 3, _LastName);
+                offset += ObjectSegmentHelper.SerializeCacheSegment<TTypeResolver, string>(ref targetBytes, startOffset, offset, 2, ref _FirstName);
+                offset += ObjectSegmentHelper.SerializeCacheSegment<TTypeResolver, string>(ref targetBytes, startOffset, offset, 3, ref _LastName);
 
                 return ObjectSegmentHelper.WriteSize(ref targetBytes, startOffset, offset, 3);
             }

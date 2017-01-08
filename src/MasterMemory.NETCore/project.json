@@ -1,4 +1,4 @@
-﻿
+
 {
 	"version": "0.1.0",
 	"buildOptions": {
@@ -13,7 +13,7 @@
 	"dependencies": {
 		"System.Collections": "4.0.11",
 		"System.Linq": "4.1.0",
-		"ZeroFormatter": "1.5.7"
+    "ZeroFormatter": "1.6.0"
 	},
 	"frameworks": {
 		"netstandard1.6": {

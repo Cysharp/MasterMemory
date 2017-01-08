@@ -12,6 +12,7 @@ namespace MasterMemory
     public class Database
     {
         readonly Dictionary<string, ISerializableMemory> memories; // as readonly
+        readonly bool useNullTracker;
 
         public int MemoryCount
         {
@@ -36,8 +37,8 @@ namespace MasterMemory
                 var byteOffsetMemory = obj as ArraySegmentMemory;
                 if (byteOffsetMemory != null)
                 {
-                    // TODO:null tracker?
-                    var memory = byteOffsetMemory.ToMemory<TKey, TElement>(new DirtyTracker(), indexSelector);
+                    var tracker = useNullTracker ? DirtyTracker.NullTracker : new DirtyTracker();
+                    var memory = byteOffsetMemory.ToMemory<TKey, TElement>(tracker, indexSelector);
                     memories[memoryKey] = memory;
                     return memory;
                 }
@@ -60,17 +61,21 @@ namespace MasterMemory
             {
                 this.memories.Add(item.Key, item.Value);
             }
+            this.useNullTracker = true;
         }
-        Database(Dictionary<string, ISerializableMemory> memories)
+
+        Database(Dictionary<string, ISerializableMemory> memories, bool useNullTracker)
         {
             this.memories = memories;
+            this.useNullTracker = useNullTracker;
         }
 
-        public static Database Open(byte[] bytes)
+        /// <summary>
+        /// Create database from underlying bytes.
+        /// If all objects are readonly, set guaranteedAllObjectsAreReadonly = true for improve performance.
+        /// </summary>
+        public static Database Open(byte[] bytes, bool guaranteedAllObjectsAreReadonly = false)
         {
-            // TODO:use null tracker?
-            var tracker = new DirtyTracker();
-
             var memoryCount = BinaryUtil.ReadInt32(ref bytes, 0);
             var stringFormatter = ZeroFormatter.Formatters.Formatter<DefaultResolver, string>.Default;
 
@@ -82,7 +87,7 @@ namespace MasterMemory
             for (int i = 0; i < memoryCount; i++)
             {
                 int byteSize;
-                var keyName = stringFormatter.Deserialize(ref bytes, offset, tracker, out byteSize);
+                var keyName = stringFormatter.Deserialize(ref bytes, offset, DirtyTracker.NullTracker, out byteSize);
                 offset += byteSize;
                 var memoryOffset = BinaryUtil.ReadInt32(ref bytes, offset);
                 offset += 4;
@@ -95,12 +100,12 @@ namespace MasterMemory
                 {
                     memories.Add(prevKeyName, new ArraySegmentMemory(new ArraySegment<byte>(bytes, prevMemoryOffset, memoryOffset - prevMemoryOffset)));
                 }
-                
+
                 prevKeyName = keyName;
                 prevMemoryOffset = memoryOffset;
             }
 
-            return new Database(memories);
+            return new Database(memories, guaranteedAllObjectsAreReadonly);
         }
 
         public byte[] Save()

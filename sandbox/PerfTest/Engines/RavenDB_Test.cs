@@ -104,7 +104,6 @@ namespace TestPerfLiteDB
             }
             else
             {
-                // TODO
                 // store = new EmbeddableDocumentStore { RunInMemory = true }.Initialize();
             }
         }

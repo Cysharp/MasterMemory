@@ -359,7 +359,7 @@
           "ref/netstandard1.3/System.Threading.Tasks.dll": {}
         }
       },
-      "ZeroFormatter/1.5.7": {
+      "ZeroFormatter/1.6.0": {
         "type": "package",
         "dependencies": {
           "System.Collections": "4.0.11",
@@ -376,7 +376,7 @@
           "System.Text.Encoding": "4.0.11",
           "System.Text.Encoding.Extensions": "4.0.11",
           "System.Threading": "4.0.11",
-          "ZeroFormatter.Interfaces": "1.5.7"
+          "ZeroFormatter.Interfaces": "1.6.0"
         },
         "compile": {
           "lib/netstandard1.6/ZeroFormatter.dll": {}
@@ -385,7 +385,7 @@
           "lib/netstandard1.6/ZeroFormatter.dll": {}
         }
       },
-      "ZeroFormatter.Interfaces/1.5.7": {
+      "ZeroFormatter.Interfaces/1.6.0": {
         "type": "package",
         "dependencies": {
           "System.Linq": "4.1.0",
@@ -2026,23 +2026,23 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "ZeroFormatter/1.5.7": {
-      "sha512": "ybJVmCUxx6aw9QjVBxJJ4N75Q8O5UfMMBXgCSqYaajJW/F2jWvRhix9T2JhCOxD0oFj2GE1ZxX0rsCZzm4Zxtw==",
+    "ZeroFormatter/1.6.0": {
+      "sha512": "vKX4eo8N4EOjNDaP14jqcLvv1D7+W8ac3x7Ben11aIkQajzAQUNm38rpRT9q9B2IUSE0SXO5HEcczHGZNZEHAA==",
       "type": "package",
-      "path": "ZeroFormatter/1.5.7",
+      "path": "ZeroFormatter/1.6.0",
       "files": [
-        "ZeroFormatter.1.5.7.nupkg.sha512",
+        "ZeroFormatter.1.6.0.nupkg.sha512",
         "ZeroFormatter.nuspec",
         "lib/net45/ZeroFormatter.dll",
         "lib/netstandard1.6/ZeroFormatter.dll"
       ]
     },
-    "ZeroFormatter.Interfaces/1.5.7": {
-      "sha512": "Uc/UXgLlnp8dQBTk8v08DkS8ZD/qO3/TCUlbqxzROITBaaS90DPEmbvoyxIWgYGxSVvtlx0H0/6wjTJVDYSiuw==",
+    "ZeroFormatter.Interfaces/1.6.0": {
+      "sha512": "L4QDvlctxylxEsM1vQnV1kv9muRqm2PoN1ke/HidTjz6SL0ch5CBolWkBHIZz1URFbMeB6AvQjmslJsMe/OZZQ==",
       "type": "package",
-      "path": "ZeroFormatter.Interfaces/1.5.7",
+      "path": "ZeroFormatter.Interfaces/1.6.0",
       "files": [
-        "ZeroFormatter.Interfaces.1.5.7.nupkg.sha512",
+        "ZeroFormatter.Interfaces.1.6.0.nupkg.sha512",
         "ZeroFormatter.Interfaces.nuspec",
         "lib/net35-Unity Full v3.5/ZeroFormatter.Interfaces.dll",
         "lib/net35/ZeroFormatter.Interfaces.dll",
@@ -2057,7 +2057,7 @@
     "": [
       "System.Collections >= 4.0.11",
       "System.Linq >= 4.1.0",
-      "ZeroFormatter >= 1.5.7"
+      "ZeroFormatter >= 1.6.0"
     ],
     ".NETStandard,Version=v1.6": []
   },

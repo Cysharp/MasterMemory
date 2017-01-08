@@ -32,12 +32,12 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="ZeroFormatter, Version=1.5.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ZeroFormatter.1.5.7\lib\net45\ZeroFormatter.dll</HintPath>
+    <Reference Include="ZeroFormatter, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ZeroFormatter.1.6.0\lib\net45\ZeroFormatter.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ZeroFormatter.Interfaces, Version=1.5.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ZeroFormatter.Interfaces.1.5.7\lib\net45\ZeroFormatter.Interfaces.dll</HintPath>
+    <Reference Include="ZeroFormatter.Interfaces, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ZeroFormatter.Interfaces.1.6.0\lib\net45\ZeroFormatter.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -72,9 +72,6 @@
     <Compile Include="RangeView.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +91,9 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>LookupView.cs</LastGenOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
