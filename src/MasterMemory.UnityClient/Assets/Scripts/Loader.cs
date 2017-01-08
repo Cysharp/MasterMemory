@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System;
 
 [assembly: MasterMemoryHintAttribute(typeof(Sample))] // dummy
-[assembly: MasterMemoryHintAttribute(typeof(Sample), typeof(int), typeof(KeyTuple<string, string>), typeof(KeyTuple<string, string, int>))]
+[assembly: MasterMemoryHintAttribute(typeof(Sample), typeof(int), typeof(KeyTuple<string, string>), typeof(KeyTuple<string, string, int>), typeof(KeyTuple<int,int, string, string>), typeof(KeyTuple<string,int>))]
 [assembly: MasterMemoryHintAttribute(typeof(Sample), typeof(MyDummyEnum1), typeof(KeyTuple<MyDummyEnum2, MyDummyEnum3>))]
 
 public class TesTes_MyDummyEnum1_Comparer : IComparer<TesTes.MyDummyEnum1>

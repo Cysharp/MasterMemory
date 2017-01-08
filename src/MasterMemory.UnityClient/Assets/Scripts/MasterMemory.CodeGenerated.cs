@@ -21,6 +21,8 @@ namespace MasterMemory
             ZeroFormatter.Formatters.Formatter.RegisterList<DefaultResolver, MasterMemory.Tests.Sample>();
             MasterMemory.KeyTupleComparer.Register<string, string>();
             MasterMemory.KeyTupleComparer.Register<string, string, int>();
+            MasterMemory.KeyTupleComparer.Register<int, int, string, string>();
+            MasterMemory.KeyTupleComparer.Register<string, int>();
             MasterMemory.KeyTupleComparer.Register<MyDummyEnum2, MyDummyEnum3>();
         }
     }

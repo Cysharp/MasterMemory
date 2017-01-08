@@ -7,8 +7,8 @@ namespace MasterMemory.Internal
 {
     internal static class KeyTupleComparerRegister
     {
-        static readonly MethodInfo[] registers; // 2 = 0, 3 = 1,...
-        static readonly object[] emptyArgs = new object[0];
+        // static readonly MethodInfo[] registers; // 2 = 0, 3 = 1,...
+        // static readonly object[] emptyArgs = new object[0];
 
         static KeyTupleComparerRegister()
         {
@@ -20,7 +20,7 @@ namespace MasterMemory.Internal
                 .OrderBy(x => x.GetGenericArguments().Length)
                 .ToArray();
 #else
-            registers = null;
+            
 #endif
         }
 

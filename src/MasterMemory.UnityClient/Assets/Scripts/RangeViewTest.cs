@@ -21,8 +21,8 @@ namespace MasterMemory.Tests
                 range[3].Is(7);
                 range[4].Is(8);
 
-                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[-1]; });
-                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[5]; });
+                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[-1]; UnityEngine.Debug.Log(_); });
+                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[5]; UnityEngine.Debug.Log(_); });
 
                 var begin = 4;
                 foreach (var item in range)
@@ -56,8 +56,8 @@ namespace MasterMemory.Tests
                 range[4].Is(3);
                 range[5].Is(2);
 
-                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[-1]; });
-                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[6]; });
+                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[-1]; UnityEngine.Debug.Log(_); });
+                Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = range[6]; UnityEngine.Debug.Log(_); });
 
                 var begin = 7;
                 foreach (var item in range)
