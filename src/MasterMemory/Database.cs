@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MasterMemory;
+using System;
 using System.Collections.Generic;
 using ZeroFormatter;
 using ZeroFormatter.Formatters;

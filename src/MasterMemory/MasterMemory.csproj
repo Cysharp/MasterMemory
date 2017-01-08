@@ -67,6 +67,7 @@
       <DependentUpon>LookupView.tt</DependentUpon>
     </Compile>
     <Compile Include="MasterMemoryComparer.cs" />
+    <Compile Include="MasterMemoryHintAttribute.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RangeView.cs" />

@@ -2,6 +2,9 @@
 using System.Linq;
 using RuntimeUnitTestToolkit;
 using ZeroFormatter;
+using MasterMemory;
+using MasterMemory.Tests;
+
 
 namespace MasterMemory.Tests
 {
@@ -45,7 +48,7 @@ namespace MasterMemory.Tests
             return new Memory<int, Sample>(data, x => x.Id);
         }
 
-        
+
         public void Find()
         {
             var data = CreateData();
@@ -68,7 +71,7 @@ namespace MasterMemory.Tests
             }
         }
 
-        
+
         public void MultiKeyFind()
         {
             var data = CreateData();
@@ -88,7 +91,7 @@ namespace MasterMemory.Tests
             secondary.FindOrDefault(KeyTuple.Create("___", "foo")).IsNull();
         }
 
-        
+
         public void FindClosest()
         {
             var data = CreateData();
@@ -148,7 +151,7 @@ namespace MasterMemory.Tests
             }
         }
 
-        
+
         public void FindClosestMultiKey()
         {
             var data = CreateData();
@@ -170,7 +173,7 @@ namespace MasterMemory.Tests
             secondary.FindClosest(KeyTuple.Create("aaa", 120), false).Age.Is(99);
         }
 
-        
+
         public void FindMany()
         {
             var data = CreateData();
@@ -184,7 +187,7 @@ namespace MasterMemory.Tests
             view["aaa"].OrderBy(x => x.Id).Select(x => x.Id).IsCollection(2, 4, 5, 9);
         }
 
-        
+
         public void FindManyMultiKey()
         {
             var data = CreateData();

@@ -90,6 +90,7 @@
     <Compile Include="Assets\MasterMemory\Internal\LookupView.cs" />
     <Compile Include="Assets\MasterMemory\KeyTupleComparer.cs" />
     <Compile Include="Assets\MasterMemory\MasterMemoryComparer.cs" />
+    <Compile Include="Assets\MasterMemory\MasterMemoryHintAttribute.cs" />
     <Compile Include="Assets\MasterMemory\Memory.cs" />
     <Compile Include="Assets\MasterMemory\RangeView.cs" />
     <Compile Include="Assets\RuntimeUnitTestToolkit\Assert.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Assets\Scripts\DatabaseTest.cs" />
     <Compile Include="Assets\Scripts\KeyTupleMemoryTest.cs" />
     <Compile Include="Assets\Scripts\Loader.cs" />
+    <Compile Include="Assets\Scripts\MasterMemory.CodeGenerated.cs" />
     <Compile Include="Assets\Scripts\MemoryTest.cs" />
     <Compile Include="Assets\Scripts\RangeViewTest.cs" />
     <Compile Include="Assets\Scripts\ZeroFormatterGenerated.cs" />

@@ -12,15 +12,16 @@ namespace MasterMemory.Internal
 
         static KeyTupleComparerRegister()
         {
-            registers =
 #if !UNITY_5
+            registers =
+
             typeof(KeyTupleComparer).GetTypeInfo().GetMethods()
-#else
-            typeof(KeyTupleComparer).GetMethods()
-#endif
                 .Where(x => x.Name == "Register")
                 .OrderBy(x => x.GetGenericArguments().Length)
                 .ToArray();
+#else
+            registers = null;
+#endif
         }
 
         public static void RegisterDynamic<TKey>()
@@ -32,11 +33,13 @@ namespace MasterMemory.Internal
                 registers[args.Length - 2].MakeGenericMethod(args).Invoke(null, emptyArgs);
             }
 #else
+            /*
             if (typeof(TKey).GetInterfaces().Contains(typeof(IKeyTuple)))
             {
                 var args = typeof(TKey).GetGenericArguments();
                 registers[args.Length - 2].MakeGenericMethod(args).Invoke(null, emptyArgs);
             }
+            */
 #endif
         }
     }
