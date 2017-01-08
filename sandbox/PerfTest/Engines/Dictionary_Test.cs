@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -106,6 +107,76 @@ namespace TestPerfLiteDB
 
                 dict.TryAdd(v.id, v);
             }
+        }
+
+        public void Bulk()
+        {
+
+        }
+
+        public void CreateIndex()
+        {
+
+        }
+
+        public void Dispose()
+        {
+
+        }
+
+        public void Prepare()
+        {
+
+        }
+
+        public void Query()
+        {
+            for (var i = 0; i < _count; i++)
+            {
+                TestDoc d;
+                dict.TryGetValue(i, out d);
+            }
+        }
+
+        public void Update()
+        {
+
+        }
+    }
+
+    public class ImmutableDictionary_Test : ITest
+    {
+        private string _filename;
+        private int _count;
+
+        ImmutableDictionary<int, TestDoc> dict;
+
+        public int Count { get { return _count; } }
+        public int FileLength { get { return (int)new FileInfo(_filename).Length; } }
+
+        public ImmutableDictionary_Test(int count)
+        {
+            _count = count;
+            _filename = "immutabledict-" + Guid.NewGuid().ToString("n") + ".db";
+            //dict = new ImmutableDictionary<int, TestPerfLiteDB.TestDoc>();
+        }
+
+        public void Insert()
+        {
+            var builder = ImmutableDictionary.CreateBuilder<int, TestDoc>();
+            foreach (var doc in Helper.GetDocs(_count))
+            {
+                var v = new TestDoc
+                {
+                    id = doc["_id"].AsInt32,
+                    name = doc["name"].AsString,
+                    lorem = doc["lorem"].AsString
+                };
+
+                builder.Add(v.id, v);
+            }
+
+            dict = builder.ToImmutableDictionary();
         }
 
         public void Bulk()

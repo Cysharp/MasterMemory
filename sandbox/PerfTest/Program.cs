@@ -29,6 +29,7 @@ namespace TestPerfLiteDB
 
             RunTest("Dictionary", new Dictionary_Test(5000));
             RunTest("ConcurrentDictionary", new ConcurrentDictionary_Test(5000));
+            RunTest("ImmutableDictionary", new ImmutableDictionary_Test(5000));
 
             RunTest("MasterMemory: Plain", new MasterMemory_Test(5000));
             RunTest("MasterMemory: Loaded", new MasterMemoryDatabase_Test(5000));
