@@ -50,7 +50,8 @@
       <DependentUpon>DictionaryView.tt</DependentUpon>
     </Compile>
     <Compile Include="Internal\ExpandableArray.cs" />
-    <Compile Include="Internal\KeyTupleComparer.cs">
+    <Compile Include="Internal\KeyTupleComparerRegister.cs" />
+    <Compile Include="KeyTupleComparer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>KeyTupleComparer.tt</DependentUpon>
@@ -81,7 +82,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>DictionaryView.cs</LastGenOutput>
     </Content>
-    <Content Include="Internal\KeyTupleComparer.tt">
+    <Content Include="KeyTupleComparer.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>KeyTupleComparer.cs</LastGenOutput>
     </Content>

@@ -16,21 +16,30 @@ using ZeroFormatter;
 using ZeroFormatter.Formatters;
 using ZeroFormatter.Internal;
 
-namespace MasterMemory.Internal
+namespace MasterMemory
 {
     public static class KeyTupleComparer
     {
-        internal static readonly Type[] Types = new[]
+<# for(var i = 2; i<= 7; i++ ) {
+    var t = string.Join(", ", Enumerable.Range(1, i).Select(x => "T" + x));
+#>
+        public static void Register<<#= t #>>()
         {
-            null, // 0
-            null, // 1
-            typeof(KeyTupleComparer<,>),
-            typeof(KeyTupleComparer<,,>),
-            typeof(KeyTupleComparer<,,,>),
-            typeof(KeyTupleComparer<,,,,>),
-            typeof(KeyTupleComparer<,,,,,>),
-            typeof(KeyTupleComparer<,,,,,,>)
-        };
+            var comparers = MasterMemoryComparer<KeyTuple<<#= t #>>>.DefaultArray;
+            if (comparers.Length != 1) return;
+
+            comparers = new IComparer<KeyTuple<<#= t #>>>[]
+            {
+<# for(var j = 1; j <= i; j++ ) { #>
+                new KeyTupleComparer<<#= t #>>(<#= j #>),
+<# } #>
+            };
+
+            MasterMemoryComparer<KeyTuple<<#= t #>>>.Default = new KeyTupleComparer<<#= t #>>(-1);
+            MasterMemoryComparer<KeyTuple<<#= t #>>>.DefaultArray = comparers;
+        }
+
+<# } #>
     }
 
 <# for(var i = 2; i<= 7; i++ ) {

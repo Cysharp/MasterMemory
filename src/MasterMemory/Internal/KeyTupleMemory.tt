@@ -83,8 +83,11 @@ namespace MasterMemory.Internal
         {
             return new LookupView<#= indexCount #><<#= typeKeyList #>, TElement>(this);
         }
-
+#if !UNITY_5
         public IReadOnlyDictionary<<#= keyType #>, TElement> ToDictionaryView()
+#else
+        public IDictionary<<#= keyType #>, TElement> ToDictionaryView()
+#endif
         {
             return new DictionaryView<#= indexCount #><<#= typeKeyList #>, TElement>(this);
         }

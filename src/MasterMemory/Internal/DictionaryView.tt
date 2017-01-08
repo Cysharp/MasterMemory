@@ -16,7 +16,10 @@ using ZeroFormatter;
 
 namespace MasterMemory.Internal
 {
-    public class DictionaryView<TKey, TElement> : IDictionary<TKey, TElement>, IReadOnlyDictionary<TKey, TElement>
+    public class DictionaryView<TKey, TElement> : IDictionary<TKey, TElement>
+#if !UNITY_5
+    , IReadOnlyDictionary<TKey, TElement>
+#endif
     {
         readonly Memory<TKey, TElement> innerMemory;
 
@@ -87,6 +90,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
+#if !UNITY_5
 
         IEnumerable<TKey> IReadOnlyDictionary<TKey, TElement>.Keys
         {
@@ -103,6 +107,8 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
+
+#endif
 
         public void Add(KeyValuePair<TKey, TElement> item)
         {
@@ -162,7 +168,10 @@ namespace MasterMemory.Internal
        var createKeyTuple = deconstructKeys + ", " + defaultOthers;
 #>
 
-    public class DictionaryView<#= indexCount #><<#= typeKeyList #>, TElement> : IDictionary<<#= keyType #>, TElement>, IReadOnlyDictionary<<#= keyType #>, TElement>
+    public class DictionaryView<#= indexCount #><<#= typeKeyList #>, TElement> : IDictionary<<#= keyType #>, TElement>   
+#if !UNITY_5    
+    , IReadOnlyDictionary<<#= keyType #>, TElement>
+#endif
     {
         readonly KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory;
 
@@ -233,6 +242,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
+#if !UNITY_5
 
         IEnumerable<<#= keyType #>> IReadOnlyDictionary<<#= keyType #>, TElement>.Keys
         {
@@ -249,6 +259,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
+#endif
 
         public void Add(KeyValuePair<<#= keyType #>, TElement> item)
         {

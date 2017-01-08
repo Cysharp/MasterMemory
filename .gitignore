@@ -109,7 +109,7 @@ UpgradeLog*.XML
 .vs/restore.dg
 
 # Unity
-tests/ZeroFormatter.UnityTests/bin/*
-tests/ZeroFormatter.UnityTests/Library/*
-tests/ZeroFormatter.UnityTests/obj/*
-tests/ZeroFormatter.UnityTests/Temp/*
+src/MasterMemory.Unity/bin/*
+src/MasterMemory.Unity/Library/*
+src/MasterMemory.Unity/obj/*
+src/MasterMemory.Unity/Temp/*

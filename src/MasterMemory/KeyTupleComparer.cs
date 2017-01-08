@@ -7,21 +7,115 @@ using ZeroFormatter;
 using ZeroFormatter.Formatters;
 using ZeroFormatter.Internal;
 
-namespace MasterMemory.Internal
+namespace MasterMemory
 {
     public static class KeyTupleComparer
     {
-        internal static readonly Type[] Types = new[]
+        public static void Register<T1, T2>()
         {
-            null, // 0
-            null, // 1
-            typeof(KeyTupleComparer<,>),
-            typeof(KeyTupleComparer<,,>),
-            typeof(KeyTupleComparer<,,,>),
-            typeof(KeyTupleComparer<,,,,>),
-            typeof(KeyTupleComparer<,,,,,>),
-            typeof(KeyTupleComparer<,,,,,,>)
-        };
+            var comparers = MasterMemoryComparer<KeyTuple<T1, T2>>.DefaultArray;
+            if (comparers.Length != 1) return;
+
+            comparers = new IComparer<KeyTuple<T1, T2>>[]
+            {
+                new KeyTupleComparer<T1, T2>(1),
+                new KeyTupleComparer<T1, T2>(2),
+            };
+
+            MasterMemoryComparer<KeyTuple<T1, T2>>.Default = new KeyTupleComparer<T1, T2>(-1);
+            MasterMemoryComparer<KeyTuple<T1, T2>>.DefaultArray = comparers;
+        }
+
+        public static void Register<T1, T2, T3>()
+        {
+            var comparers = MasterMemoryComparer<KeyTuple<T1, T2, T3>>.DefaultArray;
+            if (comparers.Length != 1) return;
+
+            comparers = new IComparer<KeyTuple<T1, T2, T3>>[]
+            {
+                new KeyTupleComparer<T1, T2, T3>(1),
+                new KeyTupleComparer<T1, T2, T3>(2),
+                new KeyTupleComparer<T1, T2, T3>(3),
+            };
+
+            MasterMemoryComparer<KeyTuple<T1, T2, T3>>.Default = new KeyTupleComparer<T1, T2, T3>(-1);
+            MasterMemoryComparer<KeyTuple<T1, T2, T3>>.DefaultArray = comparers;
+        }
+
+        public static void Register<T1, T2, T3, T4>()
+        {
+            var comparers = MasterMemoryComparer<KeyTuple<T1, T2, T3, T4>>.DefaultArray;
+            if (comparers.Length != 1) return;
+
+            comparers = new IComparer<KeyTuple<T1, T2, T3, T4>>[]
+            {
+                new KeyTupleComparer<T1, T2, T3, T4>(1),
+                new KeyTupleComparer<T1, T2, T3, T4>(2),
+                new KeyTupleComparer<T1, T2, T3, T4>(3),
+                new KeyTupleComparer<T1, T2, T3, T4>(4),
+            };
+
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4>>.Default = new KeyTupleComparer<T1, T2, T3, T4>(-1);
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4>>.DefaultArray = comparers;
+        }
+
+        public static void Register<T1, T2, T3, T4, T5>()
+        {
+            var comparers = MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5>>.DefaultArray;
+            if (comparers.Length != 1) return;
+
+            comparers = new IComparer<KeyTuple<T1, T2, T3, T4, T5>>[]
+            {
+                new KeyTupleComparer<T1, T2, T3, T4, T5>(1),
+                new KeyTupleComparer<T1, T2, T3, T4, T5>(2),
+                new KeyTupleComparer<T1, T2, T3, T4, T5>(3),
+                new KeyTupleComparer<T1, T2, T3, T4, T5>(4),
+                new KeyTupleComparer<T1, T2, T3, T4, T5>(5),
+            };
+
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5>>.Default = new KeyTupleComparer<T1, T2, T3, T4, T5>(-1);
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5>>.DefaultArray = comparers;
+        }
+
+        public static void Register<T1, T2, T3, T4, T5, T6>()
+        {
+            var comparers = MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5, T6>>.DefaultArray;
+            if (comparers.Length != 1) return;
+
+            comparers = new IComparer<KeyTuple<T1, T2, T3, T4, T5, T6>>[]
+            {
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6>(1),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6>(2),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6>(3),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6>(4),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6>(5),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6>(6),
+            };
+
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5, T6>>.Default = new KeyTupleComparer<T1, T2, T3, T4, T5, T6>(-1);
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5, T6>>.DefaultArray = comparers;
+        }
+
+        public static void Register<T1, T2, T3, T4, T5, T6, T7>()
+        {
+            var comparers = MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5, T6, T7>>.DefaultArray;
+            if (comparers.Length != 1) return;
+
+            comparers = new IComparer<KeyTuple<T1, T2, T3, T4, T5, T6, T7>>[]
+            {
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(1),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(2),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(3),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(4),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(5),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(6),
+                new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(7),
+            };
+
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5, T6, T7>>.Default = new KeyTupleComparer<T1, T2, T3, T4, T5, T6, T7>(-1);
+            MasterMemoryComparer<KeyTuple<T1, T2, T3, T4, T5, T6, T7>>.DefaultArray = comparers;
+        }
+
     }
 
 
