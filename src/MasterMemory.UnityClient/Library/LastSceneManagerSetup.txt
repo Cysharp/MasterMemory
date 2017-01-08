@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/RuntimeUnitTestToolkit/UnitTest.unity
-  isLoaded: 1
-  isActive: 1
