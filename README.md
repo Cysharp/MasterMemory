@@ -39,6 +39,12 @@ TODO....
 Performance
 ---
 
+![image](https://cloud.githubusercontent.com/assets/46207/21770444/ac6ca034-d6c6-11e6-9b64-b947f291e307.png)
+
+![image](https://cloud.githubusercontent.com/assets/46207/21770452/b561f932-d6c6-11e6-833e-97f977b6e00c.png)
+
+
+
 TODO....
 
 Architecture
