@@ -21,6 +21,13 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MasterMemory.NETCore.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.CodeGenerator", "src\MasterMemory.CodeGenerator\MasterMemory.CodeGenerator.csproj", "{A937F794-5766-4281-B44D-979E0F0EE46B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{FA5932B4-5B60-40CC-8C57-2EDDB88EE512}"
+	ProjectSection(SolutionItems) = preProject
+		nuget\MasterMemory.nuspec = nuget\MasterMemory.nuspec
+		nuget\pack.bat = nuget\pack.bat
+		nuget\push.bat = nuget\push.bat
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -8,7 +8,8 @@
 				"../MasterMemory/*.cs",
 				"../MasterMemory/*/*.cs"
 			],
-		"define": [ "NET_CORE" ]
+			"define": [ "NET_CORE" ],
+			"xmlDoc": true
 	},
 	"dependencies": {
 		"System.Collections": "4.0.11",
