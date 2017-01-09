@@ -13,6 +13,14 @@ MasterMemory's objective has two areas.
 
 These features are suitable for master data management(read-heavy and less-write) on application embedded especially role-playing game. MasterMemory has better performance than any other in-memory database(100x faster than filebase SQLite and 10x faster than inmemory SQLite).
 
+Install
+---
+for .NET, .NET Core
+
+* PM> Install-Package [MasterMemory](https://www.nuget.org/packages/MasterMemory)
+
+for Unity, Unity packages exists on [MasterMemory/Releases](https://github.com/neuecc/MasterMemory/releases) as well. More details, please see the [Unity-Supports](https://github.com/neuecc/MasterMemory#unity-supports) section.
+
 Features
 ---
 
@@ -24,9 +32,49 @@ Features
 * lightweight range-view
 * ILookup/IDictionary view
 
-
-
-
+Quick Start
+---
+TODO....
 
 Performance
 ---
+
+TODO....
+
+Architecture
+---
+
+TODO...
+
+Unity Supports
+---
+MasterMemory requires [ZeroFormatter](https://github.com/neuecc/ZeroFormatter/) as dependencies.
+
+MasterMemory.Unity works on all platforms(PC, Android, iOS, etc...). But it can 'not' use dynamic keytuple index generation due to IL2CPP issue. But pre code generate helps it. Code Generator is located in `packages\MasterMemory.*.*.*\tools\MasterMemory.CodeGenerator.exe`, which is using [Roslyn](https://github.com/dotnet/roslyn) so analyze source code, pass the target `csproj`. 
+
+```
+arguments help:
+  -i, --input=VALUE             [required]Input path of analyze csproj
+  -o, --output=VALUE            [required]Output path
+  -u, --unuseunityattr          [optional, default=false]Unuse UnityEngine's RuntimeInitializeOnLoadMethodAttribute on MasterMemoryInitializer
+  -c, --conditionalsymbol=VALUE [optional, default=empty]conditional compiler symbol
+  -n, --namespace=VALUE         [optional, default=MasterMemory]Set namespace root name
+```
+
+TODO:....
+
+Author Info
+---
+Yoshifumi Kawai(a.k.a. neuecc) is a software developer in Japan.  
+He is the Director/CTO at Grani, Inc.  
+Grani is a top social game developer in Japan.  
+He is awarding Microsoft MVP for Visual C# since 2011.  
+He is known as the creator of [UniRx](http://github.com/neuecc/UniRx/)(Reactive Extensions for Unity)  
+
+Blog: https://medium.com/@neuecc (English)  
+Blog: http://neue.cc/ (Japanese)  
+Twitter: https://twitter.com/neuecc (Japanese)   
+
+License
+---
+This library is under the MIT License.
