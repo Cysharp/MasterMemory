@@ -170,6 +170,61 @@ Architecture
 
 TODO...
 
+Tips: TypedSchema
+---
+
+```csharp
+// repretents schema and query of database table.
+public class PersonSchema
+{
+    const string Key = "Person"; // unique per application.
+
+    // in Unity, can not use IReadOnlyDictionary so use IDictionary instead.
+    public readonly IReadOnlyDictionary<int, Person> ById;
+    public readonly ILookup<KeyTuple<Gender, int>, Person> ByGenderAndAge;
+    public readonly ILookup<Gender, Person> ByGender;
+
+    // build database.
+    public static void Build(DatabaseBuilder builder, IEnumerable<Person> persons)
+    {
+        builder.Add(Key, persons, x => x.Id);
+    }
+
+    // create typedschema.
+    public PersonSchema(Database database)
+    {
+        var memory = database.GetMemory(Key, (Person x) => x.Id);
+        var secondaryIndex = memory.SecondaryIndex("ByGenderAndAge", x => KeyTuple.Create(x.Gender, x.Age));
+
+        ById = memory.ToDictionaryView();
+        ByGenderAndAge = secondaryIndex.ToLookupView();
+        ByGender = secondaryIndex.UseIndex1().ToLookupView();
+    }
+}
+
+// wrapper of typed schema.
+public class TypedDatabase
+{
+    // any other schemas
+    public readonly PersonSchema Person;
+
+    // datasources or datasource factory...
+    public static Database Build(IEnumerable<Person> persons)
+    {
+        var builder = new DatabaseBuilder();
+        PersonSchema.Build(builder, persons);
+        return builder.Build();
+    }
+
+    public TypedDatabase(Database database)
+    {
+        Person = new PersonSchema(database);
+    }
+}
+```
+
+
+
 Unity Supports
 ---
 MasterMemory requires [ZeroFormatter](https://github.com/neuecc/ZeroFormatter/) as dependencies.
