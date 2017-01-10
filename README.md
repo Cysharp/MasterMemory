@@ -34,7 +34,124 @@ Features
 
 Quick Start
 ---
-TODO....
+MasterMemory usually uses two classes, `Memory<TKey, TElement>` represents collection holder of document like `IDictionary<TKey, TValue>`, `ILookup<TKey, TElement>`. `Database` represents collection of Memory.
+
+```csharp
+public enum Gender
+{
+    Male, Female
+}
+
+// Document class must be ZeroFormattable.
+[ZeroFormattable]
+public class Person
+{
+    [Index(0)]
+    public virtual int Id { get; set; }
+    [Index(1)]
+    public virtual int Age { get; set; }
+    [Index(2)]
+    public virtual Gender Gender { get; set; }
+    [Index(3)]
+    public virtual string Name { get; set; }
+}
+```
+
+Memory is readonly-collection(represents database table), can instantiate from `IEnumerable<T>` and primary key selector.
+
+```csharp
+var sampleData = new[]
+{
+    new Person { Id = 0, Age = 13, Gender = Gender.Male,   Name = "Dana Terry" },
+    new Person { Id = 1, Age = 17, Gender = Gender.Male,   Name = "Kirk Obrien" },
+    new Person { Id = 2, Age = 31, Gender = Gender.Male,   Name = "Wm Banks" },
+    new Person { Id = 3, Age = 44, Gender = Gender.Male,   Name = "Karl Benson" },
+    new Person { Id = 4, Age = 23, Gender = Gender.Male,   Name = "Jared Holland" },
+    new Person { Id = 5, Age = 27, Gender = Gender.Female, Name = "Jeanne Phelps" },
+    new Person { Id = 6, Age = 25, Gender = Gender.Female, Name = "Willie Rose" },
+    new Person { Id = 7, Age = 11, Gender = Gender.Female, Name = "Shari Gutierrez" },
+    new Person { Id = 8, Age = 63, Gender = Gender.Female, Name = "Lori Wilson" },
+    new Person { Id = 9, Age = 34, Gender = Gender.Female, Name = "Lena Ramsey" },
+};
+
+// Find(query unique key)
+{
+    // Memory is like Dictionary<TKey, TValue>
+    var byId = new Memory<int, Person>(sampleData, x => x.Id);
+
+    var id5 = byId.Find(5);
+    Console.WriteLine(id5.Name); // Jeanne Phelps
+}
+
+// FindMany(query index key)
+{
+    // Memory is also like ILookup<TKey, TElement>
+    var byGender = new Memory<Gender, Person>(sampleData, x => x.Gender);
+
+    var females = byGender.FindMany(Gender.Female);
+    foreach (var item in females) Console.WriteLine(item.Id); // 5, 6, 7, 8, 9(order is not guranteed).
+}
+
+// Multi key index
+{
+    var byGenderAndAge = new Memory<KeyTuple<Gender, int>, Person>(sampleData, x => KeyTuple.Create(x.Gender, x.Age));
+
+    var maleNearAge30 = byGenderAndAge.FindClosest(Gender.Male, 35, selectLower: true);
+    Console.WriteLine(maleNearAge30.Name + ":" + maleNearAge30.Age); // Wm Banks:31
+
+    var males = byGenderAndAge.UseIndex1().FindMany(Gender.Male, ascendant: false); // use index1 only(Gender)
+    foreach (var item in males) Console.WriteLine(item.Age); // 44, 31, 23, 17, 13(order is guranteed).
+}
+```
+
+When handling as a database, Memory is normally not used standalone. It can create from `DatabaseBuilder` and get, save from `Database`.
+
+```csharp
+// use Database
+{
+    // Database is a collection of memories, which can be created from DatabaseBuilder
+    var databaseBuilder = new DatabaseBuilder();
+
+    // Add key string with data + primary key(for create memory)
+    databaseBuilder.Add("person", sampleData, x => x.Id);
+
+    // build database.
+    var database = databaseBuilder.Build();
+
+    // load memory
+    var byId = database.GetMemory("person", (Person x) => x.Id);
+
+    var id9 = byId.Find(9);
+    Console.WriteLine(id9.Name); // Lena Ramsey
+
+    // create secondary index
+    var byGenderAndAge = byId.SecondaryIndex("Gender.Age", x => KeyTuple.Create(x.Gender, x.Age));
+
+    // Typed FindMany as ILookup(or Typed Find as IDictionary by ToDictionaryView)
+    var byGender = byGenderAndAge.UseIndex1().ToLookupView();
+    foreach (var female in byGender[Gender.Female]) Console.WriteLine(female.Age); // 11, 25, 27, 34, 63(order is ascendant)
+
+    // dump database, the binary can save to storage or transport on network.
+    var binary = database.Save();
+    File.WriteAllBytes("sampledb.db", binary);
+}
+
+// Open database from saved binary
+{
+    var database = Database.Open(File.ReadAllBytes("sampledb.db"));
+
+    // and read memories...
+    var memory = database.GetMemory("person", (Person x) => x.Id);
+
+    // re-build
+    var databaseBuilder = database.ToBuilder();
+
+    databaseBuilder.Replace("person", memory.FindAll().Where(x => x.Age <= 50), x => x.Id);
+
+    database = databaseBuilder.Build();
+    File.WriteAllBytes("sampledb.db", database.Save());
+}
+```
 
 Performance
 ---
