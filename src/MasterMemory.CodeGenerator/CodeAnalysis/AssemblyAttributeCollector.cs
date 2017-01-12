@@ -22,9 +22,16 @@ namespace MasterMemory.CodeGenerator.CodeAnalysis
 
         public static INamedTypeSymbol[] GetKeyTypes(AttributeData attr)
         {
-            var args = attr.ConstructorArguments;
-            var v = args[1].Values;
-            return v.Select(x => x.Value).OfType<INamedTypeSymbol>().ToArray();
+            try
+            {
+                var args = attr.ConstructorArguments;
+                var v = args[1].Values;
+                return v.Select(x => x.Value).OfType<INamedTypeSymbol>().ToArray();
+            }
+            catch
+            {
+                return new[] { (INamedTypeSymbol)attr.ConstructorArguments[1].Value };
+            }
         }
     }
 
