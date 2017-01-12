@@ -36,11 +36,20 @@ namespace MasterMemory.CodeGenerator.Generator
             
             #line default
             #line hidden
-            this.Write("\r\n{\r\n    using global::System;\r\n    using global::System.Collections.Generic;\r\n  " +
-                    "  using global::System.Linq;\r\n    using global::ZeroFormatter.Formatters;\r\n\r\n   " +
-                    " public static partial class MasterMemoryInitializer\r\n    {\r\n");
+            this.Write(@"
+{
+    using global::System;
+    using global::System.Collections.Generic;
+    using global::System.Linq;
+    using global::ZeroFormatter.Formatters;
+
+    public static partial class MasterMemoryInitializer
+    {
+        static bool registered = false;
+
+");
             
-            #line 20 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 22 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  if( !UnuseUnityAttribute) { 
             
             #line default
@@ -48,82 +57,83 @@ namespace MasterMemory.CodeGenerator.Generator
             this.Write("        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeL" +
                     "oadType.BeforeSceneLoad)]\r\n");
             
-            #line 22 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 24 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  } 
             
             #line default
             #line hidden
-            this.Write("        public static void Register()\r\n        {\r\n");
+            this.Write("        public static void Register()\r\n        {\r\n            if(registered) retu" +
+                    "rn;\r\n            registered = true;\r\n\r\n");
             
-            #line 25 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 30 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  foreach(var def in enumDefinitions) { 
             
             #line default
             #line hidden
             this.Write("            MasterMemory.MasterMemoryComparer<");
             
-            #line 26 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 31 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(def.FullName));
             
             #line default
             #line hidden
             this.Write(">.Default = new ");
             
-            #line 26 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 31 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace + ".Comparers." + def.FullName.Replace(".", "_") + "_Comparer"));
             
             #line default
             #line hidden
             this.Write("();\r\n");
             
-            #line 27 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 32 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             
-            #line 28 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 33 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  foreach(var def in elementDefinitions) {  
             
             #line default
             #line hidden
             this.Write("            ZeroFormatter.Formatters.Formatter.RegisterList<DefaultResolver, ");
             
-            #line 29 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 34 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(def.FullName));
             
             #line default
             #line hidden
             this.Write(">();\r\n");
             
-            #line 30 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 35 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             
-            #line 31 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 36 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  foreach(var def in keyTupleDefinitions) { var t = string.Join(", ", def.FullNames);  
             
             #line default
             #line hidden
             this.Write("            MasterMemory.KeyTupleComparer.Register<");
             
-            #line 32 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 37 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(t));
             
             #line default
             #line hidden
             this.Write(">();\r\n");
             
-            #line 33 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 38 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("        }\r\n    }\r\n}\r\n\r\nnamespace ");
             
-            #line 38 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 43 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
             
             #line default
@@ -132,56 +142,56 @@ namespace MasterMemory.CodeGenerator.Generator
                     "neric;\r\n    using global::System.Linq;\r\n    using global::ZeroFormatter.Formatte" +
                     "rs;\r\n\r\n");
             
-            #line 45 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 50 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
  foreach(var item in enumDefinitions) { 
             
             #line default
             #line hidden
             this.Write("\r\n    public class ");
             
-            #line 47 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 52 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.FullName.Replace(".", "_") + "_Comparer"));
             
             #line default
             #line hidden
             this.Write(" : IComparer<");
             
-            #line 47 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 52 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.FullName));
             
             #line default
             #line hidden
             this.Write(">\r\n    {\r\n        public int Compare(");
             
-            #line 49 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 54 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.FullName));
             
             #line default
             #line hidden
             this.Write(" x, ");
             
-            #line 49 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 54 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.FullName));
             
             #line default
             #line hidden
             this.Write(" y)\r\n        {\r\n            return ((");
             
-            #line 51 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 56 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.UnderlyingType));
             
             #line default
             #line hidden
             this.Write(")x).CompareTo((");
             
-            #line 51 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 56 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.UnderlyingType));
             
             #line default
             #line hidden
             this.Write(")y);\r\n        }\r\n    }\r\n\r\n");
             
-            #line 55 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
+            #line 60 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
 } 
             
             #line default

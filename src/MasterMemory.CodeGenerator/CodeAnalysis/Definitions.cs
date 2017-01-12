@@ -27,5 +27,10 @@ namespace MasterMemory.CodeGenerator.CodeAnalysis
         {
             return this.FullNames.SequenceEqual(other.FullNames);
         }
+
+        public override int GetHashCode()
+        {
+            return string.Join(", ", this.FullNames).GetHashCode();
+        }
     }
 }
