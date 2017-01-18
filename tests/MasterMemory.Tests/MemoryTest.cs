@@ -51,6 +51,15 @@ namespace MasterMemory.Tests
         }
 
         [Fact]
+        public void Count()
+        {
+            var data = CreateData();
+            var memory = CreateMemory(data);
+
+            memory.Count.Is(data.Length);
+        }
+
+        [Fact]
         public void Find()
         {
             var data = CreateData();

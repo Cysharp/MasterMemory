@@ -67,7 +67,13 @@ namespace MasterMemory
         Dictionary<string, object> dynamicIndexMemoriesCache;
         readonly bool rootMemory;
 
-        public int Count { get; set; }
+        public int Count
+        {
+            get
+            {
+                return orderedData.Count;
+            }
+        }
 
         readonly IList<TElement> orderedData;
         readonly Func<TElement, TKey> indexSelector;
