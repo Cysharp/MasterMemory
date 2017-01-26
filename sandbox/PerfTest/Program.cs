@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LiteDB;
+using System.IO;
 
 // based test code -> https://github.com/mbdavid/LiteDB-Perf
 
@@ -13,8 +14,22 @@ namespace TestPerfLiteDB
 {
     class Program
     {
+        static void Test()
+        {
+            var dbPath = @"C:\Users\y.kawai\AppData\Local\Temp\Grani,Inc\Ivory\masterdatabase.db";
+            var hugahuga = MasterMemory.Database.ReportDiagnostics(File.ReadAllBytes(dbPath))
+                .OrderByDescending(x => x.Item2)
+                .Select(x=> new { DbName = x.Item1, Size = x.Item2 / 1024 / 1024 + "MB", OriginalSize = x.Item2 })
+                .ToArray();
+
+            var db = MasterMemory.Database.Open(File.ReadAllBytes(dbPath), true);
+        }
+
         static void Main(string[] args)
         {
+            Test();
+            return;
+            /*
             RunTest("LiteDB: default", new LiteDB_Test(5000, null, new FileOptions { Journal = true, FileMode = FileMode.Shared }));
             //RunTest("LiteDB: encrypted", new LiteDB_Test(5000, "mypass", new FileOptions { Journal = true, FileMode = FileMode.Shared }));
             //RunTest("LiteDB: exclusive no journal", new LiteDB_Test(5000, null, new FileOptions { Journal = false, FileMode = FileMode.Exclusive }));
@@ -35,6 +50,7 @@ namespace TestPerfLiteDB
             RunTest("MasterMemory: Loaded", new MasterMemoryDatabase_Test(5000));
 
             Console.ReadKey();
+            */
         }
 
         static void RunTest(string name, ITest test)
@@ -47,15 +63,15 @@ namespace TestPerfLiteDB
 
             test.Run("Insert", test.Insert, true);
             test.Run("Bulk", test.Bulk, true);
-            test.Run("CreateIndex", test.CreateIndex,true);
+            test.Run("CreateIndex", test.CreateIndex, true);
             test.Run("Query", test.Query, false);
             test.Run("Query", test.Query, false);
             test.Run("Query", test.Query, false);
             test.Run("Query", test.Query, false);
-            
+
             try
             {
-                 Console.WriteLine("FileLength     : " + Math.Round((double)test.FileLength / (double)1024, 2).ToString().PadLeft(5, ' ') + " kb");
+                Console.WriteLine("FileLength     : " + Math.Round((double)test.FileLength / (double)1024, 2).ToString().PadLeft(5, ' ') + " kb");
             }
             catch (System.IO.FileNotFoundException)
             {

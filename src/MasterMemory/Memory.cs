@@ -18,6 +18,11 @@ namespace MasterMemory
     {
         readonly ArraySegment<byte> buffer;
 
+        internal ArraySegment<byte> GetBuffer()
+        {
+             return buffer;
+        }
+
         public ArraySegmentMemory(ArraySegment<byte> buffer)
         {
             this.buffer = buffer;

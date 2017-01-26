@@ -150,6 +150,20 @@ namespace MasterMemory
             return builder;
         }
 
+        public static Tuple<string, int>[] ReportDiagnostics(byte[] bytes)
+        {
+            var list = new List<Tuple<string, int>>();
+
+            var db = Database.Open(bytes, true);
+            foreach (var item in db.memories)
+            {
+                var arraySegmentMemory = item.Value as ArraySegmentMemory;
+                list.Add(Tuple.Create(item.Key, arraySegmentMemory.GetBuffer().Count));
+            }
+
+            return list.ToArray();
+        }
+
         struct HeaderRecord
         {
             public int HeaderOffset;
