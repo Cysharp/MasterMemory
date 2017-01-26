@@ -64,7 +64,8 @@ namespace MasterMemory
 
         public RangeView(IList<T> orderedData, int left, int right, bool ascendant)
         {
-            if (right < left) throw new ArgumentException("right < left," + "right:" + right + " left:" + left);
+            if (right < left) hasValue = false;
+            
             this.orderedData = orderedData;
             this.left = left;
             this.right = right;

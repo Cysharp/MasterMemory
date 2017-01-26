@@ -89,7 +89,8 @@ namespace MasterMemory.Tests
             same[0].Is(101);
 
 
-            Assert.Throws<ArgumentException>(() => new RangeView<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 5, 4, true));
+            // count = 0;
+            // Assert.Throws<ArgumentException>(() => new RangeView<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 5, 4, true));
         }
     }
 }

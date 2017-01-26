@@ -210,5 +210,11 @@ namespace MasterMemory.Tests
             secondary.FindMany(KeyTuple.Create("aaa", 89), false).Select(x => x.Id).Is(4, 2);
         }
 
+        [Fact]
+        public void Empty()
+        {
+            var memory = new Memory<int, int>(Enumerable.Empty<int>(), x => x);
+            memory.FindAll().Count.Is(0);
+        }
     }
 }
