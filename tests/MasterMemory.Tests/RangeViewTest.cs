@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -91,6 +92,17 @@ namespace MasterMemory.Tests
 
             // count = 0;
             // Assert.Throws<ArgumentException>(() => new RangeView<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 5, 4, true));
+        }
+
+        [Fact]
+        public void MyTestMethod()
+        {
+
+            var db = MasterMemory.Database.Open(null);
+
+
+
+
         }
     }
 }
