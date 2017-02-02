@@ -20,7 +20,7 @@ namespace MasterMemory
 
         internal ArraySegment<byte> GetBuffer()
         {
-             return buffer;
+            return buffer;
         }
 
         public ArraySegmentMemory(ArraySegment<byte> buffer)
@@ -215,12 +215,18 @@ namespace MasterMemory
 
         internal TElement InternalFindClosest(TKey key, bool selectLower, int comparerCount)
         {
+            var index = FindClosestIndex(key, selectLower, comparerCount);
+            return orderedData[index];
+        }
+
+        int FindClosestIndex(TKey key, bool selectLower, int comparerCount)
+        {
             if (orderedData.Count == 0) throw new ArgumentOutOfRangeException("Empty data is not supported.");
 
             if (comparerCount == 1)
             {
                 var index = BinarySearch.FindClosest(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0], selectLower);
-                return orderedData[index];
+                return index;
             }
             else
             {
@@ -234,7 +240,7 @@ namespace MasterMemory
                     if (i == comparerCount - 1)
                     {
                         var index = BinarySearch.FindClosest(orderedData, lo, hi, key, indexSelector, comparer, selectLower);
-                        return orderedData[index];
+                        return index;
                     }
                     else
                     {

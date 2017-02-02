@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace MasterMemory
 {
-    public class MasterMemoryQuery<TOuter>
+    public class MasterMemoryQuery<TOuter> : IEnumerable<TOuter>
     {
         readonly IEnumerable<TOuter> outerList;
 
@@ -276,12 +277,65 @@ namespace MasterMemory
             }
         }
 
-        /// <summary>
-        /// Complete the query mode.
-        /// </summary>
-        public IEnumerable<TOuter> AsEnumerable()
+        public IEnumerator<TOuter> GetEnumerator()
         {
-            return outerList.AsEnumerable();
+            return outerList.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return outerList.GetEnumerator();
+        }
+    }
+
+    public static class MasterMemoryQueryEnumerableExtensions
+    {
+        public static MasterMemoryQuery<T> AsMasterMemoryQuery<T>(this IEnumerable<T> source)
+        {
+            return new MasterMemoryQuery<T>(source);
+        }
+
+        // If you needs IEnumerable<T>.Distinct, use Ix or AnonymousComparer or others... 
+        public static IEnumerable<T> Distinct<T, TKey>(this MasterMemoryQuery<T> source, Func<T, TKey> compareKeySelector)
+        {
+            var comparer = new EqualityComparer<T>(
+                (x, y) =>
+                {
+                    if (object.ReferenceEquals(x, y)) return true;
+                    if (x == null || y == null) return false;
+
+                    return compareKeySelector(x).Equals(compareKeySelector(y));
+                },
+                obj =>
+                {
+                    if (obj == null) return 0;
+
+                    return compareKeySelector(obj).GetHashCode();
+                });
+
+            return source.Distinct(comparer);
+        }
+
+        class EqualityComparer<T> : IEqualityComparer<T>
+        {
+            private readonly Func<T, T, bool> equals;
+            private readonly Func<T, int> getHashCode;
+
+            public EqualityComparer(Func<T, T, bool> equals, Func<T, int> getHashCode)
+            {
+                this.equals = equals;
+                this.getHashCode = getHashCode;
+            }
+
+            public bool Equals(T x, T y)
+            {
+                return equals(x, y);
+            }
+
+            public int GetHashCode(T obj)
+            {
+                return getHashCode(obj);
+            }
         }
     }
 }
