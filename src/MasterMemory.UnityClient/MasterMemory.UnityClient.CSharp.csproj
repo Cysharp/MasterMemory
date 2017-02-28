@@ -58,12 +58,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -73,25 +67,37 @@
     <Reference Include="UnityEditor.iOS.Extensions.Common">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
     </Reference>
-    <Reference Include="ZeroFormatter">
-      <HintPath>Assets\ZeroFormatter\ZeroFormatter.dll</HintPath>
-    </Reference>
-    <Reference Include="ZeroFormatter.Interfaces">
-      <HintPath>Assets\ZeroFormatter\ZeroFormatter.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\MasterMemory\Database.cs" />
     <Compile Include="Assets\MasterMemory\Internal\BinarySearch.cs" />
-    <Compile Include="Assets\MasterMemory\Internal\DictionaryView.cs" />
+    <Compile Include="Assets\MasterMemory\Internal\DictionaryView.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DictionaryView.tt</DependentUpon>
+    </Compile>
     <Compile Include="Assets\MasterMemory\Internal\ExpandableArray.cs" />
     <Compile Include="Assets\MasterMemory\Internal\KeyTupleComparerRegister.cs" />
-    <Compile Include="Assets\MasterMemory\Internal\KeyTupleMemory.cs" />
-    <Compile Include="Assets\MasterMemory\Internal\LookupView.cs" />
-    <Compile Include="Assets\MasterMemory\KeyTupleComparer.cs" />
+    <Compile Include="Assets\MasterMemory\Internal\LookupView.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LookupView.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Assets\MasterMemory\Internal\MemoryKeyMemory.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MemoryKeyMemory.tt</DependentUpon>
+    </Compile>
     <Compile Include="Assets\MasterMemory\MasterMemoryComparer.cs" />
     <Compile Include="Assets\MasterMemory\MasterMemoryHintAttribute.cs" />
+    <Compile Include="Assets\MasterMemory\MasterMemoryQuery.cs" />
     <Compile Include="Assets\MasterMemory\Memory.cs" />
+    <Compile Include="Assets\MasterMemory\MemoryKey.cs" />
+    <Compile Include="Assets\MasterMemory\MemoryKeyComparer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MemoryKeyComparer.tt</DependentUpon>
+    </Compile>
     <Compile Include="Assets\MasterMemory\RangeView.cs" />
     <Compile Include="Assets\RuntimeUnitTestToolkit\Assert.cs" />
     <Compile Include="Assets\RuntimeUnitTestToolkit\ChainingAssertion.Unity.cs" />
@@ -100,10 +106,60 @@
     <Compile Include="Assets\Scripts\DatabaseTest.cs" />
     <Compile Include="Assets\Scripts\KeyTupleMemoryTest.cs" />
     <Compile Include="Assets\Scripts\Loader.cs" />
-    <Compile Include="Assets\Scripts\MasterMemory.CodeGenerated.cs" />
     <Compile Include="Assets\Scripts\MemoryTest.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Attributes.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\FloatBits.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Formatters\CollectionFormatter.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Formatters\DictionaryFormatter.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Formatters\IMessagePackFormatter.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Formatters\MultiDimentionalArrayFormatter.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Formatters\NullableFormatter.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Formatters\StandardClassLibraryFormatter.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\IFormatterResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\IMessagePackSerializationCallbackReceiver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Internal\DynamicAssembly.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Internal\ILGeneratorExtensions.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Internal\ReflectionExtensions.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\MessagePackBinary.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\MessagePackCode.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\MessagePackSerializer.Json.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\MessagePackSerializer.NonGeneric.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\MessagePackSerializer.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Nil.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Resolvers\BuiltinResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Resolvers\CompositeResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Resolvers\DefaultResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicEnumResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicGenericResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicObjectResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicUnionResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\Shims\Reflection.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\StringEncoding.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\T4Formatters\PrimitiveFormatter.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\UnsafeExtensions\UnityBlitResolver.cs" />
+    <Compile Include="Assets\Scripts\MessagePack\UnsafeExtensions\UnsafeBlitFormatter.cs" />
     <Compile Include="Assets\Scripts\RangeViewTest.cs" />
-    <Compile Include="Assets\Scripts\ZeroFormatterGenerated.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\MasterMemory\Internal\DictionaryView.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DictionaryView.cs</LastGenOutput>
+    </None>
+    <None Include="Assets\MasterMemory\Internal\LookupView.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>LookupView.cs</LastGenOutput>
+    </None>
+    <None Include="Assets\MasterMemory\Internal\MemoryKeyMemory.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MemoryKeyMemory.cs</LastGenOutput>
+    </None>
+    <None Include="Assets\MasterMemory\MemoryKeyComparer.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MemoryKeyComparer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

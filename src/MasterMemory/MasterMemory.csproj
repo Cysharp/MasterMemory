@@ -15,13 +15,61 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Internal\DictionaryView.tt" />
-    <None Remove="Internal\KeyTupleMemory.tt" />
-    <None Remove="Internal\LookupView.tt" />
-    <None Remove="MemoryKeyComparer.tt" />
+    <None Remove="src\*.meta" />
+    <None Remove="src\Internal\*.meta" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MessagePack" Version="0.2.3-beta" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="src\Internal\DictionaryView.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DictionaryView.cs</LastGenOutput>
+    </None>
+    <None Update="src\Internal\LookupView.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>LookupView.cs</LastGenOutput>
+    </None>
+    <None Update="src\Internal\MemoryKeyComparer.tt">
+      <LastGenOutput>MemoryKeyComparer.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="src\Internal\MemoryKeyMemory.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MemoryKeyMemory.cs</LastGenOutput>
+    </None>
+    <None Update="src\MemoryKeyComparer.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MemoryKeyComparer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="src\Internal\DictionaryView.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DictionaryView.tt</DependentUpon>
+    </Compile>
+    <Compile Update="src\Internal\LookupView.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LookupView.tt</DependentUpon>
+    </Compile>
+    <Compile Update="src\Internal\MemoryKeyMemory.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MemoryKeyMemory.tt</DependentUpon>
+    </Compile>
+    <Compile Update="src\MemoryKeyComparer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MemoryKeyComparer.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
