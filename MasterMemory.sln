@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sandbox", "sandbox", "{FFAA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{FA5932B4-5B60-40CC-8C57-2EDDB88EE512}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		nuget\MasterMemory.nuspec = nuget\MasterMemory.nuspec
 		nuget\pack.bat = nuget\pack.bat
 		nuget\push.bat = nuget\push.bat

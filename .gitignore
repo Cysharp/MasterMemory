@@ -113,3 +113,7 @@ src/MasterMemory.UnityClient/bin/*
 src/MasterMemory.UnityClient/Library/*
 src/MasterMemory.UnityClient/obj/*
 src/MasterMemory.UnityClient/Temp/*
+
+# OTHER
+nuget/tools/*
+*.nupkg

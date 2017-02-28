@@ -17,10 +17,10 @@
     </frameworkAssemblies>
     <dependencies>
       <group targetFramework=".NETFramework4.5">
-        <dependency id="MessagePack" version="0.2.2" />
+        <dependency id="MessagePack" version="0.3.0" />
       </group>
       <group targetFramework=".NETStandard1.4">
-        <dependency id="MessagePack" version="0.2.2" />
+        <dependency id="MessagePack" version="0.3.0" />
       </group>
     </dependencies>
   </metadata>
@@ -29,7 +29,6 @@
     <file src="..\src\MasterMemory\bin\Release\netstandard1.4\MasterMemory.xml" target="lib\net45" />
     <file src="..\src\MasterMemory\bin\Release\netstandard1.4\MasterMemory.dll" target="lib\netstandard1.4" />
     <file src="..\src\MasterMemory\bin\Release\netstandard1.4\MasterMemory.xml" target="lib\netstandard1.4" />
-    <file src="MasterMemory.CodeGenerator.exe" target="tools\" />
-    <file src="MasterMemory.CodeGenerator.exe.config" target="tools\" />
+    <file src=".\tools\*" target="tools\" />
   </files>
 </package>
