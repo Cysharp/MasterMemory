@@ -1,19 +1,13 @@
 ﻿using MasterMemory;
+using MessagePack;
 using System;
 using System.Collections.Generic;
-using ZeroFormatter;
-using ZeroFormatter.Formatters;
-using ZeroFormatter.Internal;
 
 namespace MasterMemory
 {
-    // Memory Layout:
-    // [MemoryCount:int][(key:string,memoryOffset:index)][memory...]
-
     public class Database
     {
-        readonly Dictionary<string, ISerializableMemory> memories; // as readonly
-        readonly bool useNullTracker;
+        readonly Dictionary<string, IInternalMemory> memories; // as readonly
 
         public int MemoryCount
         {
@@ -29,48 +23,35 @@ namespace MasterMemory
         {
             lock (memories)
             {
-                ISerializableMemory obj;
+                IInternalMemory obj;
                 if (!memories.TryGetValue(memoryKey, out obj))
                 {
                     throw new KeyNotFoundException("MemoryKey Not Found:" + memoryKey);
                 }
 
-                var byteOffsetMemory = obj as ArraySegmentMemory;
-                if (byteOffsetMemory != null)
+                if (!obj.IsRegisteredSelector)
                 {
-                    var tracker = useNullTracker ? DirtyTracker.NullTracker : new DirtyTracker();
-                    var memory = byteOffsetMemory.ToMemory<TKey, TElement>(tracker, indexSelector);
-                    memories[memoryKey] = memory;
-                    return memory;
+                    obj.InternalSetSelect(indexSelector);
                 }
-                else
+
+                var memory = obj as Memory<TKey, TElement>;
+                if (memory == null)
                 {
-                    var memory = obj as Memory<TKey, TElement>;
-                    if (memory == null)
-                    {
-                        throw new ArgumentException("Cast type is invalid, actual memory type:" + obj.GetType().Name);
-                    }
-                    return memory;
+                    throw new ArgumentException("Cast type is invalid, actual memory type:" + obj.GetType().Name);
                 }
+                return memory;
             }
         }
 
-        internal Database(IEnumerable<KeyValuePair<string, ISerializableMemory>> memories)
+        internal Database(IEnumerable<KeyValuePair<string, IInternalMemory>> memories)
         {
-            this.memories = new Dictionary<string, ISerializableMemory>(StringComparer.OrdinalIgnoreCase);
+            this.memories = new Dictionary<string, IInternalMemory>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in memories)
             {
                 this.memories.Add(item.Key, item.Value);
             }
-            this.useNullTracker = true;
         }
-
-        Database(Dictionary<string, ISerializableMemory> memories, bool useNullTracker)
-        {
-            this.memories = memories;
-            this.useNullTracker = useNullTracker;
-        }
-
+        
         /// <summary>
         /// Create database from underlying bytes.
         /// If all objects are readonly, set guaranteedAllObjectsAreReadonly = true for improve performance.
@@ -117,22 +98,17 @@ namespace MasterMemory
                 var list = new List<HeaderRecord>();
 
                 var offset = 0;
-                offset += ZeroFormatter.Internal.BinaryUtil.WriteInt32(ref bytes, 0, MemoryCount);
 
-                // headers
+
+                offset += MessagePackBinary.WriteMapHeader(ref bytes, offset, memories.Count);
+                
                 foreach (var item in memories)
                 {
-                    var stringFormatter = ZeroFormatter.Formatters.Formatter<DefaultResolver, string>.Default;
-                    offset += stringFormatter.Serialize(ref bytes, offset, item.Key);
-                    list.Add(new HeaderRecord { HeaderOffset = offset, Memory = item.Value });
-                    offset += 4;
-                }
+                    offset += MessagePackBinary.WriteString(ref bytes, offset, item.Key);
 
-                // memories
-                foreach (var item in list)
-                {
-                    BinaryUtil.WriteInt32Unsafe(ref bytes, item.HeaderOffset, offset);
-                    offset += item.Memory.Serialize(ref bytes, offset);
+                    
+
+
                 }
 
                 BinaryUtil.FastResize(ref bytes, offset);
@@ -154,19 +130,13 @@ namespace MasterMemory
         {
             var list = new List<MemoryAnalysis>();
 
-            var db = Database.Open(bytes, true);
-            foreach (var item in db.memories)
-            {
-                var arraySegmentMemory = item.Value as ArraySegmentMemory;
-                var buffer = arraySegmentMemory.GetBuffer();
-
-                // Count is only work List<T> is VariableSizeList
-                var count = 0;
-                if (buffer.Count >= 8)
-                {
-                    var array = buffer.Array;
-                    count = BinaryUtil.ReadInt32(ref array, buffer.Offset + 4);
-                }
+            // TODO:...
+            //var db = Database.Open(bytes, true);
+            //foreach (var item in db.memories)
+            //{
+            //    var arraySegmentMemory = item.Value as ArraySegmentMemory;
+            //    list.Add(Tuple.Create(item.Key, arraySegmentMemory.GetBuffer().Count));
+            //}
 
                 list.Add(new MemoryAnalysis(item.Key, count, buffer.Count));
             }
@@ -230,14 +200,14 @@ namespace MasterMemory
 
     public class DatabaseBuilder
     {
-        readonly Dictionary<string, ISerializableMemory> memories = new Dictionary<string, ISerializableMemory>(StringComparer.OrdinalIgnoreCase);
+        readonly Dictionary<string, IInternalMemory> memories = new Dictionary<string, IInternalMemory>(StringComparer.OrdinalIgnoreCase);
 
         public DatabaseBuilder()
         {
 
         }
 
-        internal void InternalAdd(string key, ISerializableMemory memory)
+        internal void InternalAdd(string key, IInternalMemory memory)
         {
             memories.Add(key, memory);
         }

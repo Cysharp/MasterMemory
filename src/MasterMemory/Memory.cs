@@ -1,44 +1,14 @@
 ﻿using MasterMemory.Internal;
-using System.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ZeroFormatter;
-using ZeroFormatter.Formatters;
-using ZeroFormatter.Internal;
 
 namespace MasterMemory
 {
-    public interface ISerializableMemory
+    public interface IInternalMemory
     {
-        int Serialize(ref byte[] bytes, int offset);
-    }
-
-    internal sealed class ArraySegmentMemory : ISerializableMemory
-    {
-        readonly ArraySegment<byte> buffer;
-
-        internal ArraySegment<byte> GetBuffer()
-        {
-            return buffer;
-        }
-
-        public ArraySegmentMemory(ArraySegment<byte> buffer)
-        {
-            this.buffer = buffer;
-        }
-
-        public int Serialize(ref byte[] bytes, int offset)
-        {
-            BinaryUtil.EnsureCapacity(ref bytes, offset, buffer.Count);
-            Buffer.BlockCopy(buffer.Array, buffer.Offset, bytes, offset, buffer.Count);
-            return buffer.Count;
-        }
-
-        public Memory<TKey, TElement> ToMemory<TKey, TElement>(DirtyTracker tracker, Func<TElement, TKey> indexSelector)
-        {
-            return new Memory<TKey, TElement>(buffer.Array, buffer.Offset, tracker, indexSelector);
-        }
+        bool IsRegisteredSelector { get; }
+        void InternalSetSelect(object selector);
     }
 
     public interface IMemoryFinder<TKey, TElement>
@@ -66,7 +36,7 @@ namespace MasterMemory
     /// <summary>
     /// Represents key indexed memory like Dictionary/ILookup.
     /// </summary>
-    public class Memory<TKey, TElement> : IMemoryFinder<TKey, TElement>, ISerializableMemory
+    public class Memory<TKey, TElement> : IMemoryFinder<TKey, TElement>, IInternalMemory
     {
         readonly object gate = new object();
         Dictionary<string, object> dynamicIndexMemoriesCache;
@@ -80,9 +50,25 @@ namespace MasterMemory
             }
         }
 
+        bool IInternalMemory.IsRegisteredSelector
+        {
+            get { return indexSelector != null; }
+        }
+
         readonly IList<TElement> orderedData;
-        readonly Func<TElement, TKey> indexSelector;
+        Func<TElement, TKey> indexSelector;
         readonly IComparer<TKey>[] comparers;
+
+        // not yet set selector.
+        Memory(TElement[] orderedData)
+        {
+            KeyTupleComparerRegister.RegisterDynamic<TKey>();
+
+            var comparer = MasterMemoryComparer<TKey>.Default;
+            this.comparers = MasterMemoryComparer<TKey>.DefaultArray;
+            this.rootMemory = true;
+            this.orderedData = orderedData;
+        }
 
         public Memory(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector)
             : this(datasource, indexSelector, true)
@@ -100,16 +86,17 @@ namespace MasterMemory
             this.rootMemory = rootMemory;
         }
 
-        internal Memory(byte[] bytes, int offset, DirtyTracker tracker, Func<TElement, TKey> indexSelector)
+        internal static Memory<TKey, TElement> CreateFromDatabase(TElement[] datasource)
         {
             KeyTupleComparerRegister.RegisterDynamic<TKey>();
 
-            var formatter = ZeroFormatter.Formatters.Formatter<DefaultResolver, IList<TElement>>.Default;
-            int size;
-            this.orderedData = formatter.Deserialize(ref bytes, offset, tracker, out size);
-            this.indexSelector = indexSelector;
-            this.comparers = MasterMemoryComparer<TKey>.DefaultArray;
-            this.rootMemory = true;
+            var memory = new Memory<TKey, TElement>(datasource);
+            return memory;
+        }
+
+        void IInternalMemory.InternalSetSelect(object indexSelector)
+        {
+            this.indexSelector = (Func<TElement, TKey>)indexSelector;
         }
 
         /// <summary>Get the first(single) value.</summary>
@@ -346,12 +333,6 @@ namespace MasterMemory
             }
 
             return (Memory<TSecondaryIndex, TElement>)memory;
-        }
-
-        public int Serialize(ref byte[] bytes, int offset)
-        {
-            var formatter = Formatter<DefaultResolver, IList<TElement>>.Default;
-            return formatter.Serialize(ref bytes, offset, orderedData);
         }
 
         public override string ToString()
