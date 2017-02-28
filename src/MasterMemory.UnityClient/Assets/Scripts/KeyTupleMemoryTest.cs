@@ -1,10 +1,9 @@
 ﻿using RuntimeUnitTestToolkit;
 using System.Linq;
-using ZeroFormatter;
 
 namespace MasterMemory.Tests
 {
-    public class KeyTupleMemoryTest
+    public class MemoryKeyMemoryTest
     {
         Sample[] CreateData()
         {
@@ -36,7 +35,7 @@ namespace MasterMemory.Tests
         {
             var memory = CreateMemory(CreateData());
 
-            var byIdAndAgeAndFirstNameAndLastName = memory.SecondaryIndex("AllIndex", x => KeyTuple.Create(x.Id, x.Age, x.FirstName, x.LastName));
+            var byIdAndAgeAndFirstNameAndLastName = memory.SecondaryIndex("AllIndex", x => MemoryKey.Create(x.Id, x.Age, x.FirstName, x.LastName));
 
 
             var byId = byIdAndAgeAndFirstNameAndLastName.UseIndex1();
@@ -60,7 +59,7 @@ namespace MasterMemory.Tests
         {
             var memory = CreateMemory(CreateData());
 
-            var byFirstNameAndLastNameAndAge = memory.SecondaryIndex("FirstName.LastName.Age", x => KeyTuple.Create(x.FirstName, x.LastName, x.Age));
+            var byFirstNameAndLastNameAndAge = memory.SecondaryIndex("FirstName.LastName.Age", x => MemoryKey.Create(x.FirstName, x.LastName, x.Age));
 
             var byFirstName = byFirstNameAndLastNameAndAge.UseIndex1();
             var byFirstNameAndLastName = byFirstNameAndLastNameAndAge.UseIndex12();

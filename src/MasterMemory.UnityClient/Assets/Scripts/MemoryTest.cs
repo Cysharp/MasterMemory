@@ -1,23 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using RuntimeUnitTestToolkit;
-using ZeroFormatter;
 using MasterMemory;
 using MasterMemory.Tests;
 
 
 namespace MasterMemory.Tests
 {
-    [ZeroFormattable]
+    //[ZeroFormattable]
     public class Sample
     {
-        [Index(0)]
+        //[Index(0)]
         public virtual int Id { get; set; }
-        [Index(1)]
+        //[Index(1)]
         public virtual int Age { get; set; }
-        [Index(2)]
+        //[Index(2)]
         public virtual string FirstName { get; set; }
-        [Index(3)]
+        //[Index(3)]
         public virtual string LastName { get; set; }
     }
 
@@ -76,19 +75,19 @@ namespace MasterMemory.Tests
         {
             var data = CreateData();
             var memory = CreateMemory(data);
-            var secondary = memory.SecondaryIndex("FirstName.LastName", x => KeyTuple.Create(x.FirstName, x.LastName));
+            var secondary = memory.SecondaryIndex("FirstName.LastName", x => MemoryKey.Create(x.FirstName, x.LastName));
 
             foreach (var item in data)
             {
-                var f = secondary.Find(KeyTuple.Create(item.FirstName, item.LastName));
+                var f = secondary.Find(MemoryKey.Create(item.FirstName, item.LastName));
                 item.Id.Is(f.Id);
             }
 
-            Assert.Throws<KeyNotFoundException>(() => secondary.Find(KeyTuple.Create("aaa", "___")));
-            Assert.Throws<KeyNotFoundException>(() => secondary.Find(KeyTuple.Create("___", "foo")));
+            Assert.Throws<KeyNotFoundException>(() => secondary.Find(MemoryKey.Create("aaa", "___")));
+            Assert.Throws<KeyNotFoundException>(() => secondary.Find(MemoryKey.Create("___", "foo")));
 
-            secondary.FindOrDefault(KeyTuple.Create("aaa", "___")).IsNull();
-            secondary.FindOrDefault(KeyTuple.Create("___", "foo")).IsNull();
+            secondary.FindOrDefault(MemoryKey.Create("aaa", "___")).IsNull();
+            secondary.FindOrDefault(MemoryKey.Create("___", "foo")).IsNull();
         }
 
 
@@ -163,14 +162,14 @@ namespace MasterMemory.Tests
             //new Sample { Id = 4, Age = 89, FirstName = "aaa", LastName = "tako" },
             //new Sample { Id = 9, Age = 99, FirstName = "aaa", LastName = "ika" },
 
-            var secondary = memory.SecondaryIndex("FirstName.Age", x => KeyTuple.Create(x.FirstName, x.Age));
+            var secondary = memory.SecondaryIndex("FirstName.Age", x => MemoryKey.Create(x.FirstName, x.Age));
 
-            secondary.FindClosest(KeyTuple.Create("aaa", 10), true).Age.Is(19);
-            secondary.FindClosest(KeyTuple.Create("aaa", 92), true).Age.Is(89);
-            secondary.FindClosest(KeyTuple.Create("aaa", 120), true).Age.Is(99);
-            secondary.FindClosest(KeyTuple.Create("aaa", 10), false).Age.Is(19);
-            secondary.FindClosest(KeyTuple.Create("aaa", 73), false).Age.Is(89);
-            secondary.FindClosest(KeyTuple.Create("aaa", 120), false).Age.Is(99);
+            secondary.FindClosest(MemoryKey.Create("aaa", 10), true).Age.Is(19);
+            secondary.FindClosest(MemoryKey.Create("aaa", 92), true).Age.Is(89);
+            secondary.FindClosest(MemoryKey.Create("aaa", 120), true).Age.Is(99);
+            secondary.FindClosest(MemoryKey.Create("aaa", 10), false).Age.Is(19);
+            secondary.FindClosest(MemoryKey.Create("aaa", 73), false).Age.Is(89);
+            secondary.FindClosest(MemoryKey.Create("aaa", 120), false).Age.Is(99);
         }
 
 
@@ -193,10 +192,10 @@ namespace MasterMemory.Tests
             var data = CreateData();
             var memory = CreateMemory(data);
 
-            var secondary = memory.SecondaryIndex("FirstName.Age", x => KeyTuple.Create(x.FirstName, x.Age));
+            var secondary = memory.SecondaryIndex("FirstName.Age", x => MemoryKey.Create(x.FirstName, x.Age));
 
-            secondary.FindMany(KeyTuple.Create("aaa", 89)).Select(x => x.Id).OrderBy(x => x).IsCollection(2, 4);
-            secondary.FindMany(KeyTuple.Create("aaa", 89), false).Select(x => x.Id).OrderByDescending(x => x).IsCollection(4, 2);
+            secondary.FindMany(MemoryKey.Create("aaa", 89)).Select(x => x.Id).OrderBy(x => x).IsCollection(2, 4);
+            secondary.FindMany(MemoryKey.Create("aaa", 89), false).Select(x => x.Id).OrderByDescending(x => x).IsCollection(4, 2);
         }
 
     }

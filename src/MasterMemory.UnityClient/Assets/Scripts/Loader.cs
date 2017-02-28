@@ -45,7 +45,7 @@ public class Loader
     {
         UnitTest.RegisterAllMethods<BinarySearchTest>();
         UnitTest.RegisterAllMethods<DatabaseTest>();
-        UnitTest.RegisterAllMethods<KeyTupleMemoryTest>();
+        UnitTest.RegisterAllMethods<MemoryKeyMemoryTest>();
         UnitTest.RegisterAllMethods<MemoryTest>();
         UnitTest.RegisterAllMethods<RangeViewTest>();
 

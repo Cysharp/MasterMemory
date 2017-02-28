@@ -5,6 +5,8 @@ using System.Linq;
 
 namespace MasterMemory
 {
+    public delegate TResult Func6<T1, T2, T3, T4, T5, TResult>(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5);
+
     public class MasterMemoryQuery<TOuter> : IEnumerable<TOuter>
     {
         readonly IEnumerable<TOuter> outerList;
@@ -63,12 +65,12 @@ namespace MasterMemory
             }
         }
 
-        public MasterMemoryQuery<TResult> Join<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
+        public MasterMemoryQuery<TResult> Join<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func6<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
         {
             return new MasterMemoryQuery<TResult>(JoinCore(innerMemory1, innerMemory2, innerMemory3, innerMemory4, keySelector, resultSelector));
         }
 
-        IEnumerable<TResult> JoinCore<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
+        IEnumerable<TResult> JoinCore<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func6<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
         {
             foreach (var outer in outerList)
             {
@@ -98,7 +100,7 @@ namespace MasterMemory
             return new MasterMemoryQuery<TResult>(FlatJoinCore(innerMemory1, innerMemory2, innerMemory3, keySelector, resultSelector, true));
         }
 
-        public MasterMemoryQuery<TResult> OuterJoin<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
+        public MasterMemoryQuery<TResult> OuterJoin<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func6<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
         {
             return new MasterMemoryQuery<TResult>(FlatJoinCore(innerMemory1, innerMemory2, innerMemory3, innerMemory4, keySelector, resultSelector, true));
         }
@@ -120,7 +122,7 @@ namespace MasterMemory
             return new MasterMemoryQuery<TResult>(FlatJoinCore(innerMemory1, innerMemory2, innerMemory3, keySelector, resultSelector, false));
         }
 
-        public MasterMemoryQuery<TResult> InnerJoin<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
+        public MasterMemoryQuery<TResult> InnerJoin<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func6<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector)
         {
             return new MasterMemoryQuery<TResult>(FlatJoinCore(innerMemory1, innerMemory2, innerMemory3, innerMemory4, keySelector, resultSelector, false));
         }
@@ -179,7 +181,7 @@ namespace MasterMemory
             }
         }
 
-        IEnumerable<TResult> FlatJoinCore<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector, bool defaultIfEmpty)
+        IEnumerable<TResult> FlatJoinCore<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func6<TOuter, TInner1, TInner2, TInner3, TInner4, TResult> resultSelector, bool defaultIfEmpty)
         {
             foreach (var outer in outerList)
             {
@@ -259,12 +261,12 @@ namespace MasterMemory
             }
         }
 
-        public MasterMemoryQuery<TResult> GroupJoin<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func<TOuter, RangeView<TInner1>, RangeView<TInner2>, RangeView<TInner3>, RangeView<TInner4>, TResult> resultSelector)
+        public MasterMemoryQuery<TResult> GroupJoin<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func6<TOuter, RangeView<TInner1>, RangeView<TInner2>, RangeView<TInner3>, RangeView<TInner4>, TResult> resultSelector)
         {
             return new MasterMemoryQuery<TResult>(GroupJoinCore(innerMemory1, innerMemory2, innerMemory3, innerMemory4, keySelector, resultSelector));
         }
 
-        IEnumerable<TResult> GroupJoinCore<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func<TOuter, RangeView<TInner1>, RangeView<TInner2>, RangeView<TInner3>, RangeView<TInner4>, TResult> resultSelector)
+        IEnumerable<TResult> GroupJoinCore<TInner1, TInner2, TInner3, TInner4, TJoinKey, TResult>(IMemoryFinder<TJoinKey, TInner1> innerMemory1, IMemoryFinder<TJoinKey, TInner2> innerMemory2, IMemoryFinder<TJoinKey, TInner3> innerMemory3, IMemoryFinder<TJoinKey, TInner4> innerMemory4, Func<TOuter, TJoinKey> keySelector, Func6<TOuter, RangeView<TInner1>, RangeView<TInner2>, RangeView<TInner3>, RangeView<TInner4>, TResult> resultSelector)
         {
             foreach (var outer in outerList)
             {

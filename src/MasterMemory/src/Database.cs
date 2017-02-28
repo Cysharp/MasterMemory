@@ -24,7 +24,7 @@ namespace MasterMemory
             return GetMemory(memoryKey, indexSelector, MessagePackSerializer.DefaultResolver);
         }
 
-        public Memory<TKey, TElement> GetMemory<TKey, TElement>(string memoryKey, Func<TElement, TKey> indexSelector, IFormatterResolver resolver = null)
+        public Memory<TKey, TElement> GetMemory<TKey, TElement>(string memoryKey, Func<TElement, TKey> indexSelector, IFormatterResolver resolver)
         {
             lock (memories)
             {

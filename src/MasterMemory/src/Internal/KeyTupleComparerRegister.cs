@@ -6,7 +6,9 @@ namespace MasterMemory.Internal
 {
     internal static class MemoryKeyComparerRegister
     {
+#if !UNITY_5
         static readonly MethodInfo[] registers; // 2 = 0, 3 = 1,...
+#endif
         static readonly object[] emptyArgs = new object[0];
 
         static MemoryKeyComparerRegister()
@@ -19,7 +21,7 @@ namespace MasterMemory.Internal
                 .OrderBy(x => x.GetGenericArguments().Length)
                 .ToArray();
 #else
-            registers = null;
+            // registers = null;
 #endif
         }
 
@@ -32,13 +34,7 @@ namespace MasterMemory.Internal
                 registers[args.Length - 2].MakeGenericMethod(args).Invoke(null, emptyArgs);
             }
 #else
-            /*
-            if (typeof(TKey).GetInterfaces().Contains(typeof(IKeyTuple)))
-            {
-                var args = typeof(TKey).GetGenericArguments();
-                registers[args.Length - 2].MakeGenericMethod(args).Invoke(null, emptyArgs);
-            }
-            */
+            // currently do nothing...
 #endif
         }
     }
