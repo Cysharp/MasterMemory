@@ -7,18 +7,19 @@ using System.Text;
 using System.Threading.Tasks;
 using LiteDB;
 using ZeroFormatter;
+using MessagePack;
 
 namespace TestPerfLiteDB
 {
-    [ZeroFormattable]
+    [MessagePackObject]
     public class TestDoc
     {
-        [Index(0)]
-        public virtual int id { get; set; }
-        [Index(1)]
-        public virtual string name { get; set; }
-        [Index(2)]
-        public virtual string lorem { get; set; }
+        [Key(0)]
+        public int id { get; set; }
+        [Key(1)]
+        public string name { get; set; }
+        [Key(2)]
+        public string lorem { get; set; }
     }
 
     static class Helper
@@ -45,7 +46,7 @@ namespace TestPerfLiteDB
 
         public static IEnumerable<BsonDocument> GetDocs(int count)
         {
-            for(var i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 yield return new BsonDocument
                 {
@@ -55,7 +56,7 @@ namespace TestPerfLiteDB
                 };
             }
         }
-        
+
         public static string LoremIpsum(int minWords, int maxWords,
             int minSentences, int maxSentences,
             int numParagraphs)

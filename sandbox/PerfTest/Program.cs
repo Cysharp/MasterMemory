@@ -16,41 +16,39 @@ namespace TestPerfLiteDB
     {
         static void Test()
         {
-            var dbPath = @"C:\Users\y.kawai\AppData\Local\Temp\Grani,Inc\Ivory\masterdatabase.db";
-            var hugahuga = MasterMemory.Database.ReportDiagnostics(File.ReadAllBytes(dbPath))
-                .OrderByDescending(x => x.Item2)
-                .Select(x=> new { DbName = x.Item1, Size = x.Item2 / 1024 / 1024 + "MB", OriginalSize = x.Item2 })
-                .ToArray();
+            //var dbPath = @"C:\Users\y.kawai\AppData\Local\Temp\Grani,Inc\Ivory\masterdatabase.db";
+            //var hugahuga = MasterMemory.Database.ReportDiagnostics(File.ReadAllBytes(dbPath))
+            //    .OrderByDescending(x => x.Item2)
+            //    .Select(x=> new { DbName = x.Item1, Size = x.Item2 / 1024 / 1024 + "MB", OriginalSize = x.Item2 })
+            //    .ToArray();
 
-            var db = MasterMemory.Database.Open(File.ReadAllBytes(dbPath), true);
+            //var db = MasterMemory.Database.Open(File.ReadAllBytes(dbPath), true);
         }
 
         static void Main(string[] args)
         {
-            Test();
-            return;
-            /*
-            RunTest("LiteDB: default", new LiteDB_Test(5000, null, new FileOptions { Journal = true, FileMode = FileMode.Shared }));
-            //RunTest("LiteDB: encrypted", new LiteDB_Test(5000, "mypass", new FileOptions { Journal = true, FileMode = FileMode.Shared }));
-            //RunTest("LiteDB: exclusive no journal", new LiteDB_Test(5000, null, new FileOptions { Journal = false, FileMode = FileMode.Exclusive }));
+            RunTest("LiteDB: default", new LiteDB_Test(5000, null, new LiteDB.FileOptions { Journal = true, FileMode = LiteDB.FileMode.Shared }));
+            RunTest("LiteDB: encrypted", new LiteDB_Test(5000, "mypass", new LiteDB.FileOptions { Journal = true, FileMode = LiteDB.FileMode.Shared }));
+            RunTest("LiteDB: exclusive no journal", new LiteDB_Test(5000, null, new LiteDB.FileOptions { Journal = false, FileMode = LiteDB.FileMode.Exclusive }));
             RunTest("LiteDB: in-memory", new LiteDB_Test(5000));
 
             RunTest("SQLite: default", new SQLite_Test(5000, null, true));
-            //RunTest("SQLite: encrypted", new SQLite_Test(5000, "mypass", true));
-            //RunTest("SQLite: no journal", new SQLite_Test(5000, null, false));
+            RunTest("SQLite: encrypted", new SQLite_Test(5000, "mypass", true));
+            RunTest("SQLite: no journal", new SQLite_Test(5000, null, false));
             RunTest("SQLite: in-memory", new SQLite_Test(5000, null, false, true));
 
-            // RunTest("RavenDB: in-memory", new RavenDB_Test(5000, true));
+            
 
             RunTest("Dictionary", new Dictionary_Test(5000));
             RunTest("ConcurrentDictionary", new ConcurrentDictionary_Test(5000));
             RunTest("ImmutableDictionary", new ImmutableDictionary_Test(5000));
-
+              
             RunTest("MasterMemory: Plain", new MasterMemory_Test(5000));
             RunTest("MasterMemory: Loaded", new MasterMemoryDatabase_Test(5000));
 
             Console.ReadKey();
-            */
+
+            // RunTest("RavenDB: in-memory", new RavenDB_Test(5000, true));
         }
 
         static void RunTest(string name, ITest test)

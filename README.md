@@ -9,9 +9,9 @@ Concept
 MasterMemory's objective has two areas.
 
 * **memory efficient**, Do not create index in PrimaryKey search, only use underlying data memory.
-* **startup speed**, MasterMemory adopts [ZeroFormatter](https://github.com/neuecc/ZeroFormatter/) as an internal data structure so enable infinitely fast deserialize.
+* **performance**, MasterMemory adopts [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp) as an internal data structure.
 
-These features are suitable for master data management(read-heavy and less-write) on application embedded especially role-playing game. MasterMemory has better performance than any other in-memory database(100x faster than filebase SQLite and 10x faster than inmemory SQLite).
+These features are suitable for master data management(read-heavy and less-write) on application embedded especially role-playing game. MasterMemory has better performance than any other in-memory database(300x faster than filebase SQLite and 30x faster than inmemory SQLite).
 
 Install
 ---
@@ -42,17 +42,17 @@ public enum Gender
     Male, Female
 }
 
-// Document class must be ZeroFormattable.
-[ZeroFormattable]
+// Document class must be MessagePackObject.
+[MessagePackObject]
 public class Person
 {
-    [Index(0)]
+    [Key(0)]
     public virtual int Id { get; set; }
-    [Index(1)]
+    [Key(1)]
     public virtual int Age { get; set; }
-    [Index(2)]
+    [Key(2)]
     public virtual Gender Gender { get; set; }
-    [Index(3)]
+    [Key(3)]
     public virtual string Name { get; set; }
 }
 ```
@@ -94,7 +94,7 @@ var sampleData = new[]
 
 // Multi key index
 {
-    var byGenderAndAge = new Memory<KeyTuple<Gender, int>, Person>(sampleData, x => KeyTuple.Create(x.Gender, x.Age));
+    var byGenderAndAge = new Memory<MemoryKey<Gender, int>, Person>(sampleData, x => MemoryKey.Create(x.Gender, x.Age));
 
     var maleNearAge30 = byGenderAndAge.FindClosest(Gender.Male, 35, selectLower: true);
     Console.WriteLine(maleNearAge30.Name + ":" + maleNearAge30.Age); // Wm Banks:31
@@ -125,7 +125,7 @@ When handling as a database, Memory is normally not used standalone. It can crea
     Console.WriteLine(id9.Name); // Lena Ramsey
 
     // create secondary index
-    var byGenderAndAge = byId.SecondaryIndex("Gender.Age", x => KeyTuple.Create(x.Gender, x.Age));
+    var byGenderAndAge = byId.SecondaryIndex("Gender.Age", x => MemoryKey.Create(x.Gender, x.Age));
 
     // Typed FindMany as ILookup(or Typed Find as IDictionary by ToDictionaryView)
     var byGender = byGenderAndAge.UseIndex1().ToLookupView();
@@ -181,7 +181,7 @@ public class PersonSchema
 
     // in Unity, can not use IReadOnlyDictionary so use IDictionary instead.
     public readonly IReadOnlyDictionary<int, Person> ById;
-    public readonly ILookup<KeyTuple<Gender, int>, Person> ByGenderAndAge;
+    public readonly ILookup<MemoryKey<Gender, int>, Person> ByGenderAndAge;
     public readonly ILookup<Gender, Person> ByGender;
 
     // build database.
@@ -194,7 +194,7 @@ public class PersonSchema
     public PersonSchema(Database database)
     {
         var memory = database.GetMemory(Key, (Person x) => x.Id);
-        var secondaryIndex = memory.SecondaryIndex("ByGenderAndAge", x => KeyTuple.Create(x.Gender, x.Age));
+        var secondaryIndex = memory.SecondaryIndex("ByGenderAndAge", x => MemoryKey.Create(x.Gender, x.Age));
 
         ById = memory.ToDictionaryView();
         ByGenderAndAge = secondaryIndex.ToLookupView();
@@ -227,7 +227,7 @@ public class TypedDatabase
 
 Unity Supports
 ---
-MasterMemory requires [ZeroFormatter](https://github.com/neuecc/ZeroFormatter/) as dependencies.
+MasterMemory requires [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp) as dependencies.
 
 MasterMemory.Unity works on all platforms(PC, Android, iOS, etc...). But it can 'not' use dynamic keytuple index generation due to IL2CPP issue. But pre code generate helps it. Code Generator is located in `packages\MasterMemory.*.*.*\tools\MasterMemory.CodeGenerator.exe`, which is using [Roslyn](https://github.com/dotnet/roslyn) so analyze source code, pass the target `csproj`. 
 

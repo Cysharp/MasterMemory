@@ -118,7 +118,7 @@ namespace TestPerfLiteDB
             builder.Add("test", MakeDoc(), x => x.id);
             var saved = builder.Build().Save();
             File.WriteAllBytes(_filename, saved);
-            memory = Database.Open(saved, true).GetMemory<int, TestDoc>("test", x => x.id);
+            memory = Database.Open(saved).GetMemory<int, TestDoc>("test", x => x.id);
         }
 
         public void Bulk()

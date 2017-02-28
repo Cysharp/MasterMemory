@@ -1,14 +1,9 @@
-﻿<#@ template language="C#" #>
-<#@ assembly name="System.Core" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Text" #>
-<#@ import namespace="System.Collections.Generic" #>
 #pragma warning disable 618
 #pragma warning disable 612
 #pragma warning disable 414
 #pragma warning disable 168
 
-namespace <#= Namespace #>
+namespace MasterMemory
 {
     using global::System;
     using global::System.Collections.Generic;
@@ -19,20 +14,20 @@ namespace <#= Namespace #>
     {
         static bool registered = false;
 
-<# if( !UnuseUnityAttribute) { #>
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
-<# } #>
         public static void Register()
         {
             if(registered) return;
             registered = true;
 
-<# foreach(var def in enumDefinitions) { #>
-            MasterMemory.MasterMemoryComparer<<#= def.FullName #>>.Default = new <#= Namespace + ".Comparers." + def.FullName.Replace(".", "_") + "_Comparer" #>();
-<# } #>
-<# foreach(var def in keyTupleDefinitions) { var t = string.Join(", ", def.FullNames);  #>
-            MasterMemory.MemoryKeyComparer.Register<<#= t #>>();
-<# } #>
+            MasterMemory.MasterMemoryComparer<TesTes.MyDummyEnum1>.Default = new MasterMemory.Comparers.TesTes_MyDummyEnum1_Comparer();
+            MasterMemory.MasterMemoryComparer<MyDummyEnum2>.Default = new MasterMemory.Comparers.MyDummyEnum2_Comparer();
+            MasterMemory.MasterMemoryComparer<MyDummyEnum3>.Default = new MasterMemory.Comparers.MyDummyEnum3_Comparer();
+            MasterMemory.MemoryKeyComparer.Register<string, string>();
+            MasterMemory.MemoryKeyComparer.Register<string, string, int>();
+            MasterMemory.MemoryKeyComparer.Register<int, int, string, string>();
+            MasterMemory.MemoryKeyComparer.Register<string, int>();
+            MasterMemory.MemoryKeyComparer.Register<MyDummyEnum2, MyDummyEnum3>();
         }
     }
 
@@ -71,11 +66,9 @@ namespace <#= Namespace #>
 
         static MasterMemoryResolverGetFormatterHelper()
         {
-            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(<#= elementDefinitions.Length #>)
+            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(1)
             {
-<# for(var i = 0; i < elementDefinitions.Length; i++) { var x = elementDefinitions[i]; #>
-                {typeof(<#= x.FullName #>), <#= i #> },
-<# } #>
+                {typeof(MasterMemory.Tests.Sample), 0 },
             };
         }
 
@@ -86,32 +79,46 @@ namespace <#= Namespace #>
 
             switch (key)
             {
-<# for(var i = 0; i < elementDefinitions.Length; i++) { var x = elementDefinitions[i]; #>
-                case <#= i #>: return new globall::MessagePack.Formatters.ArrayFormatter<<#= x.FullName #>>();
-<# } #>
+                case 0: return new globall::MessagePack.Formatters.ArrayFormatter<MasterMemory.Tests.Sample>();
                 default: return null;
             }
         }
     }
 }
 
-namespace <#= Namespace #>.Comparers
+namespace MasterMemory.Comparers
 {
     using global::System;
     using global::System.Collections.Generic;
     using global::System.Linq;
 
-<# foreach(var item in enumDefinitions) { #>
 
-    public class <#= item.FullName.Replace(".", "_") + "_Comparer" #> : IComparer<<#= item.FullName #>>
+    public class TesTes_MyDummyEnum1_Comparer : IComparer<TesTes.MyDummyEnum1>
     {
-        public int Compare(<#= item.FullName #> x, <#= item.FullName #> y)
+        public int Compare(TesTes.MyDummyEnum1 x, TesTes.MyDummyEnum1 y)
         {
-            return ((<#= item.UnderlyingType #>)x).CompareTo((<#= item.UnderlyingType #>)y);
+            return ((Byte)x).CompareTo((Byte)y);
         }
     }
 
-<#} #>
+
+    public class MyDummyEnum2_Comparer : IComparer<MyDummyEnum2>
+    {
+        public int Compare(MyDummyEnum2 x, MyDummyEnum2 y)
+        {
+            return ((Int32)x).CompareTo((Int32)y);
+        }
+    }
+
+
+    public class MyDummyEnum3_Comparer : IComparer<MyDummyEnum3>
+    {
+        public int Compare(MyDummyEnum3 x, MyDummyEnum3 y)
+        {
+            return ((UInt32)x).CompareTo((UInt32)y);
+        }
+    }
+
 }
 
 #pragma warning restore 618

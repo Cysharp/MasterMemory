@@ -14,7 +14,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ZeroFormatter;
 using MasterMemory.Internal;
 
 namespace MasterMemory.Internal
@@ -23,17 +22,17 @@ namespace MasterMemory.Internal
         var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
 #>
 <# for(var j = 1; j <= i - 1; j++) {
-       var keyType = (j == 1) ? "TKey1" : "KeyTuple<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
+       var keyType = (j == 1) ? "TKey1" : "MemoryKey<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
        var indexCount = string.Join("", Enumerable.Range(1, j));
        
        var deconstructKeys = (j == 1) ? "key" : string.Join(", ", Enumerable.Range(1, j).Select(x => "key.Item" + x));
        var defaultOthers = string.Join(", ", Enumerable.Range(j + 1, i - j).Select(x => "default(TKey" + x + ")"));
-       var createKeyTuple = deconstructKeys + ", " + defaultOthers;
+       var createMemoryKey = deconstructKeys + ", " + defaultOthers;
 #>
 
-    internal class KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> : IMemoryFinder<<#= keyType #>, TElement>
+    internal class MemoryKey<#= indexCount #>Memory<<#= typeKeyList #>, TElement> : IMemoryFinder<<#= keyType #>, TElement>
     {
-        readonly Memory<KeyTuple<<#= typeKeyList #>>, TElement> memory;
+        readonly Memory<MemoryKey<<#= typeKeyList #>>, TElement> memory;
         const int ComparerCount = <#= j #>;
 
         public int Count
@@ -44,7 +43,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public KeyTuple<#= indexCount #>Memory(Memory<KeyTuple<<#= typeKeyList #>>, TElement> memory)
+        public MemoryKey<#= indexCount #>Memory(Memory<MemoryKey<<#= typeKeyList #>>, TElement> memory)
         {
             this.memory = memory;
         }
@@ -92,9 +91,9 @@ namespace MasterMemory.Internal
             return new DictionaryView<#= indexCount #><<#= typeKeyList #>, TElement>(this);
         }
 
-        KeyTuple<<#= typeKeyList #>> CreateKey(<#= keyType #> key)
+        MemoryKey<<#= typeKeyList #>> CreateKey(<#= keyType #> key)
         {
-            return KeyTuple.Create(<#= createKeyTuple #>);
+            return MemoryKey.Create(<#= createMemoryKey #>);
         }
     }            
 
@@ -109,19 +108,19 @@ namespace MasterMemory
         var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
 #>
 <# for(var j = 1; j <= i - 1; j++) {
-       var resultType = (j == 1) ? "TKey1" : "KeyTuple<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
+       var resultType = (j == 1) ? "TKey1" : "MemoryKey<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
        var indexCount = string.Join("", Enumerable.Range(1, j));
 #>
 
-        public static IMemoryFinder<<#= resultType #>, TElement> UseIndex<#= indexCount #><<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory)
+        public static IMemoryFinder<<#= resultType #>, TElement> UseIndex<#= indexCount #><<#= typeKeyList #>, TElement>(this IMemoryFinder<MemoryKey<<#= typeKeyList #>>, TElement> memory)
         {
-            return new KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement>(memory as Memory<KeyTuple<<#= typeKeyList #>>, TElement>);
+            return new MemoryKey<#= indexCount #>Memory<<#= typeKeyList #>, TElement>(memory as Memory<MemoryKey<<#= typeKeyList #>>, TElement>);
         }
 
 <# } } #>
     }
 
-    public static class KeyTupleConstructExtensions
+    public static class MemoryKeyConstructExtensions
     {
 <# for(var i = 2; i <= 7; i++) { 
         var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
@@ -129,29 +128,29 @@ namespace MasterMemory
         var itemList = string.Join(", ", Enumerable.Range(1, i).Select(x => "item" + x));
 #>
 
-        public static bool TryFind<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, out TElement value)
+        public static bool TryFind<<#= typeKeyList #>, TElement>(this IMemoryFinder<MemoryKey<<#= typeKeyList #>>, TElement> memory, <#= argList #>, out TElement value)
         {
-            return memory.TryFind(KeyTuple.Create(<#= itemList #>), out value);
+            return memory.TryFind(MemoryKey.Create(<#= itemList #>), out value);
         }
 
-        public static TElement Find<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>)
+        public static TElement Find<<#= typeKeyList #>, TElement>(this IMemoryFinder<MemoryKey<<#= typeKeyList #>>, TElement> memory, <#= argList #>)
         {
-            return memory.Find(KeyTuple.Create(<#= itemList #>));
+            return memory.Find(MemoryKey.Create(<#= itemList #>));
         }
 
-        public static TElement FindOrDefault<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, TElement defaultValue = default(TElement))
+        public static TElement FindOrDefault<<#= typeKeyList #>, TElement>(this IMemoryFinder<MemoryKey<<#= typeKeyList #>>, TElement> memory, <#= argList #>, TElement defaultValue = default(TElement))
         {
-            return memory.FindOrDefault(KeyTuple.Create(<#= itemList #>), defaultValue);
+            return memory.FindOrDefault(MemoryKey.Create(<#= itemList #>), defaultValue);
         }
 
-        public static TElement FindClosest<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, bool selectLower = true)
+        public static TElement FindClosest<<#= typeKeyList #>, TElement>(this IMemoryFinder<MemoryKey<<#= typeKeyList #>>, TElement> memory, <#= argList #>, bool selectLower = true)
         {
-            return memory.FindClosest(KeyTuple.Create(<#= itemList #>), selectLower);
+            return memory.FindClosest(MemoryKey.Create(<#= itemList #>), selectLower);
         }
 
-        public static RangeView<TElement> FindMany<<#= typeKeyList #>, TElement>(this IMemoryFinder<KeyTuple<<#= typeKeyList #>>, TElement> memory, <#= argList #>, bool ascendant = true)
+        public static RangeView<TElement> FindMany<<#= typeKeyList #>, TElement>(this IMemoryFinder<MemoryKey<<#= typeKeyList #>>, TElement> memory, <#= argList #>, bool ascendant = true)
         {
-            return memory.FindMany(KeyTuple.Create(<#= itemList #>), ascendant);
+            return memory.FindMany(MemoryKey.Create(<#= itemList #>), ascendant);
         }
 
 <# } #>

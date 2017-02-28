@@ -1,14 +1,36 @@
 ﻿using MasterMemory.Internal;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace MasterMemory
 {
+    public class MasterMemoryResolver
+    {
+
+    }
+
     public interface IInternalMemory
     {
-        bool IsRegisteredSelector { get; }
-        void InternalSetSelect(object selector);
+        int Serialize(ref byte[] bytes, int offset, IFormatterResolver resolver);
+    }
+
+    internal class InternalRawMemory : IInternalMemory
+    {
+        public readonly byte[] RawMemory;
+
+        public InternalRawMemory(byte[] bytes)
+        {
+            this.RawMemory = bytes;
+        }
+
+        int IInternalMemory.Serialize(ref byte[] bytes, int offset, IFormatterResolver resolver)
+        {
+            MessagePackBinary.EnsureCapacity(ref bytes, offset, RawMemory.Length);
+            Buffer.BlockCopy(RawMemory, 0, bytes, offset, RawMemory.Length);
+            return RawMemory.Length;
+        }
     }
 
     public interface IMemoryFinder<TKey, TElement>
@@ -46,57 +68,38 @@ namespace MasterMemory
         {
             get
             {
-                return orderedData.Count;
+                return orderedData.Length;
             }
         }
 
-        bool IInternalMemory.IsRegisteredSelector
-        {
-            get { return indexSelector != null; }
-        }
-
-        readonly IList<TElement> orderedData;
-        Func<TElement, TKey> indexSelector;
+        readonly TElement[] orderedData;
+        readonly Func<TElement, TKey> indexSelector;
         readonly IComparer<TKey>[] comparers;
 
-        // not yet set selector.
-        Memory(TElement[] orderedData)
-        {
-            KeyTupleComparerRegister.RegisterDynamic<TKey>();
-
-            var comparer = MasterMemoryComparer<TKey>.Default;
-            this.comparers = MasterMemoryComparer<TKey>.DefaultArray;
-            this.rootMemory = true;
-            this.orderedData = orderedData;
-        }
-
         public Memory(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector)
-            : this(datasource, indexSelector, true)
+            : this(datasource, indexSelector, true, false)
         {
         }
 
-        public Memory(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector, bool rootMemory)
+        /// <summary>
+        /// unsafe internal API.
+        /// </summary>
+        internal Memory(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector, bool rootMemory, bool ordered)
         {
-            KeyTupleComparerRegister.RegisterDynamic<TKey>();
+            MemoryKeyComparerRegister.RegisterDynamic<TKey>();
 
             var comparer = MasterMemoryComparer<TKey>.Default;
             this.comparers = MasterMemoryComparer<TKey>.DefaultArray;
-            this.orderedData = FastSort(datasource, indexSelector, comparer);
+            if (ordered)
+            {
+                this.orderedData = (TElement[])datasource;
+            }
+            else
+            {
+                this.orderedData = FastSort(datasource, indexSelector, comparer);
+            }
             this.indexSelector = indexSelector;
             this.rootMemory = rootMemory;
-        }
-
-        internal static Memory<TKey, TElement> CreateFromDatabase(TElement[] datasource)
-        {
-            KeyTupleComparerRegister.RegisterDynamic<TKey>();
-
-            var memory = new Memory<TKey, TElement>(datasource);
-            return memory;
-        }
-
-        void IInternalMemory.InternalSetSelect(object indexSelector)
-        {
-            this.indexSelector = (Func<TElement, TKey>)indexSelector;
         }
 
         /// <summary>Get the first(single) value.</summary>
@@ -121,7 +124,7 @@ namespace MasterMemory
             else
             {
                 var lo = 0;
-                var hi = orderedData.Count;
+                var hi = orderedData.Length;
                 for (int i = 0; i < comparerCount; i++)
                 {
                     var comparer = comparers[i];
@@ -208,17 +211,17 @@ namespace MasterMemory
 
         int FindClosestIndex(TKey key, bool selectLower, int comparerCount)
         {
-            if (orderedData.Count == 0) throw new ArgumentOutOfRangeException("Empty data is not supported.");
+            if (orderedData.Length == 0) throw new ArgumentOutOfRangeException("Empty data is not supported.");
 
             if (comparerCount == 1)
             {
-                var index = BinarySearch.FindClosest(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0], selectLower);
+                var index = BinarySearch.FindClosest(orderedData, 0, orderedData.Length, key, indexSelector, comparers[0], selectLower);
                 return index;
             }
             else
             {
                 var lo = 0;
-                var hi = orderedData.Count;
+                var hi = orderedData.Length;
 
                 for (int i = 0; i < comparerCount; i++)
                 {
@@ -263,16 +266,16 @@ namespace MasterMemory
         {
             if (comparerCount == 1)
             {
-                var lo = BinarySearch.LowerBound(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0]);
+                var lo = BinarySearch.LowerBound(orderedData, 0, orderedData.Length, key, indexSelector, comparers[0]);
                 if (lo == -1) return RangeView<TElement>.Empty();
-                var hi = BinarySearch.UpperBound(orderedData, 0, orderedData.Count, key, indexSelector, comparers[0]);
+                var hi = BinarySearch.UpperBound(orderedData, 0, orderedData.Length, key, indexSelector, comparers[0]);
 
                 return new RangeView<TElement>(orderedData, lo, hi, ascendant);
             }
             else
             {
                 var lo = 0;
-                var hi = orderedData.Count;
+                var hi = orderedData.Length;
                 for (int i = 0; i < comparerCount; i++)
                 {
                     var comparer = comparers[i];
@@ -297,7 +300,7 @@ namespace MasterMemory
 
         public RangeView<TElement> FindAll(bool ascendant = true)
         {
-            return new MasterMemory.RangeView<TElement>(orderedData, 0, orderedData.Count - 1, ascendant);
+            return new MasterMemory.RangeView<TElement>(orderedData, 0, orderedData.Length - 1, ascendant);
         }
 
         public ILookup<TKey, TElement> ToLookupView()
@@ -328,7 +331,7 @@ namespace MasterMemory
 
                 if (!dynamicIndexMemoriesCache.TryGetValue(indexName, out memory))
                 {
-                    memory = dynamicIndexMemoriesCache[indexName] = new Memory<TSecondaryIndex, TElement>(this.orderedData, secondaryIndexSelector, false);
+                    memory = dynamicIndexMemoriesCache[indexName] = new Memory<TSecondaryIndex, TElement>(this.orderedData, secondaryIndexSelector, false, false);
                 }
             }
 
@@ -373,6 +376,11 @@ namespace MasterMemory
                 Array.Resize(ref array.items, array.count);
                 return array.items;
             }
+        }
+
+        public int Serialize(ref byte[] bytes, int offset, IFormatterResolver resolver)
+        {
+            return resolver.GetFormatterWithVerify<TElement[]>().Serialize(ref bytes, offset, orderedData, resolver);
         }
     }
 }

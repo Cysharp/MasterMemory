@@ -1,10 +1,10 @@
-﻿using MasterMemory;
-using MessagePack;
+﻿using MessagePack;
 using System;
 using System.Collections.Generic;
 
 namespace MasterMemory
 {
+    // layout: array of (key, byte[]) tuple. (serialize valid messagepack-binary)
     public class Database
     {
         readonly Dictionary<string, IInternalMemory> memories; // as readonly
@@ -21,6 +21,11 @@ namespace MasterMemory
 
         public Memory<TKey, TElement> GetMemory<TKey, TElement>(string memoryKey, Func<TElement, TKey> indexSelector)
         {
+            return GetMemory(memoryKey, indexSelector, MessagePackSerializer.DefaultResolver);
+        }
+
+        public Memory<TKey, TElement> GetMemory<TKey, TElement>(string memoryKey, Func<TElement, TKey> indexSelector, IFormatterResolver resolver = null)
+        {
             lock (memories)
             {
                 IInternalMemory obj;
@@ -29,17 +34,26 @@ namespace MasterMemory
                     throw new KeyNotFoundException("MemoryKey Not Found:" + memoryKey);
                 }
 
-                if (!obj.IsRegisteredSelector)
+                var raw = obj as InternalRawMemory;
+                if (raw != null)
                 {
-                    obj.InternalSetSelect(indexSelector);
-                }
+                    var orderedData = MessagePackSerializer.Deserialize<TElement[]>(raw.RawMemory, resolver);
 
-                var memory = obj as Memory<TKey, TElement>;
-                if (memory == null)
-                {
-                    throw new ArgumentException("Cast type is invalid, actual memory type:" + obj.GetType().Name);
+                    var mem = new Memory<TKey, TElement>(orderedData, indexSelector, true, true);
+
+                    memories[memoryKey] = mem;
+                    obj = raw = null;
+                    return mem;
                 }
-                return memory;
+                else
+                {
+                    var memory = obj as Memory<TKey, TElement>;
+                    if (memory == null)
+                    {
+                        throw new ArgumentException("Cast type is invalid, actual memory type:" + obj.GetType().Name);
+                    }
+                    return memory;
+                }
             }
         }
 
@@ -51,68 +65,107 @@ namespace MasterMemory
                 this.memories.Add(item.Key, item.Value);
             }
         }
-        
+
         /// <summary>
-        /// Create database from underlying bytes.
-        /// If all objects are readonly, set guaranteedAllObjectsAreReadonly = true for improve performance.
+        /// Open the database.
         /// </summary>
-        public static Database Open(byte[] bytes, bool guaranteedAllObjectsAreReadonly = false)
+        public static Database Open(byte[] bytes)
         {
-            var memoryCount = BinaryUtil.ReadInt32(ref bytes, 0);
-            var stringFormatter = ZeroFormatter.Formatters.Formatter<DefaultResolver, string>.Default;
+            var offset = 0;
+            int readSize;
+            var memoryCount = MessagePackBinary.ReadArrayHeader(bytes, 0, out readSize);
+            offset += readSize;
 
-            var memories = new Dictionary<string, ISerializableMemory>(memoryCount, StringComparer.OrdinalIgnoreCase);
-            var offset = 4;
+            var memories = new KeyValuePair<string, IInternalMemory>[memoryCount];
 
-            string prevKeyName = null;
-            int prevMemoryOffset = 0;
             for (int i = 0; i < memoryCount; i++)
             {
-                int byteSize;
-                var keyName = stringFormatter.Deserialize(ref bytes, offset, DirtyTracker.NullTracker, out byteSize);
-                offset += byteSize;
-                var memoryOffset = BinaryUtil.ReadInt32(ref bytes, offset);
-                offset += 4;
+                var len = MessagePackBinary.ReadArrayHeader(bytes, offset, out readSize);
+                offset += readSize;
 
-                if (memoryCount == 1 || i == memoryCount - 1)
-                {
-                    memories.Add(keyName, new ArraySegmentMemory(new ArraySegment<byte>(bytes, memoryOffset, bytes.Length - memoryOffset)));
-                }
-                if (i != 0)
-                {
-                    memories.Add(prevKeyName, new ArraySegmentMemory(new ArraySegment<byte>(bytes, prevMemoryOffset, memoryOffset - prevMemoryOffset)));
-                }
+                if (len != 2) throw new InvalidOperationException("Invalid MsgPack Binary of Database.");
 
-                prevKeyName = keyName;
-                prevMemoryOffset = memoryOffset;
+                var keyName = MessagePackBinary.ReadString(bytes, offset, out readSize);
+                offset += readSize;
+
+                var beginOffset = offset;
+                var arrayLen = MessagePackBinary.ReadArrayHeader(bytes, offset, out readSize);
+                offset += readSize;
+                for (int j = 0; j < arrayLen; j++)
+                {
+                    offset += MessagePackBinary.ReadNextBlock(bytes, offset);
+                }
+                readSize = offset - beginOffset;
+                var binary = new byte[readSize];
+                Buffer.BlockCopy(bytes, beginOffset, binary, 0, readSize);
+
+                var memory = new InternalRawMemory(binary);
+                memories[i] = new KeyValuePair<string, IInternalMemory>(keyName, memory);
             }
 
-            return new Database(memories, guaranteedAllObjectsAreReadonly);
+            return new Database(memories);
         }
 
+        // Memo: imple Open(FileStream) for stream read on future.
+
         public byte[] Save()
+        {
+            return Save(MessagePackSerializer.DefaultResolver);
+        }
+
+        public byte[] Save(IFormatterResolver resolver)
         {
             lock (memories)
             {
                 var bytes = new byte[255]; // initial
-                var list = new List<HeaderRecord>();
 
                 var offset = 0;
+                offset += MessagePackBinary.WriteArrayHeader(ref bytes, 0, MemoryCount);
 
-
-                offset += MessagePackBinary.WriteMapHeader(ref bytes, offset, memories.Count);
-                
                 foreach (var item in memories)
                 {
+                    offset += MessagePackBinary.WriteArrayHeader(ref bytes, offset, 2);
                     offset += MessagePackBinary.WriteString(ref bytes, offset, item.Key);
-
-                    
-
-
+                    offset += item.Value.Serialize(ref bytes, offset, resolver);
                 }
 
-                BinaryUtil.FastResize(ref bytes, offset);
+                MessagePackBinary.FastResize(ref bytes, offset);
                 return bytes;
+            }
+        }
+
+        public int SaveToFile(System.IO.FileStream fileStream)
+        {
+            return SaveToFile(fileStream, MessagePackSerializer.DefaultResolver);
+        }
+
+        public int SaveToFile(System.IO.FileStream fileStream, IFormatterResolver resolver)
+        {
+            lock (memories)
+            {
+                var bytes = new byte[255]; // buffer
+
+                var size = 0;
+                var offset = 0;
+                offset += MessagePackBinary.WriteArrayHeader(ref bytes, 0, MemoryCount);
+
+                fileStream.Write(bytes, 0, offset); // write header.
+                size += offset;
+
+                foreach (var item in memories)
+                {
+                    offset = 0;
+                    offset += MessagePackBinary.WriteArrayHeader(ref bytes, offset, 2);
+                    offset += MessagePackBinary.WriteString(ref bytes, offset, item.Key);
+                    offset += item.Value.Serialize(ref bytes, offset, resolver);
+
+                    fileStream.Write(bytes, 0, offset);
+                    size += offset;
+                }
+
+                fileStream.Flush();
+
+                return size;
             }
         }
 
@@ -126,28 +179,27 @@ namespace MasterMemory
             return builder;
         }
 
-        public static MemoryAnalysis[] ReportDiagnostics(byte[] bytes)
+        /// <summary>
+        /// Database diagnostics. If allowDump = true, can use MemoryAnalysis.DumpRows(but if true, holds the raw byte[] in memory).
+        /// </summary>
+        public static MemoryAnalysis[] ReportDiagnostics(byte[] bytes, bool allowDump = false)
         {
             var list = new List<MemoryAnalysis>();
 
-            // TODO:...
-            //var db = Database.Open(bytes, true);
-            //foreach (var item in db.memories)
-            //{
-            //    var arraySegmentMemory = item.Value as ArraySegmentMemory;
-            //    list.Add(Tuple.Create(item.Key, arraySegmentMemory.GetBuffer().Count));
-            //}
+            var db = Database.Open(bytes);
+            foreach (var item in db.memories)
+            {
+                var rawMemory = item.Value as InternalRawMemory;
 
-                list.Add(new MemoryAnalysis(item.Key, count, buffer.Count));
+                int readSize;
+                var count = MessagePackBinary.ReadArrayHeader(rawMemory.RawMemory, 0, out readSize);
+
+                var analysis = new MemoryAnalysis(item.Key, count, rawMemory.RawMemory.Length, allowDump ? rawMemory.RawMemory : null);
+
+                list.Add(analysis);
             }
 
             return list.ToArray();
-        }
-
-        struct HeaderRecord
-        {
-            public int HeaderOffset;
-            public ISerializableMemory Memory;
         }
     }
 
@@ -157,11 +209,37 @@ namespace MasterMemory
         public int Count { get; private set; }
         public long Size { get; private set; }
 
-        public MemoryAnalysis(string keyName, int count, long size)
+        readonly byte[] rawArrayBytes;
+
+        public MemoryAnalysis(string keyName, int count, long size, byte[] rawArrayBytes)
         {
             this.KeyName = keyName;
             this.Count = count;
             this.Size = size;
+            this.rawArrayBytes = rawArrayBytes;
+        }
+
+        public IEnumerable<string> DumpRows()
+        {
+            if (rawArrayBytes == null) yield break;
+
+            byte[] buffer = new byte[10];
+
+            var offset = 0;
+            int readSize;
+            var length = MessagePackBinary.ReadArrayHeader(rawArrayBytes, 0, out readSize);
+            offset += readSize;
+
+            for (int i = 0; i < length; i++)
+            {
+                readSize = MessagePackBinary.ReadNextBlock(rawArrayBytes, offset);
+
+                MessagePackBinary.EnsureCapacity(ref buffer, 0, readSize);
+                Buffer.BlockCopy(rawArrayBytes, offset, buffer, 0, readSize);
+
+                yield return MessagePackSerializer.ToJson(buffer);
+                offset += readSize;
+            }
         }
 
         public override string ToString()

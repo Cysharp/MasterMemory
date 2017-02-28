@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using ZeroFormatter;
 
 namespace MasterMemory.Internal
 {
@@ -153,9 +152,9 @@ namespace MasterMemory.Internal
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
-        readonly KeyTuple1Memory<TKey1, TKey2, TElement> innerMemory;
+        readonly MemoryKey1Memory<TKey1, TKey2, TElement> innerMemory;
 
-        internal DictionaryView1(KeyTuple1Memory<TKey1, TKey2, TElement> innerMemory)
+        internal DictionaryView1(MemoryKey1Memory<TKey1, TKey2, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
@@ -293,9 +292,9 @@ namespace MasterMemory.Internal
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
-        readonly KeyTuple1Memory<TKey1, TKey2, TKey3, TElement> innerMemory;
+        readonly MemoryKey1Memory<TKey1, TKey2, TKey3, TElement> innerMemory;
 
-        internal DictionaryView1(KeyTuple1Memory<TKey1, TKey2, TKey3, TElement> innerMemory)
+        internal DictionaryView1(MemoryKey1Memory<TKey1, TKey2, TKey3, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
@@ -428,19 +427,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView12<TKey1, TKey2, TKey3, TElement> : IDictionary<KeyTuple<TKey1, TKey2>, TElement>   
+    public class DictionaryView12<TKey1, TKey2, TKey3, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
-        readonly KeyTuple12Memory<TKey1, TKey2, TKey3, TElement> innerMemory;
+        readonly MemoryKey12Memory<TKey1, TKey2, TKey3, TElement> innerMemory;
 
-        internal DictionaryView12(KeyTuple12Memory<TKey1, TKey2, TKey3, TElement> innerMemory)
+        internal DictionaryView12(MemoryKey12Memory<TKey1, TKey2, TKey3, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2> key]
+        public TElement this[MemoryKey<TKey1, TKey2> key]
         {
             get
             {
@@ -468,13 +467,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -487,7 +486,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2>> Keys
         {
             get
             {
@@ -504,7 +503,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
             get
             {
@@ -512,7 +511,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Values
         {
             get
             {
@@ -521,12 +520,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -536,27 +535,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2> key)
+        public bool Remove(MemoryKey<TKey1, TKey2> key)
         {
             throw new NotSupportedException();
         }
@@ -573,9 +572,9 @@ namespace MasterMemory.Internal
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
-        readonly KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory;
+        readonly MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory;
 
-        internal DictionaryView1(KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory)
+        internal DictionaryView1(MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
@@ -708,19 +707,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TElement> : IDictionary<KeyTuple<TKey1, TKey2>, TElement>   
+    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
-        readonly KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory;
+        readonly MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory;
 
-        internal DictionaryView12(KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory)
+        internal DictionaryView12(MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2> key]
+        public TElement this[MemoryKey<TKey1, TKey2> key]
         {
             get
             {
@@ -748,13 +747,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -767,7 +766,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2>> Keys
         {
             get
             {
@@ -784,7 +783,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
             get
             {
@@ -792,7 +791,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Values
         {
             get
             {
@@ -801,12 +800,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -816,27 +815,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2> key)
+        public bool Remove(MemoryKey<TKey1, TKey2> key)
         {
             throw new NotSupportedException();
         }
@@ -848,19 +847,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>   
+    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
-        readonly KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory;
+        readonly MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory;
 
-        internal DictionaryView123(KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory)
+        internal DictionaryView123(MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3> key]
         {
             get
             {
@@ -888,13 +887,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -907,7 +906,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3>> Keys
         {
             get
             {
@@ -924,7 +923,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
             get
             {
@@ -932,7 +931,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Values
         {
             get
             {
@@ -941,12 +940,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -956,27 +955,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             throw new NotSupportedException();
         }
@@ -993,9 +992,9 @@ namespace MasterMemory.Internal
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
-        readonly KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
+        readonly MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
 
-        internal DictionaryView1(KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
+        internal DictionaryView1(MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
@@ -1128,19 +1127,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<KeyTuple<TKey1, TKey2>, TElement>   
+    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
-        readonly KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
+        readonly MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
 
-        internal DictionaryView12(KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
+        internal DictionaryView12(MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2> key]
+        public TElement this[MemoryKey<TKey1, TKey2> key]
         {
             get
             {
@@ -1168,13 +1167,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -1187,7 +1186,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2>> Keys
         {
             get
             {
@@ -1204,7 +1203,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
             get
             {
@@ -1212,7 +1211,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Values
         {
             get
             {
@@ -1221,12 +1220,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -1236,27 +1235,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2> key)
+        public bool Remove(MemoryKey<TKey1, TKey2> key)
         {
             throw new NotSupportedException();
         }
@@ -1268,19 +1267,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>   
+    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
-        readonly KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
+        readonly MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
 
-        internal DictionaryView123(KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
+        internal DictionaryView123(MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3> key]
         {
             get
             {
@@ -1308,13 +1307,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -1327,7 +1326,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3>> Keys
         {
             get
             {
@@ -1344,7 +1343,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
             get
             {
@@ -1352,7 +1351,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Values
         {
             get
             {
@@ -1361,12 +1360,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -1376,27 +1375,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             throw new NotSupportedException();
         }
@@ -1408,19 +1407,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>   
+    public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>
 #endif
     {
-        readonly KeyTuple1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
+        readonly MemoryKey1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory;
 
-        internal DictionaryView1234(KeyTuple1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
+        internal DictionaryView1234(MemoryKey1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3, TKey4> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3, TKey4> key]
         {
             get
             {
@@ -1448,13 +1447,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3, TKey4> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3, TKey4> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3, TKey4> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3, TKey4> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -1467,7 +1466,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3, TKey4>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3, TKey4>> Keys
         {
             get
             {
@@ -1484,7 +1483,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
         {
             get
             {
@@ -1492,7 +1491,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Values
         {
             get
             {
@@ -1501,12 +1500,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3, TKey4> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3, TKey4> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -1516,27 +1515,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3, TKey4> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3, TKey4> key)
         {
             throw new NotSupportedException();
         }
@@ -1553,9 +1552,9 @@ namespace MasterMemory.Internal
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
-        readonly KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
+        readonly MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
 
-        internal DictionaryView1(KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
+        internal DictionaryView1(MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
@@ -1688,19 +1687,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<KeyTuple<TKey1, TKey2>, TElement>   
+    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
-        readonly KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
+        readonly MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
 
-        internal DictionaryView12(KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
+        internal DictionaryView12(MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2> key]
+        public TElement this[MemoryKey<TKey1, TKey2> key]
         {
             get
             {
@@ -1728,13 +1727,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -1747,7 +1746,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2>> Keys
         {
             get
             {
@@ -1764,7 +1763,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
             get
             {
@@ -1772,7 +1771,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Values
         {
             get
             {
@@ -1781,12 +1780,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -1796,27 +1795,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2> key)
+        public bool Remove(MemoryKey<TKey1, TKey2> key)
         {
             throw new NotSupportedException();
         }
@@ -1828,19 +1827,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>   
+    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
-        readonly KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
+        readonly MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
 
-        internal DictionaryView123(KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
+        internal DictionaryView123(MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3> key]
         {
             get
             {
@@ -1868,13 +1867,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -1887,7 +1886,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3>> Keys
         {
             get
             {
@@ -1904,7 +1903,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
             get
             {
@@ -1912,7 +1911,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Values
         {
             get
             {
@@ -1921,12 +1920,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -1936,27 +1935,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             throw new NotSupportedException();
         }
@@ -1968,19 +1967,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>   
+    public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>
 #endif
     {
-        readonly KeyTuple1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
+        readonly MemoryKey1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
 
-        internal DictionaryView1234(KeyTuple1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
+        internal DictionaryView1234(MemoryKey1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3, TKey4> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3, TKey4> key]
         {
             get
             {
@@ -2008,13 +2007,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3, TKey4> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3, TKey4> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3, TKey4> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3, TKey4> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -2027,7 +2026,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3, TKey4>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3, TKey4>> Keys
         {
             get
             {
@@ -2044,7 +2043,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
         {
             get
             {
@@ -2052,7 +2051,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Values
         {
             get
             {
@@ -2061,12 +2060,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3, TKey4> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3, TKey4> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -2076,27 +2075,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3, TKey4> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3, TKey4> key)
         {
             throw new NotSupportedException();
         }
@@ -2108,19 +2107,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>   
+    public class DictionaryView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>
 #endif
     {
-        readonly KeyTuple12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
+        readonly MemoryKey12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory;
 
-        internal DictionaryView12345(KeyTuple12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
+        internal DictionaryView12345(MemoryKey12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key]
         {
             get
             {
@@ -2148,13 +2147,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -2167,7 +2166,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>> Keys
         {
             get
             {
@@ -2184,7 +2183,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Keys
         {
             get
             {
@@ -2192,7 +2191,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Values
         {
             get
             {
@@ -2201,12 +2200,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -2216,27 +2215,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key)
         {
             throw new NotSupportedException();
         }
@@ -2253,9 +2252,9 @@ namespace MasterMemory.Internal
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
-        readonly KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
+        readonly MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
 
-        internal DictionaryView1(KeyTuple1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
+        internal DictionaryView1(MemoryKey1Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
@@ -2388,19 +2387,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<KeyTuple<TKey1, TKey2>, TElement>   
+    public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
-        readonly KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
+        readonly MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
 
-        internal DictionaryView12(KeyTuple12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
+        internal DictionaryView12(MemoryKey12Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2> key]
+        public TElement this[MemoryKey<TKey1, TKey2> key]
         {
             get
             {
@@ -2428,13 +2427,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -2447,7 +2446,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2>> Keys
         {
             get
             {
@@ -2464,7 +2463,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
             get
             {
@@ -2472,7 +2471,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Values
         {
             get
             {
@@ -2481,12 +2480,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -2496,27 +2495,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2> key)
+        public bool Remove(MemoryKey<TKey1, TKey2> key)
         {
             throw new NotSupportedException();
         }
@@ -2528,19 +2527,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>   
+    public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
-        readonly KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
+        readonly MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
 
-        internal DictionaryView123(KeyTuple123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
+        internal DictionaryView123(MemoryKey123Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3> key]
         {
             get
             {
@@ -2568,13 +2567,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -2587,7 +2586,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3>> Keys
         {
             get
             {
@@ -2604,7 +2603,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
             get
             {
@@ -2612,7 +2611,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Values
         {
             get
             {
@@ -2621,12 +2620,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -2636,27 +2635,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3> key)
         {
             throw new NotSupportedException();
         }
@@ -2668,19 +2667,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>   
+    public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>
 #endif
     {
-        readonly KeyTuple1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
+        readonly MemoryKey1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
 
-        internal DictionaryView1234(KeyTuple1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
+        internal DictionaryView1234(MemoryKey1234Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3, TKey4> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3, TKey4> key]
         {
             get
             {
@@ -2708,13 +2707,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3, TKey4> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3, TKey4> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3, TKey4> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3, TKey4> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -2727,7 +2726,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3, TKey4>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3, TKey4>> Keys
         {
             get
             {
@@ -2744,7 +2743,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
         {
             get
             {
@@ -2752,7 +2751,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Values
         {
             get
             {
@@ -2761,12 +2760,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3, TKey4> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3, TKey4> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -2776,27 +2775,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3, TKey4> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3, TKey4> key)
         {
             throw new NotSupportedException();
         }
@@ -2808,19 +2807,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>   
+    public class DictionaryView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>
 #endif
     {
-        readonly KeyTuple12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
+        readonly MemoryKey12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
 
-        internal DictionaryView12345(KeyTuple12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
+        internal DictionaryView12345(MemoryKey12345Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key]
         {
             get
             {
@@ -2848,13 +2847,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -2867,7 +2866,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>> Keys
         {
             get
             {
@@ -2884,7 +2883,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Keys
         {
             get
             {
@@ -2892,7 +2891,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Values
         {
             get
             {
@@ -2901,12 +2900,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -2916,27 +2915,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5> key)
         {
             throw new NotSupportedException();
         }
@@ -2948,19 +2947,19 @@ namespace MasterMemory.Internal
     }
 
 
-    public class DictionaryView123456<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>   
+    public class DictionaryView123456<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>   
 #if !UNITY_5    
-    , IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>
+    , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>
 #endif
     {
-        readonly KeyTuple123456Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
+        readonly MemoryKey123456Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory;
 
-        internal DictionaryView123456(KeyTuple123456Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
+        internal DictionaryView123456(MemoryKey123456Memory<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }
 
-        public TElement this[KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key]
+        public TElement this[MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key]
         {
             get
             {
@@ -2988,13 +2987,13 @@ namespace MasterMemory.Internal
             }
         }
 
-        public bool ContainsKey(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key)
+        public bool ContainsKey(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key)
         {
             TElement v;
             return TryGetValue(key, out v);
         }
 
-        public bool TryGetValue(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key, out TElement value)
+        public bool TryGetValue(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key, out TElement value)
         {
             return innerMemory.TryFind(key, out value);
         }
@@ -3007,7 +3006,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        public ICollection<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>> Keys
+        public ICollection<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>> Keys
         {
             get
             {
@@ -3024,7 +3023,7 @@ namespace MasterMemory.Internal
         }
 #if !UNITY_5
 
-        IEnumerable<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>.Keys
+        IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>.Keys
         {
             get
             {
@@ -3032,7 +3031,7 @@ namespace MasterMemory.Internal
             }
         }
 
-        IEnumerable<TElement> IReadOnlyDictionary<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>.Values
+        IEnumerable<TElement> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>.Values
         {
             get
             {
@@ -3041,12 +3040,12 @@ namespace MasterMemory.Internal
         }
 #endif
 
-        public void Add(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> item)
+        public void Add(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void Add(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key, TElement value)
+        public void Add(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key, TElement value)
         {
             throw new NotSupportedException();
         }
@@ -3056,27 +3055,27 @@ namespace MasterMemory.Internal
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> item)
+        public bool Contains(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public void CopyTo(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>[] array, int arrayIndex)
         {
             throw new NotSupportedException();
         }
 
-        public IEnumerator<KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>> GetEnumerator()
+        public IEnumerator<KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>> GetEnumerator()
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyValuePair<KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> item)
+        public bool Remove(KeyValuePair<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> item)
         {
             throw new NotSupportedException();
         }
 
-        public bool Remove(KeyTuple<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key)
+        public bool Remove(MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> key)
         {
             throw new NotSupportedException();
         }

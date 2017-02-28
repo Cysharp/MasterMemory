@@ -12,7 +12,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using ZeroFormatter;
 
 namespace MasterMemory.Internal
 {
@@ -160,12 +159,12 @@ namespace MasterMemory.Internal
         var typeKeyList = string.Join(", ", Enumerable.Range(1, i).Select(x => "TKey" + x));
 #>
 <# for(var j = 1; j <= i - 1; j++) {
-       var keyType = (j == 1) ? "TKey1" : "KeyTuple<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
+       var keyType = (j == 1) ? "TKey1" : "MemoryKey<" + string.Join(", ", Enumerable.Range(1, j).Select(x => "TKey" + x)) + ">";
        var indexCount = string.Join("", Enumerable.Range(1, j));
        
        var deconstructKeys = (j == 1) ? "key" : string.Join(", ", Enumerable.Range(1, j).Select(x => "key.Item" + x));
        var defaultOthers = string.Join(", ", Enumerable.Range(j + 1, i - j).Select(x => "default(TKey" + x + ")"));
-       var createKeyTuple = deconstructKeys + ", " + defaultOthers;
+       var createMemoryKey = deconstructKeys + ", " + defaultOthers;
 #>
 
     public class DictionaryView<#= indexCount #><<#= typeKeyList #>, TElement> : IDictionary<<#= keyType #>, TElement>   
@@ -173,9 +172,9 @@ namespace MasterMemory.Internal
     , IReadOnlyDictionary<<#= keyType #>, TElement>
 #endif
     {
-        readonly KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory;
+        readonly MemoryKey<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory;
 
-        internal DictionaryView<#= indexCount #>(KeyTuple<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory)
+        internal DictionaryView<#= indexCount #>(MemoryKey<#= indexCount #>Memory<<#= typeKeyList #>, TElement> innerMemory)
         {
             this.innerMemory = innerMemory;
         }

@@ -1,37 +1,35 @@
 ﻿<?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
-    <metadata>
-        <id>MasterMemory</id>
-        <version>0.1.0</version>
-        <title>MasterMemory</title>
-        <authors>neuecc</authors>
-        <owners>neuecc</owners>
-        <projectUrl>https://github.com/neuecc/MasterMemory</projectUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Embedded Readonly In-Memory Document Database for .NET, .NET Core and Unity.</description>
-        <releaseNotes>initial release.</releaseNotes>
-        <tags>database, embedded, inmemory, unity</tags>
-        <frameworkAssemblies>
-            <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.5" />
-            <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.5" />
-        </frameworkAssemblies>
-        <dependencies>
-            <group targetFramework=".NETFramework4.5">
-                <dependency id="ZeroFormatter" version="1.6.0" />
-            </group>
-            <group targetFramework=".NETStandard1.6">
-                <dependency id="ZeroFormatter" version="1.6.0" />
-                <dependency id="System.Collections" version="4.0.11" />
-                <dependency id="System.Linq" version="4.1.0" />
-            </group>
-        </dependencies>
-    </metadata>
-    <files>
-        <file src="..\src\MasterMemory\bin\Release\MasterMemory.dll" target="lib\net45" />
-        <file src="..\src\MasterMemory\bin\Release\MasterMemory.xml" target="lib\net45" />
-        <file src="..\src\MasterMemory.NETCore\bin\Release\netstandard1.6\MasterMemory.dll" target="lib\netstandard1.6" />
-        <file src="..\src\MasterMemory.NETCore\bin\Release\netstandard1.6\MasterMemory.xml" target="lib\netstandard1.6" />
-        <file src="MasterMemory.CodeGenerator.exe" target="tools\" />
-        <file src="MasterMemory.CodeGenerator.exe.config" target="tools\" />
-    </files>
+  <metadata>
+    <id>MasterMemory</id>
+    <version>0.2.0</version>
+    <title>MasterMemory</title>
+    <authors>neuecc</authors>
+    <owners>neuecc</owners>
+    <projectUrl>https://github.com/neuecc/MasterMemory</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Embedded Readonly In-Memory Document Database for .NET, .NET Core and Unity.</description>
+    <releaseNotes>change serializer.</releaseNotes>
+    <tags>database, embedded, inmemory, unity</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.5" />
+    </frameworkAssemblies>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="MessagePack" version="0.2.2" />
+      </group>
+      <group targetFramework=".NETStandard1.4">
+        <dependency id="MessagePack" version="0.2.2" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\src\MasterMemory\bin\Release\netstandard1.4\MasterMemory.dll" target="lib\net45" />
+    <file src="..\src\MasterMemory\bin\Release\netstandard1.4\MasterMemory.xml" target="lib\net45" />
+    <file src="..\src\MasterMemory\bin\Release\netstandard1.4\MasterMemory.dll" target="lib\netstandard1.4" />
+    <file src="..\src\MasterMemory\bin\Release\netstandard1.4\MasterMemory.xml" target="lib\netstandard1.4" />
+    <file src="MasterMemory.CodeGenerator.exe" target="tools\" />
+    <file src="MasterMemory.CodeGenerator.exe.config" target="tools\" />
+  </files>
 </package>

@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Reflection;
 using System.Linq;
-using ZeroFormatter;
 
 namespace MasterMemory.Internal
 {
-    internal static class KeyTupleComparerRegister
+    internal static class MemoryKeyComparerRegister
     {
         static readonly MethodInfo[] registers; // 2 = 0, 3 = 1,...
         static readonly object[] emptyArgs = new object[0];
 
-        static KeyTupleComparerRegister()
+        static MemoryKeyComparerRegister()
         {
 #if !UNITY_5
             registers =
 
-            typeof(KeyTupleComparer).GetTypeInfo().GetMethods()
+            typeof(MemoryKeyComparer).GetRuntimeMethods()
                 .Where(x => x.Name == "Register")
                 .OrderBy(x => x.GetGenericArguments().Length)
                 .ToArray();
@@ -27,9 +26,9 @@ namespace MasterMemory.Internal
         public static void RegisterDynamic<TKey>()
         {
 #if !UNITY_5
-            if (typeof(TKey).GetTypeInfo().GetInterfaces().Contains(typeof(IKeyTuple)))
+            if (typeof(TKey).GetTypeInfo().ImplementedInterfaces.Contains(typeof(IMemoryKey)))
             {
-                var args = typeof(TKey).GetTypeInfo().GetGenericArguments();
+                var args = typeof(TKey).GetTypeInfo().GenericTypeArguments;
                 registers[args.Length - 2].MakeGenericMethod(args).Invoke(null, emptyArgs);
             }
 #else

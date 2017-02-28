@@ -12,31 +12,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ZeroFormatter;
-using ZeroFormatter.Formatters;
-using ZeroFormatter.Internal;
 
 namespace MasterMemory
 {
-    public static class KeyTupleComparer
+    public static class MemoryKeyComparer
     {
 <# for(var i = 2; i<= 7; i++ ) {
     var t = string.Join(", ", Enumerable.Range(1, i).Select(x => "T" + x));
 #>
         public static void Register<<#= t #>>()
         {
-            var comparers = MasterMemoryComparer<KeyTuple<<#= t #>>>.DefaultArray;
+            var comparers = MasterMemoryComparer<MemoryKey<<#= t #>>>.DefaultArray;
             if (comparers.Length != 1) return;
 
-            comparers = new IComparer<KeyTuple<<#= t #>>>[]
+            comparers = new IComparer<MemoryKey<<#= t #>>>[]
             {
 <# for(var j = 1; j <= i; j++ ) { #>
-                new KeyTupleComparer<<#= t #>>(<#= j #>),
+                new MemoryKeyComparer<<#= t #>>(<#= j #>),
 <# } #>
             };
 
-            MasterMemoryComparer<KeyTuple<<#= t #>>>.Default = new KeyTupleComparer<<#= t #>>(-1);
-            MasterMemoryComparer<KeyTuple<<#= t #>>>.DefaultArray = comparers;
+            MasterMemoryComparer<MemoryKey<<#= t #>>>.Default = new MemoryKeyComparer<<#= t #>>(-1);
+            MasterMemoryComparer<MemoryKey<<#= t #>>>.DefaultArray = comparers;
         }
 
 <# } #>
@@ -46,15 +43,15 @@ namespace MasterMemory
     var t = string.Join(", ", Enumerable.Range(1, i).Select(x => "T" + x));
 #>
 
-    public class KeyTupleComparer<<#= t #>> : IComparer<KeyTuple<<#= t #>>>
+    public class MemoryKeyComparer<<#= t #>> : IComparer<MemoryKey<<#= t #>>>
     {
 <# for(var j = 1; j <= i; j++ ) { #>
         readonly IComparer<T<#= j#>> comparer<#= j #> = MasterMemoryComparer<T<#= j #>>.Default;
 <# } #>
 
-        readonly Func<KeyTuple<<#= t #>>, KeyTuple<<#= t #>>, int> compare;
+        readonly Func<MemoryKey<<#= t #>>, MemoryKey<<#= t #>>, int> compare;
 
-        public KeyTupleComparer(int compareKeyNumber) // -1 is all.
+        public MemoryKeyComparer(int compareKeyNumber) // -1 is all.
         {
             if (compareKeyNumber == -1) compare = CompareAll;
             switch (compareKeyNumber)
@@ -70,21 +67,21 @@ namespace MasterMemory
             }
         }
 
-        public int Compare(KeyTuple<<#= t #>> x, KeyTuple<<#= t #>> y)
+        public int Compare(MemoryKey<<#= t #>> x, MemoryKey<<#= t #>> y)
         {
             return compare(x, y);
         }
 
 <# for(var j = 1; j <= i; j++ ) { #>
 
-        int Compare<#= j #>(KeyTuple<<#= t #>> x, KeyTuple<<#= t #>> y)
+        int Compare<#= j #>(MemoryKey<<#= t #>> x, MemoryKey<<#= t #>> y)
         {
             return comparer<#= j #>.Compare(x.Item<#= j #>, y.Item<#= j #>);
         }
 
 <# } #>
 
-        int CompareAll(KeyTuple<<#= t #>> x, KeyTuple<<#= t #>> y)
+        int CompareAll(MemoryKey<<#= t #>> x, MemoryKey<<#= t #>> y)
         {
             int res;
 <# for(var j = 1; j <= i; j++ ) { #>

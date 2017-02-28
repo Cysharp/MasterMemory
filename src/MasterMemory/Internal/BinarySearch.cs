@@ -5,10 +5,10 @@ namespace MasterMemory.Internal
 {
     public static class BinarySearch
     {
-        public static int FindFirst<T, TKey>(IList<T> array, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
+        public static int FindFirst<T, TKey>(T[] array, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
         {
             var lo = 0;
-            var hi = array.Count - 1;
+            var hi = array.Length - 1;
 
             while (lo <= hi)
             {
@@ -30,9 +30,9 @@ namespace MasterMemory.Internal
         }
 
         // lo = 0, hi = Count.
-        public static int FindClosest<T, TKey>(IList<T> array, int lo, int hi, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer, bool selectLower)
+        public static int FindClosest<T, TKey>(T[] array, int lo, int hi, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer, bool selectLower)
         {
-            if (array.Count == 0) return -1;
+            if (array.Length == 0) return -1;
 
             var originalHi = hi;
             lo = lo - 1;
@@ -68,7 +68,7 @@ namespace MasterMemory.Internal
         }
 
         // default lo = 0, hi = array.Count
-        public static int LowerBound<T, TKey>(IList<T> array, int lo, int hi, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
+        public static int LowerBound<T, TKey>(T[] array, int lo, int hi, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
         {
             while (lo < hi)
             {
@@ -86,7 +86,7 @@ namespace MasterMemory.Internal
             }
 
             var index = lo;
-            if (index == -1 || array.Count <= index)
+            if (index == -1 || array.Length <= index)
             {
                 return -1;
             }
@@ -97,7 +97,7 @@ namespace MasterMemory.Internal
                 : -1;
         }
 
-        public static int UpperBound<T, TKey>(IList<T> array, int lo, int hi, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
+        public static int UpperBound<T, TKey>(T[] array, int lo, int hi, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
         {
             while (lo < hi)
             {
@@ -115,7 +115,7 @@ namespace MasterMemory.Internal
             }
 
             var index = (lo == 0) ? 0 : lo - 1;
-            if (index == -1 || array.Count <= index)
+            if (index == -1 || array.Length <= index)
             {
                 return -1;
             }

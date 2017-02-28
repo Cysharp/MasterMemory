@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using ZeroFormatter;
 
 namespace MasterMemory.Tests
 {
@@ -38,7 +37,7 @@ namespace MasterMemory.Tests
 
             emptyDb.MemoryCount.Is(0);
             var data = emptyDb.Save();
-            data.Is((byte)0, (byte)0, (byte)0, (byte)0);
+            data.Is((byte)144); // empty array
         }
 
         [Fact]
@@ -95,6 +94,9 @@ namespace MasterMemory.Tests
                 var memory2 = newDb.GetMemory<int, Sample>("Sample5", x => x.Id);
                 memory2.Find(8).Age.Is(49);
             }
+
+            var dumper = Database.ReportDiagnostics(savedDb, true);
+
         }
     }
 }
