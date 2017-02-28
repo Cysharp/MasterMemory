@@ -150,15 +150,25 @@ namespace MasterMemory
             return builder;
         }
 
-        public static Tuple<string, int>[] ReportDiagnostics(byte[] bytes)
+        public static MemoryAnalysis[] ReportDiagnostics(byte[] bytes)
         {
-            var list = new List<Tuple<string, int>>();
+            var list = new List<MemoryAnalysis>();
 
             var db = Database.Open(bytes, true);
             foreach (var item in db.memories)
             {
                 var arraySegmentMemory = item.Value as ArraySegmentMemory;
-                list.Add(Tuple.Create(item.Key, arraySegmentMemory.GetBuffer().Count));
+                var buffer = arraySegmentMemory.GetBuffer();
+
+                // Count is only work List<T> is VariableSizeList
+                var count = 0;
+                if (buffer.Count >= 8)
+                {
+                    var array = buffer.Array;
+                    count = BinaryUtil.ReadInt32(ref array, buffer.Offset + 4);
+                }
+
+                list.Add(new MemoryAnalysis(item.Key, count, buffer.Count));
             }
 
             return list.ToArray();
@@ -168,6 +178,53 @@ namespace MasterMemory
         {
             public int HeaderOffset;
             public ISerializableMemory Memory;
+        }
+    }
+
+    public class MemoryAnalysis
+    {
+        public string KeyName { get; private set; }
+        public int Count { get; private set; }
+        public long Size { get; private set; }
+
+        public MemoryAnalysis(string keyName, int count, long size)
+        {
+            this.KeyName = keyName;
+            this.Count = count;
+            this.Size = size;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[{0}]Count:{1}, Size:{2}", KeyName, Count, ToHumanReadableSize(Size));
+        }
+
+        static string ToHumanReadableSize(long size)
+        {
+            double bytes = size;
+
+            if (bytes <= 1024) return bytes.ToString("f2") + " B";
+
+            bytes = bytes / 1024;
+            if (bytes <= 1024) return bytes.ToString("f2") + " KB";
+
+            bytes = bytes / 1024;
+            if (bytes <= 1024) return bytes.ToString("f2") + " MB";
+
+            bytes = bytes / 1024;
+            if (bytes <= 1024) return bytes.ToString("f2") + " GB";
+
+            bytes = bytes / 1024;
+            if (bytes <= 1024) return bytes.ToString("f2") + " TB";
+
+            bytes = bytes / 1024;
+            if (bytes <= 1024) return bytes.ToString("f2") + " PB";
+
+            bytes = bytes / 1024;
+            if (bytes <= 1024) return bytes.ToString("f2") + " EB";
+
+            bytes = bytes / 1024;
+            return bytes + " ZB";
         }
     }
 
