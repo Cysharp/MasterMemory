@@ -1,6 +1,4 @@
-﻿using MasterMemory.Internal;
-using System.Collections.Generic;
-using ZeroFormatter;
+﻿using System.Collections.Generic;
 
 namespace MasterMemory
 {
