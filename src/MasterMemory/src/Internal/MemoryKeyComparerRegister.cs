@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace MasterMemory.Internal
 {
@@ -9,6 +10,7 @@ namespace MasterMemory.Internal
 #if !UNITY_5
         static readonly MethodInfo[] registers; // 2 = 0, 3 = 1,...
         static readonly object[] emptyArgs = new object[0];
+        static readonly HashSet<Type> alreadyRegistered = new HashSet<Type>();
 #endif
 
         static MemoryKeyComparerRegister()
@@ -28,10 +30,17 @@ namespace MasterMemory.Internal
         public static void RegisterDynamic<TKey>()
         {
 #if !UNITY_5
-            if (typeof(TKey).GetTypeInfo().ImplementedInterfaces.Contains(typeof(IMemoryKey)))
+            var t = typeof(TKey);
+            lock (alreadyRegistered)
             {
-                var args = typeof(TKey).GetTypeInfo().GenericTypeArguments;
-                registers[args.Length - 2].MakeGenericMethod(args).Invoke(null, emptyArgs);
+                if (alreadyRegistered.Add(t))
+                {
+                    if (typeof(TKey).GetTypeInfo().ImplementedInterfaces.Contains(typeof(IMemoryKey)))
+                    {
+                        var args = typeof(TKey).GetTypeInfo().GenericTypeArguments;
+                        registers[args.Length - 2].MakeGenericMethod(args).Invoke(null, emptyArgs);
+                    }
+                }
             }
 #else
             // currently do nothing...

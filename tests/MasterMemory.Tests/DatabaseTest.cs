@@ -54,7 +54,7 @@ namespace MasterMemory.Tests
             var savedDb = db.Save();
 
             var newDb = Database.Open(savedDb);
-            var memory2 = newDb.GetMemory<int, Sample>("Sample", x => x.Id, GeneratedResolver.Instance);
+            var memory2 = newDb.GetMemory<int, Sample>("Sample", x => x.Id);
             memory2.Find(8).Age.Is(49);
         }
 
