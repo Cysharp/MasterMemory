@@ -1203,6 +1203,8 @@ namespace MessagePack
 
         public static int WriteString(ref byte[] bytes, int offset, string value)
         {
+            if (value == null) return WriteNil(ref bytes, offset);
+
             var byteCount = StringEncoding.UTF8.GetByteCount(value);
             return WriteStringUnsafe(ref bytes, offset, value, byteCount);
         }

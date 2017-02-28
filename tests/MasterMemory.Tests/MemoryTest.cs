@@ -87,6 +87,7 @@ namespace MasterMemory.Tests
         {
             var data = CreateData();
             var memory = CreateMemory(data);
+            // var aaaa = MemoryKey.Create("a", "b");
             var secondary = memory.SecondaryIndex("FirstName.LastName", x => MemoryKey.Create(x.FirstName, x.LastName));
 
             foreach (var item in data)

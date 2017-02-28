@@ -74,59 +74,8 @@ namespace MasterMemory
         {
             return new MemoryKey<T1, T2>(item1, item2);
         }
-
-        public static MemoryKey<T1> Create<T1>
-            (
-             T1 item1)
-        {
-            return new MemoryKey<T1>(item1);
-        }
     }
 
-    
-    public class MemoryKey<T1> : IMemoryKey, IEquatable<MemoryKey<T1>>
-    {
-        T1 item1;
-
-        public MemoryKey(T1 item1)
-        {
-            this.item1 = item1;
-        }
-
-        public T1 Item1
-        {
-            get { return item1; }
-        }
-
-        public override int GetHashCode()
-        {
-            return EqualityComparer<T1>.Default.GetHashCode(item1);
-        }
-
-        string IMemoryKey.ToString()
-        {
-            return String.Format("{0}", item1);
-        }
-
-        public override string ToString()
-        {
-            return "(" + ((IMemoryKey)this).ToString() + ")";
-        }
-
-        public bool Equals(MemoryKey<T1> other)
-        {
-            return EqualityComparer<T1>.Default.Equals(item1, other.item1);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return (obj is MemoryKey<T1>)
-                ? Equals((MemoryKey<T1>)obj)
-                : false;
-        }
-    }
-
-    
     public class MemoryKey<T1, T2> : IMemoryKey, IEquatable<MemoryKey<T1, T2>>
     {
         T1 item1;

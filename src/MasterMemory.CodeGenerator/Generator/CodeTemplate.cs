@@ -162,7 +162,7 @@ namespace MasterMemory.CodeGenerator.Generator
             
             #line default
             #line hidden
-            this.Write("), ");
+            this.Write("[]), ");
             
             #line 77 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(i));

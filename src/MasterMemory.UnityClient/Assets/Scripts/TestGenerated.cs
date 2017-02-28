@@ -68,7 +68,7 @@ namespace MasterMemory
         {
             lookup = new global::System.Collections.Generic.Dictionary<Type, int>(1)
             {
-                {typeof(MasterMemory.Tests.Sample), 0 },
+                {typeof(MasterMemory.Tests.Sample[]), 0 },
             };
         }
 

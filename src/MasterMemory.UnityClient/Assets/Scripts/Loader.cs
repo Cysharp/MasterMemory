@@ -51,9 +51,11 @@ public class Loader
         UnitTest.RegisterAllMethods<MemoryTest>();
         UnitTest.RegisterAllMethods<RangeViewTest>();
 
+        /*
         MessagePack.Resolvers.CompositeResolver.RegisterAndSetAsDefault(
             MessagePack.Resolvers.GeneratedResolver.Instance,
             MasterMemoryResolver.Instance,
             DefaultResolver.Instance);
+            */
     }
 }

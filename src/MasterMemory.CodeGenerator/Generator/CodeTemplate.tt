@@ -74,7 +74,7 @@ namespace <#= Namespace #>
             lookup = new global::System.Collections.Generic.Dictionary<Type, int>(<#= elementDefinitions.Length #>)
             {
 <# for(var i = 0; i < elementDefinitions.Length; i++) { var x = elementDefinitions[i]; #>
-                {typeof(<#= x.FullName #>), <#= i #> },
+                {typeof(<#= x.FullName #>[]), <#= i #> },
 <# } #>
             };
         }
