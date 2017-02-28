@@ -1,5 +1,4 @@
-﻿using MasterMemory.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,27 +7,12 @@ using MasterMemory;
 using MessagePack.Resolvers;
 using MessagePack.Formatters;
 using MessagePack;
+using MasterMemory.Internal;
 
 namespace MasterMemory.Tests
 {
     public class BinarySearchTest
     {
-        static IMessagePackFormatter<T> GetT<T>(IFormatterResolver resolver)
-       {
-            UnityEngine.Debug.Log("koko yobarete kiteru!");
-            var get = resolver.GetFormatterWithVerify<T[]>();
-            UnityEngine.Debug.Log("get" + get.GetType().FullName.ToString());
-
-            var okk = resolver.GetFormatterWithVerify<T>();
-            UnityEngine.Debug.Log("okk" + okk.GetType().FullName.ToString());
-
-            var fff = DefaultResolver.Instance.GetFormatter<T>();
-            UnityEngine.Debug.Log("Ok:" + fff);
-            return fff;
-        }
-
-
-
         public void Find()
         {
             var rand = new Random();
