@@ -79,6 +79,7 @@
     <Compile Include="MemoryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RangeViewTest.cs" />
+    <Compile Include="TestGenerated.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MessagePack.Resolvers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -53,7 +54,7 @@ namespace MasterMemory.Tests
             var savedDb = db.Save();
 
             var newDb = Database.Open(savedDb);
-            var memory2 = newDb.GetMemory<int, Sample>("Sample", x => x.Id);
+            var memory2 = newDb.GetMemory<int, Sample>("Sample", x => x.Id, GeneratedResolver.Instance);
             memory2.Find(8).Age.Is(49);
         }
 

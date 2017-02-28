@@ -6,11 +6,6 @@ using System.Linq;
 
 namespace MasterMemory
 {
-    public class MasterMemoryResolver
-    {
-
-    }
-
     public interface IInternalMemory
     {
         int Serialize(ref byte[] bytes, int offset, IFormatterResolver resolver);

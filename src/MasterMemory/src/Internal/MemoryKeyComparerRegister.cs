@@ -8,8 +8,8 @@ namespace MasterMemory.Internal
     {
 #if !UNITY_5
         static readonly MethodInfo[] registers; // 2 = 0, 3 = 1,...
-#endif
         static readonly object[] emptyArgs = new object[0];
+#endif
 
         static MemoryKeyComparerRegister()
         {

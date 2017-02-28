@@ -3,21 +3,21 @@ using System.Linq;
 using RuntimeUnitTestToolkit;
 using MasterMemory;
 using MasterMemory.Tests;
-
+using MessagePack;
 
 namespace MasterMemory.Tests
 {
-    //[ZeroFormattable]
+    [MessagePackObject]
     public class Sample
     {
-        //[Index(0)]
-        public virtual int Id { get; set; }
-        //[Index(1)]
-        public virtual int Age { get; set; }
-        //[Index(2)]
-        public virtual string FirstName { get; set; }
-        //[Index(3)]
-        public virtual string LastName { get; set; }
+        [Key(0)]
+        public int Id { get; set; }
+        [Key(1)]
+        public int Age { get; set; }
+        [Key(2)]
+        public string FirstName { get; set; }
+        [Key(3)]
+        public string LastName { get; set; }
     }
 
     public class MemoryTest

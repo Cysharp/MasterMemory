@@ -192,7 +192,7 @@ namespace MasterMemory.CodeGenerator.Generator
             
             #line default
             #line hidden
-            this.Write(": return new globall::MessagePack.Formatters.ArrayFormatter<");
+            this.Write(": return new global::MessagePack.Formatters.ArrayFormatter<");
             
             #line 90 "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.CodeGenerator\Generator\CodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(x.FullName));

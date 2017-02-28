@@ -6,10 +6,12 @@ using MasterMemory;
 using TesTes;
 using System.Collections.Generic;
 using System;
+using MessagePack;
+using MessagePack.Resolvers;
 
 [assembly: MasterMemoryHintAttribute(typeof(Sample))] // dummy
-//[assembly: MasterMemoryHintAttribute(typeof(Sample), typeof(int), typeof(MemoryKey<string, string>), typeof(KeyTuple<string, string, int>), typeof(KeyTuple<int,int, string, string>), typeof(KeyTuple<string,int>))]
-//[assembly: MasterMemoryHintAttribute(typeof(Sample), typeof(MyDummyEnum1), typeof(KeyTuple<MyDummyEnum2, MyDummyEnum3>))]
+[assembly: MasterMemoryHintAttribute(typeof(Sample), typeof(int), typeof(MemoryKey<string, string>), typeof(MemoryKey<string, string, int>), typeof(MemoryKey<int, int, string, string>), typeof(MemoryKey<string, int>))]
+[assembly: MasterMemoryHintAttribute(typeof(Sample), typeof(MyDummyEnum1), typeof(MemoryKey<MyDummyEnum2, MyDummyEnum3>))]
 
 public class TesTes_MyDummyEnum1_Comparer : IComparer<TesTes.MyDummyEnum1>
 {
@@ -49,7 +51,9 @@ public class Loader
         UnitTest.RegisterAllMethods<MemoryTest>();
         UnitTest.RegisterAllMethods<RangeViewTest>();
 
-        //ZeroFormatter.ZeroFormatterInitializer.Register();
-        //ZeroFormatter.Formatters.Formatter.RegisterList<DefaultResolver, Sample>();
+        MessagePack.Resolvers.CompositeResolver.RegisterAndSetAsDefault(
+            MessagePack.Resolvers.GeneratedResolver.Instance,
+            MasterMemoryResolver.Instance,
+            DefaultResolver.Instance);
     }
 }

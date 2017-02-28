@@ -55,7 +55,7 @@ namespace MasterMemory.CodeGenerator.CodeAnalysis
             this.csProjPath = csProjPath;
             var compilation = RoslynExtensions.GetCompilationFromProject(csProjPath, conditinalSymbols.ToArray()).GetAwaiter().GetResult();
 
-            this.keyTupleMarker = compilation.GetTypeByMetadataName("ZeroFormatter.IKeyTuple");
+            this.keyTupleMarker = compilation.GetTypeByMetadataName("MasterMemory.IMemoryKey");
             var marker = compilation.GetTypeByMetadataName(HintAttributeDefinition.FullName);
 
             var attributes = compilation.Assembly.GetAttributes();

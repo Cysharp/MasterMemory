@@ -36,7 +36,7 @@ namespace MasterMemory.Tests
 
             emptyDb.MemoryCount.Is(0);
             var data = emptyDb.Save();
-            data.IsCollection((byte)0, (byte)0, (byte)0, (byte)0);
+            data.IsCollection((byte)144);
         }
 
         

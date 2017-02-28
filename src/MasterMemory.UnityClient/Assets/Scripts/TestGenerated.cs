@@ -79,7 +79,7 @@ namespace MasterMemory
 
             switch (key)
             {
-                case 0: return new globall::MessagePack.Formatters.ArrayFormatter<MasterMemory.Tests.Sample>();
+                case 0: return new global::MessagePack.Formatters.ArrayFormatter<MasterMemory.Tests.Sample>();
                 default: return null;
             }
         }
