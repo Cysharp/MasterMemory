@@ -14,17 +14,6 @@ namespace TestPerfLiteDB
 {
     class Program
     {
-        static void Test()
-        {
-            //var dbPath = @"C:\Users\y.kawai\AppData\Local\Temp\Grani,Inc\Ivory\masterdatabase.db";
-            //var hugahuga = MasterMemory.Database.ReportDiagnostics(File.ReadAllBytes(dbPath))
-            //    .OrderByDescending(x => x.Item2)
-            //    .Select(x=> new { DbName = x.Item1, Size = x.Item2 / 1024 / 1024 + "MB", OriginalSize = x.Item2 })
-            //    .ToArray();
-
-            //var db = MasterMemory.Database.Open(File.ReadAllBytes(dbPath), true);
-        }
-
         static void Main(string[] args)
         {
             RunTest("LiteDB: default", new LiteDB_Test(5000, null, new LiteDB.FileOptions { Journal = true, FileMode = LiteDB.FileMode.Shared }));

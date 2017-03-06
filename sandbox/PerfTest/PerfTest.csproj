@@ -49,7 +49,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="MessagePack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MessagePack.0.3.0-beta\lib\net45\MessagePack.dll</HintPath>
+      <HintPath>..\..\packages\MessagePack.0.6.1\lib\net45\MessagePack.dll</HintPath>
     </Reference>
     <Reference Include="Raven.Abstractions, Version=3.5.2.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RavenDB.Database.3.5.2\lib\net45\Raven.Abstractions.dll</HintPath>
