@@ -108,7 +108,7 @@ namespace MasterMemory.CodeGenerator.Generator
 
 	public class MasterMemoryResolver : global::MessagePack.IFormatterResolver
     {
-        public static global::MessagePack.IFormatterResolver Instance = new MasterMemoryResolver();
+        public static readonly global::MessagePack.IFormatterResolver Instance = new MasterMemoryResolver();
 
         MasterMemoryResolver()
         {
