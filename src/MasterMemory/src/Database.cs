@@ -88,14 +88,38 @@ namespace MasterMemory
                 var keyName = MessagePackBinary.ReadString(bytes, offset, out readSize);
                 offset += readSize;
 
-                var extensionOffset = offset;
-                var ext = MessagePackBinary.ReadExtensionFormatHeader(bytes, offset, out readSize);
-                offset += readSize;
-                offset += (int)ext.Length;
+                // is LZ4 or plain msgpack?
+                byte[] rawData;
+                var type = MessagePackBinary.GetMessagePackType(bytes, offset);
+                if (type == MessagePackType.Extension)
+                {
+                    var extensionOffset = offset;
+                    var ext = MessagePackBinary.ReadExtensionFormatHeader(bytes, offset, out readSize);
+                    if (ext.TypeCode == LZ4MessagePackSerializer.ExtensionTypeCode)
+                    {
+                        offset += readSize;
+                        offset += (int)ext.Length;
 
-                var rawData = new byte[offset - extensionOffset];
-                Buffer.BlockCopy(bytes, extensionOffset, rawData, 0, rawData.Length);
+                        rawData = new byte[offset - extensionOffset];
+                        Buffer.BlockCopy(bytes, extensionOffset, rawData, 0, rawData.Length);
+                        goto END;
+                    }
+                }
 
+                {
+                    var beginOffset = offset;
+                    var arrayLen = MessagePackBinary.ReadArrayHeader(bytes, offset, out readSize);
+                    offset += readSize;
+                    for (int j = 0; j < arrayLen; j++)
+                    {
+                        offset += MessagePackBinary.ReadNextBlock(bytes, offset);
+                    }
+                    readSize = offset - beginOffset;
+                    rawData = new byte[readSize];
+                    Buffer.BlockCopy(bytes, beginOffset, rawData, 0, readSize);
+                }
+
+                END:
                 var memory = new InternalRawMemory(rawData);
                 memories[i] = new KeyValuePair<string, IInternalMemory>(keyName, memory);
             }
@@ -190,16 +214,34 @@ namespace MasterMemory
                 int readSize;
                 var rawMemory = item.Value as InternalRawMemory;
 
-                var extHeader = MessagePackBinary.ReadExtensionFormatHeader(rawMemory.RawMemory, 0, out readSize);
-                offset += readSize;
+                // is LZ4 or plain msgpack?
+                byte[] decodedBytes;
+                int count;
+                var type = MessagePackBinary.GetMessagePackType(rawMemory.RawMemory, offset);
+                if (type == MessagePackType.Extension)
+                {
+                    var extensionOffset = offset;
+                    var ext = MessagePackBinary.ReadExtensionFormatHeader(rawMemory.RawMemory, offset, out readSize);
+                    if (ext.TypeCode == LZ4MessagePackSerializer.ExtensionTypeCode)
+                    {
+                        var extHeader = MessagePackBinary.ReadExtensionFormatHeader(rawMemory.RawMemory, 0, out readSize);
+                        offset += readSize;
 
-                var decodedLength = MessagePackBinary.ReadInt32(rawMemory.RawMemory, offset, out readSize);
-                offset += readSize;
+                        var decodedLength = MessagePackBinary.ReadInt32(rawMemory.RawMemory, offset, out readSize);
+                        offset += readSize;
 
-                var decodedBytes = new byte[decodedLength];
-                MessagePack.LZ4.LZ4Codec.Decode(rawMemory.RawMemory, offset, rawMemory.RawMemory.Length - offset, decodedBytes, 0, decodedBytes.Length, true);
+                        decodedBytes = new byte[decodedLength];
+                        MessagePack.LZ4.LZ4Codec.Decode(rawMemory.RawMemory, offset, rawMemory.RawMemory.Length - offset, decodedBytes, 0, decodedBytes.Length, true);
 
-                var count = MessagePackBinary.ReadArrayHeader(decodedBytes, 0, out readSize);
+                        count = MessagePackBinary.ReadArrayHeader(decodedBytes, 0, out readSize);
+                        goto END;
+                    }
+                }
+
+                decodedBytes = rawMemory.RawMemory;
+                count = MessagePackBinary.ReadArrayHeader(decodedBytes, offset, out readSize);
+
+                END:
                 var analysis = new MemoryAnalysis(item.Key, count, rawMemory.RawMemory.Length, allowDump ? decodedBytes : null);
 
                 list.Add(analysis);
