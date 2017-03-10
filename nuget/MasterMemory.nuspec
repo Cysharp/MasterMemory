@@ -2,14 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>MasterMemory</id>
-    <version>0.3.2</version>
+    <version>0.4.0</version>
     <title>MasterMemory</title>
     <authors>neuecc</authors>
     <owners>neuecc</owners>
     <projectUrl>https://github.com/neuecc/MasterMemory</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Embedded Readonly In-Memory Document Database for .NET, .NET Core and Unity.</description>
-    <releaseNotes>update dependency.</releaseNotes>
+    <releaseNotes>saved by LZ4.</releaseNotes>
     <tags>database, embedded, inmemory, unity</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.5" />
@@ -17,10 +17,10 @@
     </frameworkAssemblies>
     <dependencies>
       <group targetFramework=".NETFramework4.5">
-        <dependency id="MessagePack" version="0.7.0" />
+        <dependency id="MessagePack" version="0.8.5" />
       </group>
       <group targetFramework=".NETStandard1.4">
-        <dependency id="MessagePack" version="0.7.0" />
+        <dependency id="MessagePack" version="0.8.5" />
       </group>
     </dependencies>
   </metadata>
