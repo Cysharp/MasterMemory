@@ -375,7 +375,7 @@ namespace MasterMemory
 
         public int Serialize(ref byte[] bytes, int offset, IFormatterResolver resolver)
         {
-            return resolver.GetFormatterWithVerify<TElement[]>().Serialize(ref bytes, offset, orderedData, resolver);
+            return LZ4MessagePackSerializer.SerializeToBlock(ref bytes, offset, orderedData, resolver);
         }
     }
 }

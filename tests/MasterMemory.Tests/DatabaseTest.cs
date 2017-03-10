@@ -96,8 +96,18 @@ namespace MasterMemory.Tests
                 memory2.Find(8).Age.Is(49);
             }
 
+            // check report diagnostics
             var dumper = Database.ReportDiagnostics(savedDb, true);
+            for (int i = 0; i < dumper.Length; i++)
+            {
+                dumper[i].KeyName.Is("Sample" + (i + 1));
+                dumper[i].Count.Is(10);
 
+                foreach (var item in dumper[i].DumpRows())
+                {
+                    Console.WriteLine(item); // ....
+                }
+            }
         }
     }
 }

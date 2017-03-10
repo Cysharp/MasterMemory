@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="0.7.2" />
+    <PackageReference Include="MessagePack" Version="0.8.5" />
   </ItemGroup>
 
   <ItemGroup>

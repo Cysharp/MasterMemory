@@ -37,7 +37,7 @@ namespace MasterMemory
                 var raw = obj as InternalRawMemory;
                 if (raw != null)
                 {
-                    var orderedData = MessagePackSerializer.Deserialize<TElement[]>(raw.RawMemory, resolver);
+                    var orderedData = LZ4MessagePackSerializer.Deserialize<TElement[]>(raw.RawMemory, resolver);
 
                     var mem = new Memory<TKey, TElement>(orderedData, indexSelector, true, true);
 
@@ -88,18 +88,15 @@ namespace MasterMemory
                 var keyName = MessagePackBinary.ReadString(bytes, offset, out readSize);
                 offset += readSize;
 
-                var beginOffset = offset;
-                var arrayLen = MessagePackBinary.ReadArrayHeader(bytes, offset, out readSize);
+                var extensionOffset = offset;
+                var ext = MessagePackBinary.ReadExtensionFormatHeader(bytes, offset, out readSize);
                 offset += readSize;
-                for (int j = 0; j < arrayLen; j++)
-                {
-                    offset += MessagePackBinary.ReadNextBlock(bytes, offset);
-                }
-                readSize = offset - beginOffset;
-                var binary = new byte[readSize];
-                Buffer.BlockCopy(bytes, beginOffset, binary, 0, readSize);
+                offset += (int)ext.Length;
 
-                var memory = new InternalRawMemory(binary);
+                var rawData = new byte[offset - extensionOffset];
+                Buffer.BlockCopy(bytes, extensionOffset, rawData, 0, rawData.Length);
+
+                var memory = new InternalRawMemory(rawData);
                 memories[i] = new KeyValuePair<string, IInternalMemory>(keyName, memory);
             }
 
@@ -189,12 +186,21 @@ namespace MasterMemory
             var db = Database.Open(bytes);
             foreach (var item in db.memories)
             {
+                var offset = 0;
+                int readSize;
                 var rawMemory = item.Value as InternalRawMemory;
 
-                int readSize;
-                var count = MessagePackBinary.ReadArrayHeader(rawMemory.RawMemory, 0, out readSize);
+                var extHeader = MessagePackBinary.ReadExtensionFormatHeader(rawMemory.RawMemory, 0, out readSize);
+                offset += readSize;
 
-                var analysis = new MemoryAnalysis(item.Key, count, rawMemory.RawMemory.Length, allowDump ? rawMemory.RawMemory : null);
+                var decodedLength = MessagePackBinary.ReadInt32(rawMemory.RawMemory, offset, out readSize);
+                offset += readSize;
+
+                var decodedBytes = new byte[decodedLength];
+                MessagePack.LZ4.LZ4Codec.Decode(rawMemory.RawMemory, offset, rawMemory.RawMemory.Length - offset, decodedBytes, 0, decodedBytes.Length, true);
+
+                var count = MessagePackBinary.ReadArrayHeader(decodedBytes, 0, out readSize);
+                var analysis = new MemoryAnalysis(item.Key, count, rawMemory.RawMemory.Length, allowDump ? decodedBytes : null);
 
                 list.Add(analysis);
             }
@@ -227,6 +233,7 @@ namespace MasterMemory
 
             var offset = 0;
             int readSize;
+
             var length = MessagePackBinary.ReadArrayHeader(rawArrayBytes, 0, out readSize);
             offset += readSize;
 
@@ -237,7 +244,7 @@ namespace MasterMemory
                 MessagePackBinary.EnsureCapacity(ref buffer, 0, readSize);
                 Buffer.BlockCopy(rawArrayBytes, offset, buffer, 0, readSize);
 
-                yield return MessagePackSerializer.ToJson(buffer);
+                yield return MessagePackSerializer.ToJson(buffer); // already decoded so use standard MessagePackSerialzier
                 offset += readSize;
             }
         }
