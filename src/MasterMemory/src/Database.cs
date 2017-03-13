@@ -231,7 +231,7 @@ namespace MasterMemory
                         offset += readSize;
 
                         decodedBytes = new byte[decodedLength];
-                        MessagePack.LZ4.LZ4Codec.Decode(rawMemory.RawMemory, offset, rawMemory.RawMemory.Length - offset, decodedBytes, 0, decodedBytes.Length, true);
+                        MessagePack.LZ4.LZ4Codec.Decode(rawMemory.RawMemory, offset, rawMemory.RawMemory.Length - offset, decodedBytes, 0, decodedBytes.Length);
 
                         count = MessagePackBinary.ReadArrayHeader(decodedBytes, 0, out readSize);
                         goto END;
