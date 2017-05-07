@@ -156,12 +156,9 @@ When handling as a database, Memory is normally not used standalone. It can crea
 Performance
 ---
 
-![image](https://cloud.githubusercontent.com/assets/46207/21770494/df34cbd6-d6c6-11e6-8d18-b6215ced6509.png)
+![image](https://cloud.githubusercontent.com/assets/46207/25784661/1e0e801c-33ac-11e7-8d8a-716ddf21c38b.png)
 
-![image](https://cloud.githubusercontent.com/assets/46207/21770496/e2fe2406-d6c6-11e6-952e-69fe6cac4466.png)
-
-
-
+![image](https://cloud.githubusercontent.com/assets/46207/25784668/2ae77514-33ac-11e7-84ef-56e0b6d69e97.png)
 
 TODO....
 
