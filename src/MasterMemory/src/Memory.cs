@@ -43,7 +43,7 @@ namespace MasterMemory
         RangeView<TElement> FindAll(bool ascendant = true);
 
         ILookup<TKey, TElement> ToLookupView();
-#if UNITY_5
+#if UNITY_5_3_OR_NEWER
         IDictionary<TKey, TElement> ToDictionaryView();
 #else
         IReadOnlyDictionary<TKey, TElement> ToDictionaryView();
@@ -303,7 +303,7 @@ namespace MasterMemory
             return new LookupView<TKey, TElement>(this);
         }
 
-#if UNITY_5
+#if UNITY_5_3_OR_NEWER
         public IDictionary<TKey, TElement> ToDictionaryView()
 #else
         public IReadOnlyDictionary<TKey, TElement> ToDictionaryView()
