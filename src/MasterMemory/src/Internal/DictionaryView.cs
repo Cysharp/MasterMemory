@@ -16,7 +16,7 @@ using System.Linq;
 namespace MasterMemory.Internal
 {
     public class DictionaryView<TKey, TElement> : IDictionary<TKey, TElement>
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
     , IReadOnlyDictionary<TKey, TElement>
 #endif
     {
@@ -89,7 +89,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<TKey> IReadOnlyDictionary<TKey, TElement>.Keys
         {
@@ -159,7 +159,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1<TKey1, TKey2, TElement> : IDictionary<TKey1, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
@@ -232,7 +232,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<TKey1> IReadOnlyDictionary<TKey1, TElement>.Keys
         {
@@ -301,7 +301,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1<TKey1, TKey2, TKey3, TElement> : IDictionary<TKey1, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
@@ -374,7 +374,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<TKey1> IReadOnlyDictionary<TKey1, TElement>.Keys
         {
@@ -442,7 +442,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView12<TKey1, TKey2, TKey3, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
@@ -515,7 +515,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
@@ -584,7 +584,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1<TKey1, TKey2, TKey3, TKey4, TElement> : IDictionary<TKey1, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
@@ -657,7 +657,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<TKey1> IReadOnlyDictionary<TKey1, TElement>.Keys
         {
@@ -725,7 +725,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
@@ -798,7 +798,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
@@ -866,7 +866,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
@@ -939,7 +939,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
@@ -1008,7 +1008,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<TKey1, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
@@ -1081,7 +1081,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<TKey1> IReadOnlyDictionary<TKey1, TElement>.Keys
         {
@@ -1149,7 +1149,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
@@ -1222,7 +1222,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
@@ -1290,7 +1290,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
@@ -1363,7 +1363,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
@@ -1431,7 +1431,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>
 #endif
     {
@@ -1504,7 +1504,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
         {
@@ -1573,7 +1573,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<TKey1, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
@@ -1646,7 +1646,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<TKey1> IReadOnlyDictionary<TKey1, TElement>.Keys
         {
@@ -1714,7 +1714,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
@@ -1787,7 +1787,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
@@ -1855,7 +1855,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
@@ -1928,7 +1928,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
@@ -1996,7 +1996,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>
 #endif
     {
@@ -2069,7 +2069,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
         {
@@ -2137,7 +2137,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>
 #endif
     {
@@ -2210,7 +2210,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Keys
         {
@@ -2279,7 +2279,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<TKey1, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<TKey1, TElement>
 #endif
     {
@@ -2352,7 +2352,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<TKey1> IReadOnlyDictionary<TKey1, TElement>.Keys
         {
@@ -2420,7 +2420,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>
 #endif
     {
@@ -2493,7 +2493,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement>.Keys
         {
@@ -2561,7 +2561,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>
 #endif
     {
@@ -2634,7 +2634,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement>.Keys
         {
@@ -2702,7 +2702,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>
 #endif
     {
@@ -2775,7 +2775,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement>.Keys
         {
@@ -2843,7 +2843,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>
 #endif
     {
@@ -2916,7 +2916,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement>.Keys
         {
@@ -2984,7 +2984,7 @@ namespace MasterMemory.Internal
 
 
     public class DictionaryView123456<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement> : IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>   
-#if !UNITY_5    
+#if !UNITY_5_3_OR_NEWER    
     , IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>
 #endif
     {
@@ -3057,7 +3057,7 @@ namespace MasterMemory.Internal
                 throw new NotSupportedException();
             }
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
 
         IEnumerable<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>> IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement>.Keys
         {

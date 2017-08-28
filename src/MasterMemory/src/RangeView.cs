@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace MasterMemory
 {
     public struct RangeView<T> : IEnumerable<T>, IList<T>
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         , IReadOnlyList<T>
 #endif
     {

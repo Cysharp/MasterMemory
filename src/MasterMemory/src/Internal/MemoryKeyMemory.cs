@@ -59,7 +59,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1<TKey1, TKey2, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<TKey1, TElement> ToDictionaryView()
 #else
         public IDictionary<TKey1, TElement> ToDictionaryView()
@@ -127,7 +127,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1<TKey1, TKey2, TKey3, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<TKey1, TElement> ToDictionaryView()
 #else
         public IDictionary<TKey1, TElement> ToDictionaryView()
@@ -195,7 +195,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView12<TKey1, TKey2, TKey3, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
@@ -263,7 +263,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1<TKey1, TKey2, TKey3, TKey4, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<TKey1, TElement> ToDictionaryView()
 #else
         public IDictionary<TKey1, TElement> ToDictionaryView()
@@ -331,7 +331,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView12<TKey1, TKey2, TKey3, TKey4, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
@@ -399,7 +399,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView123<TKey1, TKey2, TKey3, TKey4, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
@@ -467,7 +467,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1<TKey1, TKey2, TKey3, TKey4, TKey5, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<TKey1, TElement> ToDictionaryView()
 #else
         public IDictionary<TKey1, TElement> ToDictionaryView()
@@ -535,7 +535,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView12<TKey1, TKey2, TKey3, TKey4, TKey5, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
@@ -603,7 +603,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView123<TKey1, TKey2, TKey3, TKey4, TKey5, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
@@ -671,7 +671,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> ToDictionaryView()
@@ -739,7 +739,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<TKey1, TElement> ToDictionaryView()
 #else
         public IDictionary<TKey1, TElement> ToDictionaryView()
@@ -807,7 +807,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
@@ -875,7 +875,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
@@ -943,7 +943,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> ToDictionaryView()
@@ -1011,7 +1011,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> ToDictionaryView()
@@ -1079,7 +1079,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<TKey1, TElement> ToDictionaryView()
 #else
         public IDictionary<TKey1, TElement> ToDictionaryView()
@@ -1147,7 +1147,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView12<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2>, TElement> ToDictionaryView()
@@ -1215,7 +1215,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView123<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3>, TElement> ToDictionaryView()
@@ -1283,7 +1283,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView1234<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4>, TElement> ToDictionaryView()
@@ -1351,7 +1351,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView12345<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5>, TElement> ToDictionaryView()
@@ -1419,7 +1419,7 @@ namespace MasterMemory.Internal
         {
             return new LookupView123456<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6, TKey7, TElement>(this);
         }
-#if !UNITY_5
+#if !UNITY_5_3_OR_NEWER
         public IReadOnlyDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> ToDictionaryView()
 #else
         public IDictionary<MemoryKey<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>, TElement> ToDictionaryView()
