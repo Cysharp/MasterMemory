@@ -13,6 +13,8 @@ MasterMemory's objective has two areas.
 
 These features are suitable for master data management(read-heavy and less-write) on application embedded especially role-playing game. MasterMemory has better performance than any other in-memory database(300x faster than filebase SQLite and 30x faster than inmemory SQLite).
 
+Similar concepts, [linkedin/PalDb](https://github.com/linkedin/PalDB) - an embeddable write-once key-value store written in Java.
+
 Install
 ---
 for .NET, .NET Core
