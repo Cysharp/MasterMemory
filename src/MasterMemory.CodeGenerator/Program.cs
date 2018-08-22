@@ -65,6 +65,8 @@ namespace MasterMemory.CodeGenerator
     {
         static void Main(string[] args)
         {
+            Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+
             var cmdArgs = new CommandlineArguments(args);
             if (!cmdArgs.IsParsed)
             {
