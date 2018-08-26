@@ -21,7 +21,7 @@ for .NET, .NET Core
 
 * PM> Install-Package [MasterMemory](https://www.nuget.org/packages/MasterMemory)
 
-for Unity, Unity packages exists on [MasterMemory/Releases](https://github.com/neuecc/MasterMemory/releases) as well. More details, please see the [Unity-Supports](https://github.com/neuecc/MasterMemory#unity-supports) section.
+for Unity, download source code and put it. More details, please see the [Unity-Supports](https://github.com/neuecc/MasterMemory#unity-supports) section.
 
 Features
 ---
