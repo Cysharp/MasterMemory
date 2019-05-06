@@ -117,3 +117,4 @@ src/MasterMemory.UnityClient/Temp/*
 # OTHER
 nuget/tools/*
 *.nupkg
+/.vs/MasterMemory/v15/Server/sqlite3
