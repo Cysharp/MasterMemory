@@ -35,6 +35,7 @@ namespace TestPerfLiteDB
             RunTest("MasterMemory: Plain", new MasterMemory_Test(5000));
             RunTest("MasterMemory: Loaded", new MasterMemoryDatabase_Test(5000));
 
+            Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
             // RunTest("RavenDB: in-memory", new RavenDB_Test(5000, true));
