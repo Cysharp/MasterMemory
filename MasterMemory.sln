@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26206.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{60662102-4523-441E-8D6C-D87A3246C648}"
 EndProject
@@ -18,13 +18,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{FA5932B4
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory", "src\MasterMemory\MasterMemory.csproj", "{F1164FFB-91C6-444F-B3B6-34B354996E14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory", "src\MasterMemory\MasterMemory.csproj", "{F1164FFB-91C6-444F-B3B6-34B354996E14}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.Tests", "tests\MasterMemory.Tests\MasterMemory.Tests.csproj", "{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerfTest", "sandbox\PerfTest\PerfTest.csproj", "{36EF0213-98F0-40F5-978F-EAEFF0F8FC42}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.CodeGenerator", "src\MasterMemory.CodeGenerator\MasterMemory.CodeGenerator.csproj", "{A937F794-5766-4281-B44D-979E0F0EE46B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory2", "src\MasterMemory2\MasterMemory2.csproj", "{D2720BBB-C233-4A1E-9768-1F00C9602180}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +50,10 @@ Global
 		{A937F794-5766-4281-B44D-979E0F0EE46B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A937F794-5766-4281-B44D-979E0F0EE46B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A937F794-5766-4281-B44D-979E0F0EE46B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2720BBB-C233-4A1E-9768-1F00C9602180}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2720BBB-C233-4A1E-9768-1F00C9602180}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2720BBB-C233-4A1E-9768-1F00C9602180}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2720BBB-C233-4A1E-9768-1F00C9602180}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,5 +63,9 @@ Global
 		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F} = {BDAFF1CB-8E53-412B-B389-42A15343C7A3}
 		{36EF0213-98F0-40F5-978F-EAEFF0F8FC42} = {FFAA235C-D30F-4958-BC4E-60CD08979464}
 		{A937F794-5766-4281-B44D-979E0F0EE46B} = {60662102-4523-441E-8D6C-D87A3246C648}
+		{D2720BBB-C233-4A1E-9768-1F00C9602180} = {60662102-4523-441E-8D6C-D87A3246C648}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0121A3C4-6AE0-4622-BE04-05D9A3E729AC}
 	EndGlobalSection
 EndGlobal
