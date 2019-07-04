@@ -6,4 +6,12 @@
     <AssemblyName>MasterMemory</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="1.7.3.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
+  </ItemGroup>
+
 </Project>

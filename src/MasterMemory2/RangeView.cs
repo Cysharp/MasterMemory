@@ -4,21 +4,22 @@ using System.Collections.Generic;
 
 namespace MasterMemory
 {
-    public class RangeView<T> : IEnumerable<T>, IReadOnlyList<T>
+    public readonly struct RangeView<T> : IEnumerable<T>, IReadOnlyList<T>
     {
+        public static RangeView<T> Empty => default(RangeView<T>);
+
         readonly T[] orderedData;
         readonly int left;
         readonly int right;
         readonly bool ascendant;
         readonly bool hasValue;
 
-        public int Count
-        {
-            get
-            {
-                return (!hasValue) ? 0 : (right - left) + 1;
-            }
-        }
+        public int Count => (!hasValue) ? 0 : (right - left) + 1;
+        public T First => this[0];
+        public T Last => this[Count - 1];
+
+        internal int FirstIndex => ascendant ? left : right;
+        internal int LastIndex => ascendant ? right : left;
 
         public T this[int index]
         {

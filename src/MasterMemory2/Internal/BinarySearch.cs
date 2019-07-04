@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MasterMemory
+namespace MasterMemory.Internal
 {
-    // TODO:IComparer is slow, use Comparison.
-
     internal static class BinarySearch
     {
-        public static int FindFirst<T, TKey>(T[] array, TKey key, Func<T, TKey> selector, Comparison<TKey> comparer)
+        public static int FindFirst<T, TKey>(T[] array, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
         {
             var lo = 0;
             var hi = array.Length - 1;
@@ -15,7 +13,7 @@ namespace MasterMemory
             while (lo <= hi)
             {
                 var mid = lo + ((hi - lo) >> 1);
-                var found = comparer.Invoke(selector(array[mid]), key);
+                var found = comparer.Compare(selector(array[mid]), key);
 
                 if (found == 0) return mid;
                 if (found < 0)
