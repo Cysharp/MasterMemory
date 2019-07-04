@@ -10,13 +10,13 @@ namespace MasterMemory
     [MemoryTable("foo")]
     public class MyClass
     {
-        [PrimaryKey, LookupView]
-        public int Foo { get; private set; }
+        [PrimaryKey]
+        public int Id { get; set; }
     }
 
     // Join, InnerJoin, OuterJoin, GroupJoin
 
-
+        // TODO:StringComparisonOptionAttribute
 
 
     public class MemoryTableAttribute : Attribute
@@ -130,35 +130,40 @@ namespace MasterMemory
 
     public partial class MyClassView
     {
-        // RangeView
-        // RangeView
+        readonly MyClass[] data;
+        readonly RangeView<MyClass> all;
+        readonly RangeView<MyClass> allReverse;
 
-        public void GetRawDataUnsafe()
+        public MyClassView(MyClass[] sortedData)
         {
-            throw new NotImplementedException();
+            this.data = sortedData;
+            this.all = new RangeView<MyClass>(sortedData, 0, sortedData.Length, true);
+            this.allReverse = new RangeView<MyClass>(sortedData, 0, sortedData.Length, false);
         }
-
-        public void GetRawPrimaryIndexUnsafe() // SecondaryIndex1, SecondaryIndex2, etc...
-        {
-            // new Dictionary<int,int>().
-            throw new NotImplementedException();
-        }
-
-        // Count
-        public int Count => throw new NotImplementedException();
-
-        // (use rangeview instead?)
-        public IReadOnlyList<int> All()
-        {
-            throw new NotImplementedException();
-        }
-
 
         // Common Properties
-        // Count, All, AllReverse
+        // Count, All, AllReverse, GetRawDataUnsafe
+
+        public int Count => data.Length;
+        public RangeView<MyClass> All => all;
+        public RangeView<MyClass> AllReverse => allReverse;
+        public MyClass[] GetRawDataUnsafe() => data;
 
         // Unique Key
         // TryFindByXxx, FindByXxx, FindByXxxOrDefault, FindClosestByXxx, FindRangeByXxx
+
+        public bool TryFindById(int key, out MyClass result)
+        {
+            var index = BinarySearch.FindFirst(data, key, x => x.Id, (x, y) => x.CompareTo(y));
+            if (index != -1)
+            {
+                
+            }
+            result = default(MyClass);
+            return result;
+        }
+
+        // public 
 
         // Lookup Key
         // SelectByXxx, SelectClosestByXxx, SelectRangeByXxx
@@ -179,6 +184,7 @@ namespace MasterMemory
 
 
 
+    // Annotations
 
     public class PrimaryKeyAttribute : Attribute
     {
