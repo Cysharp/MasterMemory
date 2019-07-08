@@ -5,11 +5,17 @@ using MessagePack.Formatters;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 namespace MasterMemory
 {
     public abstract class MemoryDatabaseBase
     {
+        protected MemoryDatabaseBase()
+        {
+
+        }
+
         public MemoryDatabaseBase(byte[] databaseBinary, bool internString = true, IFormatterResolver formatterResolver = null)
         {
             var formatter = new DictionaryFormatter<string, (int, int)>();
@@ -42,7 +48,35 @@ namespace MasterMemory
 
         protected abstract void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, IFormatterResolver resolver);
 
+        public static TableInfo[] GetTableInfo(byte[] databaseBinary)
+        {
+            var formatter = new DictionaryFormatter<string, (int, int)>();
+            var header = formatter.Deserialize(databaseBinary, 0, new HeaderFormatterResolver(), out var headerOffset);
 
-        // TODO: ToImmutableBuilder()
+            return header.Select(x => new TableInfo(x.Key, x.Value.Item2, databaseBinary, x.Value.Item1)).ToArray();
+        }
+    }
+
+    /// <summary>
+    /// Diagnostic info of MasterMemory's table.
+    /// </summary>
+    public class TableInfo
+    {
+        public string TableName { get; }
+        public int Size { get; }
+        byte[] binaryData;
+
+        public TableInfo(string tableName, int size, byte[] rawBinary, int offset)
+        {
+            TableName = tableName;
+            Size = size;
+            this.binaryData = new byte[size];
+            Array.Copy(rawBinary, offset, binaryData, 0, size);
+        }
+
+        public string DumpAsJson()
+        {
+            return LZ4MessagePackSerializer.ToJson(binaryData);
+        }
     }
 }

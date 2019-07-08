@@ -15,7 +15,7 @@ namespace MasterMemory
         int index = 0;
 
         // TableName, (Offset, Count)
-        readonly Dictionary<string, (int, int)> header = new Dictionary<string, (int, int)>();
+        readonly Dictionary<string, (int offset, int count)> header = new Dictionary<string, (int offset, int count)>();
         readonly IFormatterResolver resolver;
 
         public DatabaseBuilderBase()

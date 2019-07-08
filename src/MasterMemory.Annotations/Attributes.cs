@@ -2,7 +2,7 @@
 
 namespace MasterMemory.Annotations
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class MemoryTableAttribute : Attribute
     {
         public string TableName { get; }
@@ -13,7 +13,7 @@ namespace MasterMemory.Annotations
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class PrimaryKeyAttribute : Attribute
     {
         public int KeyOrder { get; }
@@ -24,7 +24,7 @@ namespace MasterMemory.Annotations
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class SecondaryKeyAttribute : Attribute
     {
         public int IndexNo { get; }
@@ -37,13 +37,13 @@ namespace MasterMemory.Annotations
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class NonUniqueAttribute : Attribute
     {
 
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class StringComparisonOptionAttribute : Attribute
     {
         public StringComparison StringComparison { get; }

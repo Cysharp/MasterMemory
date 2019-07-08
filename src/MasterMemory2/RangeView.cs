@@ -18,6 +18,8 @@ namespace MasterMemory
         public T First => this[0];
         public T Last => this[Count - 1];
 
+        public RangeView<T> Reverse => new RangeView<T>(orderedData, left, right, !ascendant);
+
         internal int FirstIndex => ascendant ? left : right;
         internal int LastIndex => ascendant ? right : left;
 
