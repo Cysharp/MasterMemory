@@ -7,7 +7,6 @@ using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Csv;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
-using BenchmarkDotNet.Toolchains.InProcess.Emit;
 using LiteDB;
 using System;
 using System.Collections.Generic;
@@ -21,6 +20,9 @@ using Enyim.Caching.Memcached;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Enyim.Caching.Memcached.Transcoders;
+using RocksDbSharp;
+using MessagePack;
+using System.Text;
 
 namespace Benchmark
 {
@@ -65,6 +67,8 @@ namespace Benchmark
         MemcachedClient localMemcached;
         Dictionary<int, TestDoc> dictionary;
 
+        RocksDb rocksDb;
+
         const int QueryId = 741;
 
         public SimpleRun()
@@ -90,7 +94,19 @@ namespace Benchmark
             foreach (var item in MakeDoc(5000))
             {
                 dictionary.Add(item.id, item);
+
             }
+
+            {
+                var options = new DbOptions().SetCreateIfMissing(true);
+                var tempPath = Guid.NewGuid() + ".bin";
+                rocksDb = RocksDb.Open(options, tempPath);
+                foreach (var item in MakeDoc(5000))
+                {
+                    rocksDb.Put(Encoding.UTF8.GetBytes("testdata." + item.id), MessagePackSerializer.Serialize(item));
+                }
+            }
+
 
             //var config = new MemcachedClientConfiguration(new LoggerDummy(), new Dummy());
             //localMemcached = new MemcachedClient(new LoggerDummy(), config);
@@ -98,6 +114,7 @@ namespace Benchmark
             //{
             //    localMemcached.Add("testdoc2." + item.id, item, 9999);
             //}
+
         }
 
         public IEnumerable<TestDoc> MakeDoc(int count)
@@ -140,38 +157,38 @@ namespace Benchmark
             }
         }
 
-        [Benchmark]
-        public TestDoc SQLiteFileQuery()
-        {
-            using (var cmd = new SQLiteCommand("SELECT * FROM col WHERE id = @id", sqliteFile._db))
-            {
-                cmd.Parameters.Add(new SQLiteParameter("id", DbType.Int32));
-                cmd.Parameters["id"].Value = QueryId;
+        //[Benchmark]
+        //public TestDoc SQLiteFileQuery()
+        //{
+        //    using (var cmd = new SQLiteCommand("SELECT * FROM col WHERE id = @id", sqliteFile._db))
+        //    {
+        //        cmd.Parameters.Add(new SQLiteParameter("id", DbType.Int32));
+        //        cmd.Parameters["id"].Value = QueryId;
 
-                using (var r = cmd.ExecuteReader())
-                {
-                    r.Read();
-                    var id = r.GetInt32(0);
-                    var name = r.GetString(1);
-                    var lorem = r.GetString(2);
-                    return new TestDoc { id = 1, name = name, lorem = lorem };
-                }
-            }
-        }
+        //        using (var r = cmd.ExecuteReader())
+        //        {
+        //            r.Read();
+        //            var id = r.GetInt32(0);
+        //            var name = r.GetString(1);
+        //            var lorem = r.GetString(2);
+        //            return new TestDoc { id = 1, name = name, lorem = lorem };
+        //        }
+        //    }
+        //}
 
 
 
-        [Benchmark]
-        public BsonDocument LiteDbDefaultQuery()
-        {
-            return defaultLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
-        }
+        //[Benchmark]
+        //public BsonDocument LiteDbDefaultQuery()
+        //{
+        //    return defaultLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
+        //}
 
-        [Benchmark]
-        public BsonDocument LiteDbInMemoryQuery()
-        {
-            return inmemoryLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
-        }
+        //[Benchmark]
+        //public BsonDocument LiteDbInMemoryQuery()
+        //{
+        //    return inmemoryLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
+        //}
 
         //[Benchmark]
         //public object LocalMemcachedQuery()
@@ -184,6 +201,12 @@ namespace Benchmark
         //{
         //    return dictionary.TryGetValue(QueryId, out var r) ? r : null;
         //}
+
+        [Benchmark]
+        public TestDoc RocksDbQuery()
+        {
+            return MessagePackSerializer.Deserialize<TestDoc>(rocksDb.Get(Encoding.UTF8.GetBytes("testdata." + QueryId)));
+        }
     }
 
 
