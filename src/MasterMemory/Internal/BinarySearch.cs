@@ -12,7 +12,7 @@ namespace MasterMemory.Internal
 
             while (lo <= hi)
             {
-                var mid = lo + ((hi - lo) >> 1);
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
                 var found = comparer.Compare(selector(array[mid]), key);
 
                 if (found == 0) return mid;
@@ -36,7 +36,7 @@ namespace MasterMemory.Internal
 
             while (lo <= hi)
             {
-                var mid = lo + ((hi - lo) >> 1);
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
                 // compare inlining
                 var selectedValue = selector(array[mid]);
                 var found = (selectedValue < key) ? -1 : (selectedValue > key) ? 1 : 0;

@@ -138,63 +138,63 @@ namespace Benchmark
             return db.TestDocTable.FindByid(QueryId);
         }
 
-        [Benchmark]
-        public TestDoc SQLiteInMemoryQuery()
-        {
-            using (var cmd = new SQLiteCommand("SELECT * FROM col WHERE id = @id", sqliteMemory._db))
-            {
-                cmd.Parameters.Add(new SQLiteParameter("id", DbType.Int32));
-                cmd.Parameters["id"].Value = QueryId;
+        //[Benchmark]
+        //public TestDoc SQLiteInMemoryQuery()
+        //{
+        //    using (var cmd = new SQLiteCommand("SELECT * FROM col WHERE id = @id", sqliteMemory._db))
+        //    {
+        //        cmd.Parameters.Add(new SQLiteParameter("id", DbType.Int32));
+        //        cmd.Parameters["id"].Value = QueryId;
 
-                using (var r = cmd.ExecuteReader())
-                {
-                    r.Read();
-                    var id = r.GetInt32(0);
-                    var name = r.GetString(1);
-                    var lorem = r.GetString(2);
-                    return new TestDoc { id = 1, name = name, lorem = lorem };
-                }
-            }
-        }
+        //        using (var r = cmd.ExecuteReader())
+        //        {
+        //            r.Read();
+        //            var id = r.GetInt32(0);
+        //            var name = r.GetString(1);
+        //            var lorem = r.GetString(2);
+        //            return new TestDoc { id = 1, name = name, lorem = lorem };
+        //        }
+        //    }
+        //}
 
-        [Benchmark]
-        public TestDoc SQLiteFileQuery()
-        {
-            using (var cmd = new SQLiteCommand("SELECT * FROM col WHERE id = @id", sqliteFile._db))
-            {
-                cmd.Parameters.Add(new SQLiteParameter("id", DbType.Int32));
-                cmd.Parameters["id"].Value = QueryId;
+        //[Benchmark]
+        //public TestDoc SQLiteFileQuery()
+        //{
+        //    using (var cmd = new SQLiteCommand("SELECT * FROM col WHERE id = @id", sqliteFile._db))
+        //    {
+        //        cmd.Parameters.Add(new SQLiteParameter("id", DbType.Int32));
+        //        cmd.Parameters["id"].Value = QueryId;
 
-                using (var r = cmd.ExecuteReader())
-                {
-                    r.Read();
-                    var id = r.GetInt32(0);
-                    var name = r.GetString(1);
-                    var lorem = r.GetString(2);
-                    return new TestDoc { id = 1, name = name, lorem = lorem };
-                }
-            }
-        }
+        //        using (var r = cmd.ExecuteReader())
+        //        {
+        //            r.Read();
+        //            var id = r.GetInt32(0);
+        //            var name = r.GetString(1);
+        //            var lorem = r.GetString(2);
+        //            return new TestDoc { id = 1, name = name, lorem = lorem };
+        //        }
+        //    }
+        //}
 
 
 
-        [Benchmark]
-        public BsonDocument LiteDbDefaultQuery()
-        {
-            return defaultLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
-        }
+        //[Benchmark]
+        //public BsonDocument LiteDbDefaultQuery()
+        //{
+        //    return defaultLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
+        //}
 
-        [Benchmark]
-        public BsonDocument LiteDbInMemoryQuery()
-        {
-            return inmemoryLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
-        }
+        //[Benchmark]
+        //public BsonDocument LiteDbInMemoryQuery()
+        //{
+        //    return inmemoryLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
+        //}
 
-        [Benchmark]
-        public object LocalMemcachedQuery()
-        {
-            return localMemcached.Get("testdoc2." + QueryId);
-        }
+        //[Benchmark]
+        //public object LocalMemcachedQuery()
+        //{
+        //    return localMemcached.Get("testdoc2." + QueryId);
+        //}
 
         [Benchmark]
         public TestDoc DictionaryQuery()
@@ -202,11 +202,11 @@ namespace Benchmark
             return dictionary.TryGetValue(QueryId, out var r) ? r : null;
         }
 
-        [Benchmark]
-        public TestDoc RocksDbQuery()
-        {
-            return MessagePackSerializer.Deserialize<TestDoc>(rocksDb.Get(Encoding.UTF8.GetBytes("testdata." + QueryId)));
-        }
+        //[Benchmark]
+        //public TestDoc RocksDbQuery()
+        //{
+        //    return MessagePackSerializer.Deserialize<TestDoc>(rocksDb.Get(Encoding.UTF8.GetBytes("testdata." + QueryId)));
+        //}
     }
 
 

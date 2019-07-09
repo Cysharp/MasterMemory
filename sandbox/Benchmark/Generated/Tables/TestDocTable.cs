@@ -22,7 +22,7 @@ namespace TestPerfLiteDB.Tables
             var hi = data.Length - 1;
             while (lo <= hi)
             {
-                var mid = lo + ((hi - lo) >> 1);
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
                 var selected = data[mid].id;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
                 if (found == 0) { return data[mid]; }

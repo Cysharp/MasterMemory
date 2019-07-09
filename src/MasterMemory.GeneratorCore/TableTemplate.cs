@@ -238,8 +238,8 @@ namespace MasterMemory.GeneratorCore
             #line default
             #line hidden
             this.Write(" key)\r\n        {\r\n            var lo = 0;\r\n            var hi = data.Length - 1;\r" +
-                    "\n            while (lo <= hi)\r\n            {\r\n                var mid = lo + ((h" +
-                    "i - lo) >> 1);\r\n                var selected = data[mid].");
+                    "\n            while (lo <= hi)\r\n            {\r\n\t\t\t\tvar mid = (int)(((uint)hi + (u" +
+                    "int)lo) >> 1);\r\n                var selected = data[mid].");
             
             #line 39 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.Properties[0].Name));
