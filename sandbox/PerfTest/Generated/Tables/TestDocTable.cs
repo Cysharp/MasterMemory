@@ -1,21 +1,11 @@
-﻿using LiteDB;
-using MasterMemory.Annotations;
-using MasterMemory;
-using MessagePack;
-using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MasterMemory;
 using System;
-using TestPerfLiteDB;
-using ZeroFormatter;
+using System.Runtime.CompilerServices;
 
 namespace TestPerfLiteDB.Tables
 {
-   public sealed partial class TestDocTable : TableBase<TestDoc>
-   {
+    public sealed partial class TestDocTable : TableBase<TestDoc>
+    {
         readonly Func<TestDoc, int> primaryIndexSelector;
 
 
@@ -25,9 +15,21 @@ namespace TestPerfLiteDB.Tables
             this.primaryIndexSelector = x => x.id;
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public TestDoc FindByid(int key)
         {
-            return FindUniqueCoreInt(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, key);
+            var lo = 0;
+            var hi = data.Length - 1;
+            while (lo <= hi)
+            {
+                var mid = lo + ((hi - lo) >> 1);
+                var selected = data[mid].id;
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { return data[mid]; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            return default;
         }
 
         public TestDoc FindClosestByid(int key, bool selectLower = true)

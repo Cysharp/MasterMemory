@@ -18,7 +18,7 @@ namespace MasterMemory.GeneratorCore
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+    #line 1 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "16.0.0.0")]
     public partial class TableTemplate : TableTemplateBase
     {
@@ -29,350 +29,409 @@ namespace MasterMemory.GeneratorCore
         public virtual string TransformText()
         {
             
-            #line 6 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 6 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Using));
             
             #line default
             #line hidden
             this.Write("\r\n\r\nnamespace ");
             
-            #line 8 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 8 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
             
             #line default
             #line hidden
             this.Write(".Tables\r\n{\r\n   public sealed partial class ");
             
-            #line 10 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 10 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write("Table : TableBase<");
             
-            #line 10 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 10 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write(">\r\n   {\r\n        readonly Func<");
             
-            #line 12 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 12 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 12 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 12 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.BuildTypeName()));
             
             #line default
             #line hidden
             this.Write("> ");
             
-            #line 12 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 12 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.SelectorName));
             
             #line default
             #line hidden
             this.Write(";\r\n\r\n");
             
-            #line 14 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 14 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
  for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var item = GenerationContext.SecondaryKeys[i]; 
             
             #line default
             #line hidden
             this.Write("        readonly ");
             
-            #line 15 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 15 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write("[] ");
             
-            #line 15 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 15 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.TableName));
             
             #line default
             #line hidden
             this.Write(";\r\n        readonly Func<");
             
-            #line 16 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 16 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 16 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 16 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
             
             #line default
             #line hidden
             this.Write("> ");
             
-            #line 16 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 16 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
             
             #line default
             #line hidden
             this.Write(";\r\n");
             
-            #line 17 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 17 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("\r\n        public ");
             
-            #line 19 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 19 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write("Table(");
             
-            #line 19 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 19 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write("[] sortedData)\r\n            : base(sortedData)\r\n        {\r\n            this.");
             
-            #line 22 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 22 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.SelectorName));
             
             #line default
             #line hidden
             this.Write(" = x => ");
             
-            #line 22 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 22 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.BuildKeyAccessor("x")));
             
             #line default
             #line hidden
             this.Write(";\r\n");
             
-            #line 23 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 23 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
  for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var item = GenerationContext.SecondaryKeys[i]; 
             
             #line default
             #line hidden
             this.Write("            this.");
             
-            #line 24 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 24 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
             
             #line default
             #line hidden
             this.Write(" = x => ");
             
-            #line 24 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 24 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildKeyAccessor("x")));
             
             #line default
             #line hidden
             this.Write(";\r\n            this.");
             
-            #line 25 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 25 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.TableName));
             
             #line default
             #line hidden
             this.Write(" = CloneAndSortBy(this.secondaryIndex");
             
-            #line 25 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 25 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.IndexNo));
             
             #line default
             #line hidden
             this.Write("Selector, ");
             
-            #line 25 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 25 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
             
             #line default
             #line hidden
             this.Write(");\r\n");
             
-            #line 26 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 26 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("        }\r\n\r\n");
             
-            #line 29 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 29 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
  foreach(var item in new KeyBase[] { GenerationContext.PrimaryKey }.Concat(GenerationContext.SecondaryKeys)) { 
             
             #line default
             #line hidden
-            this.Write("        public ");
             
-            #line 30 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 30 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+ if(item.CanInlineBinarySearch) { 
+            
+            #line default
+            #line hidden
+            this.Write("        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServic" +
+                    "es.MethodImplOptions.AggressiveInlining)]\r\n\t\tpublic ");
+            
+            #line 32 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
             
             #line default
             #line hidden
             this.Write(" FindBy");
             
-            #line 30 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 32 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
             
             #line default
             #line hidden
             this.Write("(");
             
-            #line 30 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 32 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
+            
+            #line default
+            #line hidden
+            this.Write(" key)\r\n        {\r\n            var lo = 0;\r\n            var hi = data.Length - 1;\r" +
+                    "\n            while (lo <= hi)\r\n            {\r\n                var mid = lo + ((h" +
+                    "i - lo) >> 1);\r\n                var selected = data[mid].");
+            
+            #line 39 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.Properties[0].Name));
+            
+            #line default
+            #line hidden
+            this.Write(@";
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { return data[mid]; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            return default;
+        }
+");
+            
+            #line 47 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+ } else { 
+            
+            #line default
+            #line hidden
+            this.Write("        public ");
+            
+            #line 48 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
+            
+            #line default
+            #line hidden
+            this.Write(" FindBy");
+            
+            #line 48 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
+            
+            #line default
+            #line hidden
+            this.Write("(");
+            
+            #line 48 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
             
             #line default
             #line hidden
             this.Write(" key)\r\n        {\r\n            return ");
             
-            #line 32 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 50 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildFindPrefix()));
             
             #line default
             #line hidden
             this.Write("Core");
             
-            #line 32 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 50 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(!item.IsNonUnique && item.IsIntType ? "Int" : ""));
             
             #line default
             #line hidden
             this.Write("(");
             
-            #line 32 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 50 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.TableName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 32 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 50 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 32 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 50 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
             
             #line default
             #line hidden
-            this.Write(", key);\r\n        }\r\n\r\n        public ");
+            this.Write(", key);\r\n        }\r\n");
             
-            #line 35 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 52 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+ } 
+            
+            #line default
+            #line hidden
+            this.Write("\r\n        public ");
+            
+            #line 54 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
             
             #line default
             #line hidden
             this.Write(" FindClosestBy");
             
-            #line 35 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 54 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
             
             #line default
             #line hidden
             this.Write("(");
             
-            #line 35 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 54 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
             
             #line default
             #line hidden
             this.Write(" key, bool selectLower = true)\r\n        {\r\n            return ");
             
-            #line 37 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 56 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildFindPrefix()));
             
             #line default
             #line hidden
             this.Write("ClosestCore(");
             
-            #line 37 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 56 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.TableName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 37 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 56 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 37 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 56 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
             
             #line default
             #line hidden
             this.Write(", key, selectLower);\r\n        }\r\n\r\n        public RangeView<");
             
-            #line 40 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 59 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             
             #line default
             #line hidden
             this.Write("> FindRangeBy");
             
-            #line 40 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 59 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
             
             #line default
             #line hidden
             this.Write("(");
             
-            #line 40 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 59 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
             
             #line default
             #line hidden
             this.Write(" min, ");
             
-            #line 40 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 59 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
             
             #line default
             #line hidden
             this.Write(" max, bool ascendant = true)\r\n        {\r\n            return ");
             
-            #line 42 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 61 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildFindPrefix()));
             
             #line default
             #line hidden
             this.Write("RangeCore(");
             
-            #line 42 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 61 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.TableName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 42 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 61 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 42 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 61 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
             
             #line default
             #line hidden
             this.Write(", min, max, ascendant);\r\n        }\r\n\r\n");
             
-            #line 45 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
+            #line 64 "C:\Users\neuecc\Documents\neuecc\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
  } 
             
             #line default

@@ -95,6 +95,43 @@ namespace MasterMemory.GeneratorCore
                 }
             }
         }
+
+        public bool IsComparableNumberType
+        {
+            get
+            {
+                if (Properties.Length == 1)
+                {
+                    var typeName = Properties[0].TypeName;
+                    if (typeName == "int" || typeName == "Int32" || typeName == "System.Int32"
+                     || typeName == "long" || typeName == "Int64" || typeName == "System.Int64"
+                     || typeName == "uint" || typeName == "UInt32" || typeName == "System.UInt32"
+                     || typeName == "ulong" || typeName == "UInt64" || typeName == "System.UInt64"
+                     || typeName == "byte" || typeName == "Byte" || typeName == "System.Byte"
+                     || typeName == "sbyte" || typeName == "SByte" || typeName == "System.SByte"
+                     )
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool CanInlineBinarySearch
+        {
+            get
+            {
+                return (this is PrimaryKey) && (IsComparableNumberType);
+            }
+        }
     }
 
     public class PrimaryKey : KeyBase

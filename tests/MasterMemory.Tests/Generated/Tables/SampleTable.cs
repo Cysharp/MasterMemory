@@ -46,9 +46,21 @@ namespace MasterMemory.Tests.Tables
             this.secondaryIndex4 = CloneAndSortBy(this.secondaryIndex4Selector, System.Collections.Generic.Comparer<string>.Default);
         }
 
-        public Sample FindById(int key)
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+		public Sample FindById(int key)
         {
-            return FindUniqueCoreInt(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, key);
+            var lo = 0;
+            var hi = data.Length - 1;
+            while (lo <= hi)
+            {
+                var mid = lo + ((hi - lo) >> 1);
+                var selected = data[mid].Id;
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { return data[mid]; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            return default;
         }
 
         public Sample FindClosestById(int key, bool selectLower = true)

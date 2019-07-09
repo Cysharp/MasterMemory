@@ -27,10 +27,29 @@ namespace <#= Namespace #>.Tables
         }
 
 <# foreach(var item in new KeyBase[] { GenerationContext.PrimaryKey }.Concat(GenerationContext.SecondaryKeys)) { #>
+<# if(item.CanInlineBinarySearch) { #>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+		public <#= item.BuildReturnTypeName(GenerationContext.ClassName) #> FindBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key)
+        {
+            var lo = 0;
+            var hi = data.Length - 1;
+            while (lo <= hi)
+            {
+                var mid = lo + ((hi - lo) >> 1);
+                var selected = data[mid].<#= item.Properties[0].Name #>;
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { return data[mid]; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            return default;
+        }
+<# } else { #>
         public <#= item.BuildReturnTypeName(GenerationContext.ClassName) #> FindBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key)
         {
             return <#= item.BuildFindPrefix() #>Core<#= !item.IsNonUnique && item.IsIntType ? "Int" : "" #>(<#= item.TableName #>, <#= item.SelectorName #>, <#= item.BuildComparer() #>, key);
         }
+<# } #>
 
         public <#= item.BuildReturnTypeName(GenerationContext.ClassName) #> FindClosestBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key, bool selectLower = true)
         {
