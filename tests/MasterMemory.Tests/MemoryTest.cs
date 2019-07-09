@@ -1,28 +1,11 @@
-﻿using MessagePack;
+﻿using FluentAssertions;
+using MasterMemory.Tests.Tables;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
 namespace MasterMemory.Tests
 {
-    [MessagePackObject]
-    public class Sample
-    {
-        [Key(0)]
-        public virtual int Id { get; set; }
-        [Key(1)]
-        public virtual int Age { get; set; }
-        [Key(2)]
-        public virtual string FirstName { get; set; }
-        [Key(3)]
-        public virtual string LastName { get; set; }
-
-        public override string ToString()
-        {
-            return $"{Id} {Age} {FirstName} {LastName}";
-        }
-    }
-
     public class MemoryTest
     {
         Sample[] CreateData()
@@ -45,80 +28,66 @@ namespace MasterMemory.Tests
             return data;
         }
 
-        Memory<int, Sample> CreateMemory(Sample[] data)
+        SampleTable CreateTable(Sample[] data)
         {
-            return new Memory<int, Sample>(data, x => x.Id);
+            return new MemoryDatabase(new DatabaseBuilder().Append(data).Build()).SampleTable;
         }
 
         [Fact]
         public void Count()
         {
             var data = CreateData();
-            var memory = CreateMemory(data);
+            var table = CreateTable(data);
 
-            memory.Count.Is(data.Length);
+            table.Count.Should().Be(data.Length);
         }
 
         [Fact]
         public void Find()
         {
             var data = CreateData();
-            var memory = CreateMemory(data);
+            var table = CreateTable(data);
 
             foreach (var item in data)
             {
-                var f = memory.Find(item.Id);
-                item.Id.Is(f.Id);
+                var f = table.FindById(item.Id);
+                item.Id.Should().Be(f.Id);
             }
 
-            Assert.Throws<KeyNotFoundException>(() => memory.Find(110));
-            memory.FindOrDefault(110).IsNull();
-
-            var view = memory.ToDictionaryView();
-            foreach (var item in data)
-            {
-                var f = view[item.Id];
-                item.Id.Is(f.Id);
-            }
+            table.FindById(110).Should().BeNull();
         }
 
         [Fact]
         public void MultiKeyFind()
         {
             var data = CreateData();
-            var memory = CreateMemory(data);
-            // var aaaa = MemoryKey.Create("a", "b");
-            var secondary = memory.SecondaryIndex("FirstName.LastName", x => MemoryKey.Create(x.FirstName, x.LastName));
+            var table = CreateTable(data);
 
             foreach (var item in data)
             {
-                var f = secondary.Find(MemoryKey.Create(item.FirstName, item.LastName));
-                item.Id.Is(f.Id);
+                var f = table.FindByFirstNameAndLastName((item.FirstName, item.LastName));
+                item.Id.Should().Be(f.Id);
             }
 
-            Assert.Throws<KeyNotFoundException>(() => secondary.Find(MemoryKey.Create("aaa", "___")));
-            Assert.Throws<KeyNotFoundException>(() => secondary.Find(MemoryKey.Create("___", "foo")));
-
-            secondary.FindOrDefault(MemoryKey.Create("aaa", "___")).IsNull();
-            secondary.FindOrDefault(MemoryKey.Create("___", "foo")).IsNull();
+            table.FindByFirstNameAndLastName(("aaa", "___")).Should().BeNull();
+            table.FindByFirstNameAndLastName(("___", "foo")).Should().BeNull();
         }
 
         [Fact]
         public void FindClosest()
         {
             var data = CreateData();
-            var memory = CreateMemory(data);
-
-            var secondary = memory.SecondaryIndex("Age", x => x.Age);
+            var table = CreateTable(data);
+            
             {
-                secondary.FindClosest(56, true).Age.Is(49);
-                secondary.FindClosest(56, false).Age.Is(59);
+                table.FindClosestByAge(56, true).First.Age.Should().Be(49);
+                table.FindClosestByAge(56, false).First.Age.Should().Be(59);
             }
             {
                 // first
                 for (int i = 0; i < 9; i++)
                 {
-                    secondary.FindClosest(i, selectLower: true).Age.Is(9);
+                    table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(9);
                 }
 
                 var lastAge = 9;
@@ -126,7 +95,7 @@ namespace MasterMemory.Tests
                 {
                     for (int i = lastAge + 1; i < item.Age; i++)
                     {
-                        secondary.FindClosest(i, selectLower: true).Age.Is(lastAge);
+                        table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(lastAge);
                     }
 
                     lastAge = item.Age;
@@ -135,14 +104,14 @@ namespace MasterMemory.Tests
                 // last
                 for (int i = 99; i < 120; i++)
                 {
-                    secondary.FindClosest(i, selectLower: true).Age.Is(99);
+                    table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(99);
                 }
             }
             {
                 // first
                 for (int i = 0; i < 9; i++)
                 {
-                    secondary.FindClosest(i, selectLower: false).Age.Is(9);
+                    table.FindClosestByAge(i, selectLower: false).First.Age.Should().Be(9);
                 }
 
                 var xss = data.OrderBy(x => x.Age).ToArray();
@@ -151,14 +120,14 @@ namespace MasterMemory.Tests
                     var item = xss[j];
                     for (int i = xss[j - 1].Age + 1; i < item.Age; i++)
                     {
-                        secondary.FindClosest(i, selectLower: false).Age.Is(xss[j].Age);
+                        table.FindClosestByAge(i, selectLower: false).First.Age.Should().Be(xss[j].Age);
                     }
                 }
 
                 // last
                 for (int i = 99; i < 120; i++)
                 {
-                    secondary.FindClosest(i, selectLower: false).Age.Is(99);
+                    table.FindClosestByAge(i, selectLower: false).First.Age.Should().Be(99);
                 }
             }
         }
@@ -167,55 +136,38 @@ namespace MasterMemory.Tests
         public void FindClosestMultiKey()
         {
             var data = CreateData();
-            var memory = CreateMemory(data);
+            var table = CreateTable(data);
 
             // Age of aaa
             //new Sample { Id = 5, Age = 19, FirstName = "aaa", LastName = "foo" },
             //new Sample { Id = 2, Age = 89, FirstName = "aaa", LastName = "bar" },
             //new Sample { Id = 4, Age = 89, FirstName = "aaa", LastName = "tako" },
             //new Sample { Id = 9, Age = 99, FirstName = "aaa", LastName = "ika" },
-
-            var secondary = memory.SecondaryIndex("FirstName.Age", x => MemoryKey.Create(x.FirstName, x.Age));
-
-            secondary.FindClosest(MemoryKey.Create("aaa", 10), true).Age.Is(19);
-            secondary.FindClosest(MemoryKey.Create("aaa", 92), true).Age.Is(89);
-            secondary.FindClosest(MemoryKey.Create("aaa", 120), true).Age.Is(99);
-            secondary.FindClosest(MemoryKey.Create("aaa", 10), false).Age.Is(19);
-            secondary.FindClosest(MemoryKey.Create("aaa", 73), false).Age.Is(89);
-            secondary.FindClosest(MemoryKey.Create("aaa", 120), false).Age.Is(99);
+            
+            table.FindClosestByFirstNameAndAge(("aaa", 10), true).First.Age.Should().Be(19);
+            table.FindClosestByFirstNameAndAge(("aaa", 92), true).First.Age.Should().Be(89);
+            table.FindClosestByFirstNameAndAge(("aaa", 120), true).First.Age.Should().Be(99);
+            table.FindClosestByFirstNameAndAge(("aaa", 10), false).First.Age.Should().Be(19);
+            table.FindClosestByFirstNameAndAge(("aaa", 73), false).First.Age.Should().Be(89);
         }
 
         [Fact]
         public void FindMany()
         {
             var data = CreateData();
-            var memory = CreateMemory(data);
+            var table = CreateTable(data);
 
-            var secondary = memory.SecondaryIndex("FirstName", x => x.FirstName);
-
-            secondary.FindMany("aaa").OrderBy(x => x.Id).Select(x => x.Id).Is(2, 4, 5, 9);
-
-            var view = secondary.ToLookupView();
-            view["aaa"].OrderBy(x => x.Id).Select(x => x.Id).Is(2, 4, 5, 9);
+            table.FindByFirstName("aaa").OrderBy(x => x.Id).Select(x => x.Id).Should().BeEquivalentTo(new[] { 2, 4, 5, 9 });
         }
 
         [Fact]
         public void FindManyMultiKey()
         {
             var data = CreateData();
-            var memory = CreateMemory(data);
-
-            var secondary = memory.SecondaryIndex("FirstName.Age", x => MemoryKey.Create(x.FirstName, x.Age));
-
-            secondary.FindMany(MemoryKey.Create("aaa", 89)).Select(x => x.Id).Is(2, 4);
-            secondary.FindMany(MemoryKey.Create("aaa", 89), false).Select(x => x.Id).Is(4, 2);
-        }
-
-        [Fact]
-        public void Empty()
-        {
-            var memory = new Memory<int, int>(Enumerable.Empty<int>(), x => x);
-            memory.FindAll().Count.Is(0);
+            var table = CreateTable(data);
+            
+            table.FindByFirstNameAndAge(("aaa", 89)).Select(x => x.Id).Should().BeEquivalentTo(new[] { 2, 4 });
+            table.FindByFirstNameAndAge(("aaa", 89)).Reverse.Select(x => x.Id).Should().BeEquivalentTo(new[] { 4, 2 });
         }
     }
 }

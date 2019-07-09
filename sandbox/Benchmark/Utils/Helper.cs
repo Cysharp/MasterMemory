@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LiteDB;
-using ZeroFormatter;
 using MessagePack;
 using MasterMemory.Annotations;
+using LiteDB;
 
 namespace TestPerfLiteDB
 {
@@ -21,28 +19,8 @@ namespace TestPerfLiteDB
         public string lorem { get; set; }
     }
 
-    static class Helper
+    public static class Helper
     {
-        public static void Run(this ITest test, string name, Action action, bool dryrun)
-        {
-            var sw = new Stopwatch();
-
-            System.GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            sw.Start();
-            action();
-            sw.Stop();
-
-            var time = sw.ElapsedMilliseconds.ToString().PadLeft(5, ' ');
-            var seg = Math.Round(test.Count / sw.Elapsed.TotalSeconds).ToString().PadLeft(8, ' ');
-
-            if (!dryrun)
-            {
-                Console.WriteLine(name.PadRight(15, ' ') + ": " +
-                    time + " ms - " +
-                    seg + " records/second");
-            }
-        }
-
         public static IEnumerable<BsonDocument> GetDocs(int count)
         {
             for (var i = 0; i < count; i++)

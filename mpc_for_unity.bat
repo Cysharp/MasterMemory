@@ -1,2 +1,0 @@
-cd /d %~dp0
-"C:\Users\y.kawai\Documents\neuecc\MessagePack-CSharp\src\MessagePack.CodeGenerator\bin\Release\mpc.exe" -i "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.UnityClient\MasterMemory.UnityClient.CSharp.csproj" -o "C:\Users\y.kawai\neuecc\MasterMemory\src\MasterMemory.UnityClient\Assets\Scripts\MessagePackGenerated.cs"

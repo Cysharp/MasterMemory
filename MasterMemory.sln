@@ -9,32 +9,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BDAFF1CB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sandbox", "sandbox", "{FFAA235C-D30F-4958-BC4E-60CD08979464}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{FA5932B4-5B60-40CC-8C57-2EDDB88EE512}"
-	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
-		nuget\MasterMemory.nuspec = nuget\MasterMemory.nuspec
-		nuget\pack.bat = nuget\pack.bat
-		nuget\push.bat = nuget\push.bat
-		README.md = README.md
-	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory", "src\MasterMemory\MasterMemory.csproj", "{F1164FFB-91C6-444F-B3B6-34B354996E14}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.Tests", "tests\MasterMemory.Tests\MasterMemory.Tests.csproj", "{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerfTest", "sandbox\PerfTest\PerfTest.csproj", "{36EF0213-98F0-40F5-978F-EAEFF0F8FC42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.CodeGenerator", "src\MasterMemory.CodeGenerator\MasterMemory.CodeGenerator.csproj", "{A937F794-5766-4281-B44D-979E0F0EE46B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory", "src\MasterMemory\MasterMemory.csproj", "{D2720BBB-C233-4A1E-9768-1F00C9602180}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory2", "src\MasterMemory2\MasterMemory2.csproj", "{D2720BBB-C233-4A1E-9768-1F00C9602180}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory.Tests", "tests\MasterMemory.Tests\MasterMemory.Tests.csproj", "{8C5EBACA-C6C7-463B-B85C-C6A05E5DEB9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.Tests2", "tests\MasterMemory.Tests2\MasterMemory.Tests2.csproj", "{8C5EBACA-C6C7-463B-B85C-C6A05E5DEB9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory.Annotations", "src\MasterMemory.Annotations\MasterMemory.Annotations.csproj", "{A13F40DD-7777-4E97-9FC4-6324722CA964}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.Annotations", "src\MasterMemory.Annotations\MasterMemory.Annotations.csproj", "{A13F40DD-7777-4E97-9FC4-6324722CA964}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory.GeneratorCore", "src\MasterMemory.GeneratorCore\MasterMemory.GeneratorCore.csproj", "{DAC2FED6-E960-4E57-949F-6B9185924E60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.GeneratorCore", "src\MasterMemory.GeneratorCore\MasterMemory.GeneratorCore.csproj", "{DAC2FED6-E960-4E57-949F-6B9185924E60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterMemory.Generator", "src\MasterMemory.Generator\MasterMemory.Generator.csproj", "{625ECD09-F1E4-4979-B7A6-F94F23F7BBB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterMemory.Generator", "src\MasterMemory.Generator\MasterMemory.Generator.csproj", "{625ECD09-F1E4-4979-B7A6-F94F23F7BBB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "sandbox\Benchmark\Benchmark.csproj", "{205509EA-78C8-4ED0-B2B5-8030DDFB0BF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,22 +29,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F1164FFB-91C6-444F-B3B6-34B354996E14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1164FFB-91C6-444F-B3B6-34B354996E14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1164FFB-91C6-444F-B3B6-34B354996E14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1164FFB-91C6-444F-B3B6-34B354996E14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{36EF0213-98F0-40F5-978F-EAEFF0F8FC42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{36EF0213-98F0-40F5-978F-EAEFF0F8FC42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36EF0213-98F0-40F5-978F-EAEFF0F8FC42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36EF0213-98F0-40F5-978F-EAEFF0F8FC42}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A937F794-5766-4281-B44D-979E0F0EE46B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A937F794-5766-4281-B44D-979E0F0EE46B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A937F794-5766-4281-B44D-979E0F0EE46B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A937F794-5766-4281-B44D-979E0F0EE46B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D2720BBB-C233-4A1E-9768-1F00C9602180}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D2720BBB-C233-4A1E-9768-1F00C9602180}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2720BBB-C233-4A1E-9768-1F00C9602180}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -78,20 +53,22 @@ Global
 		{625ECD09-F1E4-4979-B7A6-F94F23F7BBB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{625ECD09-F1E4-4979-B7A6-F94F23F7BBB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{625ECD09-F1E4-4979-B7A6-F94F23F7BBB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{205509EA-78C8-4ED0-B2B5-8030DDFB0BF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{205509EA-78C8-4ED0-B2B5-8030DDFB0BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{205509EA-78C8-4ED0-B2B5-8030DDFB0BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{205509EA-78C8-4ED0-B2B5-8030DDFB0BF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{F1164FFB-91C6-444F-B3B6-34B354996E14} = {60662102-4523-441E-8D6C-D87A3246C648}
-		{DC77541C-7063-47B8-A5EE-0CEE36EC7A6F} = {BDAFF1CB-8E53-412B-B389-42A15343C7A3}
 		{36EF0213-98F0-40F5-978F-EAEFF0F8FC42} = {FFAA235C-D30F-4958-BC4E-60CD08979464}
-		{A937F794-5766-4281-B44D-979E0F0EE46B} = {60662102-4523-441E-8D6C-D87A3246C648}
 		{D2720BBB-C233-4A1E-9768-1F00C9602180} = {60662102-4523-441E-8D6C-D87A3246C648}
 		{8C5EBACA-C6C7-463B-B85C-C6A05E5DEB9F} = {BDAFF1CB-8E53-412B-B389-42A15343C7A3}
 		{A13F40DD-7777-4E97-9FC4-6324722CA964} = {60662102-4523-441E-8D6C-D87A3246C648}
 		{DAC2FED6-E960-4E57-949F-6B9185924E60} = {60662102-4523-441E-8D6C-D87A3246C648}
 		{625ECD09-F1E4-4979-B7A6-F94F23F7BBB0} = {60662102-4523-441E-8D6C-D87A3246C648}
+		{205509EA-78C8-4ED0-B2B5-8030DDFB0BF0} = {FFAA235C-D30F-4958-BC4E-60CD08979464}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0121A3C4-6AE0-4622-BE04-05D9A3E729AC}

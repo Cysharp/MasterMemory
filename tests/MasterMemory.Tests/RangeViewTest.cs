@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FluentAssertions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,12 @@ namespace MasterMemory.Tests
             {
                 var range = new RangeView<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 4, 8, true);
 
-                range.Count.Is(5);
-                range[0].Is(4);
-                range[1].Is(5);
-                range[2].Is(6);
-                range[3].Is(7);
-                range[4].Is(8);
+                range.Count.Should().Be(5);
+                range[0].Should().Be(4);
+                range[1].Should().Be(5);
+                range[2].Should().Be(6);
+                range[3].Should().Be(7);
+                range[4].Should().Be(8);
 
                 Assert.Throws<ArgumentOutOfRangeException>(() => range[-1]);
                 Assert.Throws<ArgumentOutOfRangeException>(() => range[5]);
@@ -28,34 +29,20 @@ namespace MasterMemory.Tests
                 var begin = 4;
                 foreach (var item in range)
                 {
-                    item.Is(begin++);
+                    item.Should().Be(begin++);
                 }
-
-                var c = (ICollection<int>)range;
-                c.Contains(6).IsTrue();
-                c.Contains(-1).IsFalse();
-
-                var l = (IList<int>)range;
-                l.IndexOf(6).Is(2);
-                var newXs = new int[10];
-                l.CopyTo(newXs, 3);
-                newXs[3].Is(4);
-                newXs[4].Is(5);
-                newXs[5].Is(6);
-                newXs[6].Is(7);
-                newXs[7].Is(8);
             }
             {
                 // 7 -> 2
                 var range = new RangeView<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 2, 7, false);
 
-                range.Count.Is(6);
-                range[0].Is(7);
-                range[1].Is(6);
-                range[2].Is(5);
-                range[3].Is(4);
-                range[4].Is(3);
-                range[5].Is(2);
+                range.Count.Should().Be(6);
+                range[0].Should().Be(7);
+                range[1].Should().Be(6);
+                range[2].Should().Be(5);
+                range[3].Should().Be(4);
+                range[4].Should().Be(3);
+                range[5].Should().Be(2);
 
                 Assert.Throws<ArgumentOutOfRangeException>(() => range[-1]);
                 Assert.Throws<ArgumentOutOfRangeException>(() => range[6]);
@@ -63,35 +50,16 @@ namespace MasterMemory.Tests
                 var begin = 7;
                 foreach (var item in range)
                 {
-                    item.Is(begin--);
+                    item.Should().Be(begin--);
                 }
-
-                var c = (ICollection<int>)range;
-                c.Contains(6).IsTrue();
-                c.Contains(-1).IsFalse();
-
-                var l = (IList<int>)range;
-                l.IndexOf(6).Is(1);
-                var newXs = new int[10];
-                l.CopyTo(newXs, 3);
-                newXs[3].Is(7);
-                newXs[4].Is(6);
-                newXs[5].Is(5);
-                newXs[6].Is(4);
-                newXs[7].Is(3);
-                newXs[8].Is(2);
             }
 
             var empty = new RangeView<int>(Enumerable.Empty<int>().ToArray(), 0, 0, true);
-            empty.Count.Is(0);
+            empty.Count.Should().Be(0);
 
             var same = new RangeView<int>(Enumerable.Range(1, 1000).ToArray(), 100, 100, true);
-            same.Count.Is(1);
-            same[0].Is(101);
-
-
-            // count = 0;
-            // Assert.Throws<ArgumentException>(() => new RangeView<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 5, 4, true));
+            same.Count.Should().Be(1);
+            same[0].Should().Be(101);
         }
     }
 }

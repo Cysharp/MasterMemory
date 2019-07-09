@@ -1,11 +1,54 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0" />
+        <PackageReference Include="System.CodeDom" Version="4.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="DatabaseBuilderTemplate.cs">
+        <DependentUpon>DatabaseBuilderTemplate.tt</DependentUpon>
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+      </Compile>
+      <Compile Update="ImmutableBuilderTemplate.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>ImmutableBuilderTemplate.tt</DependentUpon>
+      </Compile>
+      <Compile Update="MemoryDatabaseTemplate.cs">
+        <DependentUpon>MemoryDatabaseTemplate.tt</DependentUpon>
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+      </Compile>
+      <Compile Update="TableTemplate.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>TableTemplate.tt</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="DatabaseBuilderTemplate.tt">
+        <LastGenOutput>DatabaseBuilderTemplate.cs</LastGenOutput>
+        <Generator>TextTemplatingFilePreprocessor</Generator>
+      </None>
+      <None Update="ImmutableBuilderTemplate.tt">
+        <LastGenOutput>ImmutableBuilderTemplate.cs</LastGenOutput>
+        <Generator>TextTemplatingFilePreprocessor</Generator>
+      </None>
+      <None Update="MemoryDatabaseTemplate.tt">
+        <LastGenOutput>MemoryDatabaseTemplate.cs</LastGenOutput>
+        <Generator>TextTemplatingFilePreprocessor</Generator>
+      </None>
+      <None Update="TableTemplate.tt">
+        <LastGenOutput>TableTemplate.cs</LastGenOutput>
+        <Generator>TextTemplatingFilePreprocessor</Generator>
+      </None>
+    </ItemGroup>
 
 </Project>

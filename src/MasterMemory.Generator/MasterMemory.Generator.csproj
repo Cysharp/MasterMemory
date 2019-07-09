@@ -7,72 +7,10 @@
 
   <ItemGroup>
     <PackageReference Include="MicroBatchFramework" Version="1.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0" />
-    <PackageReference Include="System.CodeDom" Version="4.5.0" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="4.6.0-preview6.19303.8" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
     <ProjectReference Include="..\MasterMemory.GeneratorCore\MasterMemory.GeneratorCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="mscorlib">
-      <HintPath>mscorlib</HintPath>
-    </Reference>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
-    <Reference Include="System.Core">
-      <HintPath>System.Core</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="DatabaseBuilderTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>DatabaseBuilderTemplate.tt</DependentUpon>
-    </Compile>
-    <Compile Update="ImmutableBuilderTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ImmutableBuilderTemplate.tt</DependentUpon>
-    </Compile>
-    <Compile Update="MemoryDatabaseTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MemoryDatabaseTemplate.tt</DependentUpon>
-    </Compile>
-    <Compile Update="TableTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TableTemplate.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="DatabaseBuilderTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>DatabaseBuilderTemplate.cs</LastGenOutput>
-    </None>
-    <None Update="ImmutableBuilderTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>ImmutableBuilderTemplate.cs</LastGenOutput>
-    </None>
-    <None Update="MemoryDatabaseTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>MemoryDatabaseTemplate.cs</LastGenOutput>
-    </None>
-    <None Update="TableTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>TableTemplate.cs</LastGenOutput>
-    </None>
   </ItemGroup>
 
 </Project>

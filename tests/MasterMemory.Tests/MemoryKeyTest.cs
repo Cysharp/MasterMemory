@@ -1,5 +1,7 @@
 ﻿using Xunit;
 using System.Linq;
+using MasterMemory.Tests.Tables;
+using FluentAssertions;
 
 namespace MasterMemory.Tests
 {
@@ -25,52 +27,39 @@ namespace MasterMemory.Tests
             return data;
         }
 
-        Memory<int, Sample> CreateMemory(Sample[] data)
+        SampleTable CreateTable()
         {
-            return new Memory<int, Sample>(data, x => x.Id);
+            return new MemoryDatabase(new DatabaseBuilder().Append(CreateData()).Build()).SampleTable;
         }
 
         [Fact]
         public void Unique()
         {
-            var memory = CreateMemory(CreateData());
+            var table = CreateTable();
 
-            var byIdAndAgeAndFirstNameAndLastName = memory.SecondaryIndex("AllIndex", x => MemoryKey.Create(x.Id, x.Age, x.FirstName, x.LastName));
+            table.FindById(8).Id.Should().Be(8);
+            table.FindById(100).Should().BeNull();
 
+            table.FindByIdAndAge((4, 89)).Id.Should().Be(4);
 
-            var byId = byIdAndAgeAndFirstNameAndLastName.UseIndex1();
-            var byIdAndAge = byIdAndAgeAndFirstNameAndLastName.UseIndex12();
-            var byIdAndAgeAndFirstName = byIdAndAgeAndFirstNameAndLastName.UseIndex123();
+            table.FindByIdAndAge((4, 899)).Should().BeNull();
+            table.FindByIdAndAge((5, 89)).Should().BeNull();
 
-
-            byId.Find(8).Id.Is(8);
-            byId.FindOrDefault(100).IsNull();
-
-            byIdAndAge.Find(4, 89).Id.Is(4);
-            byIdAndAge.FindOrDefault(4, 899).IsNull();
-            byIdAndAge.FindOrDefault(5, 89).IsNull();
-
-            byIdAndAgeAndFirstName.Find(6, 29, "bbb").Id.Is(6);
-            byIdAndAgeAndFirstName.FindOrDefault(6, 29, "bbbz").IsNull();
+            table.FindByIdAndAgeAndFirstName((6, 29, "bbb")).Id.Should().Be(6);
+            table.FindByIdAndAgeAndFirstName((6, 29, "bbbz")).Should().BeNull();
         }
 
         [Fact]
         public void Range()
         {
-            var memory = CreateMemory(CreateData());
+            var table = CreateTable();
 
-            var byFirstNameAndLastNameAndAge = memory.SecondaryIndex("FirstName.LastName.Age", x => MemoryKey.Create(x.FirstName, x.LastName, x.Age));
+            var test = table.FindByFirstName("eee");
 
-            var byFirstName = byFirstNameAndLastNameAndAge.UseIndex1();
-            var byFirstNameAndLastName = byFirstNameAndLastNameAndAge.UseIndex12();
+            table.FindByFirstName("eee").Select(x => x.Id).OrderBy(x => x).Should().BeEquivalentTo(new[] { 1, 10 });
+            table.FindByFirstName("eeee").Count.Should().Be(0);
 
-            byFirstName.FindMany("eee").Select(x => x.Id).OrderBy(x => x).Is(1, 10);
-            byFirstName.FindMany("eeee").Count.Is(0);
-
-            byFirstNameAndLastName.FindMany("aaa", "foo").Select(x => x.Id).OrderBy(x => x).Is(5);
-
-            byFirstNameAndLastName.FindClosest("aaa", "takz").Id.Is(4);
-
+            table.FindClosestByFirstNameAndLastName(("aaa", "takz")).Id.Should().Be(4);
         }
     }
 }

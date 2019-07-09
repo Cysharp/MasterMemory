@@ -1,4 +1,5 @@
-﻿using MessagePack.Resolvers;
+﻿using FluentAssertions;
+using MessagePack.Resolvers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,83 +32,17 @@ namespace MasterMemory.Tests
         }
 
         [Fact]
-        public void EmptyDb()
-        {
-            var builder = new DatabaseBuilder();
-            var emptyDb = builder.Build();
-
-            emptyDb.MemoryCount.Is(0);
-            var data = emptyDb.Save();
-            data.Is((byte)144); // empty array
-        }
-
-        [Fact]
         public void SingleDb()
         {
             var builder = new DatabaseBuilder();
-            builder.Add("Sample", CreateData(), x => x.Id);
-            var db = builder.Build();
+            builder.Append(CreateData());
 
-            var memory = db.GetMemory<int, Sample>("Sample", x => x.Id);
-            memory.Find(8).Age.Is(49);
+            var bin = builder.Build();
+            var db = new MemoryDatabase(bin);
+            db.SampleTable.FindById(8).Age.Should().Be(49);
 
-            var savedDb = db.Save();
-
-            var newDb = Database.Open(savedDb);
-            var memory2 = newDb.GetMemory<int, Sample>("Sample", x => x.Id);
-            memory2.Find(8).Age.Is(49);
-        }
-
-        [Fact]
-        public void MultiDb()
-        {
-            var builder = new DatabaseBuilder();
-            builder.Add("Sample1", CreateData(), x => x.Id);
-            builder.Add("Sample2", CreateData(), x => x.Id);
-            builder.Add("Sample3", CreateData(), x => x.Id);
-            builder.Add("Sample4", CreateData(), x => x.Id);
-            builder.Add("Sample5", CreateData(), x => x.Id);
-            var db = builder.Build();
-
-            var memory = db.GetMemory<int, Sample>("Sample1", x => x.Id);
-            memory.Find(8).Age.Is(49);
-
-            var savedDb = db.Save();
-
-            var newDb = Database.Open(savedDb);
-            {
-                var memory2 = newDb.GetMemory<int, Sample>("Sample1", x => x.Id);
-                memory2.Find(8).Age.Is(49);
-            }
-            {
-                var memory2 = newDb.GetMemory<int, Sample>("Sample2", x => x.Id);
-                memory2.Find(8).Age.Is(49);
-            }
-            {
-                var memory2 = newDb.GetMemory<int, Sample>("Sample3", x => x.Id);
-                memory2.Find(8).Age.Is(49);
-            }
-            {
-                var memory2 = newDb.GetMemory<int, Sample>("Sample4", x => x.Id);
-                memory2.Find(8).Age.Is(49);
-            }
-            {
-                var memory2 = newDb.GetMemory<int, Sample>("Sample5", x => x.Id);
-                memory2.Find(8).Age.Is(49);
-            }
-
-            // check report diagnostics
-            var dumper = Database.ReportDiagnostics(savedDb, true);
-            for (int i = 0; i < dumper.Length; i++)
-            {
-                dumper[i].KeyName.Is("Sample" + (i + 1));
-                dumper[i].Count.Is(10);
-
-                foreach (var item in dumper[i].DumpRows())
-                {
-                    Console.WriteLine(item); // ....
-                }
-            }
+            var tableInfo = MemoryDatabase.GetTableInfo(bin);
+            tableInfo[0].TableName.Should().Be("Sample");
         }
     }
 }

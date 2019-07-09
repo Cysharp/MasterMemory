@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MasterMemory.Generator": {
+      "commandName": "Project",
+      "commandLineArgs": "-i \"C:\\GitHubRepositories\\MasterMemory\\tests\\MasterMemory.Tests\\TestStructures\" -o \"C:\\GitHubRepositories\\MasterMemory\\tests\\MasterMemory.Tests\\Generated\" -n \"MasterMemory.Tests\""
+    }
+  }
+}
