@@ -37,13 +37,15 @@ namespace MasterMemory.GeneratorCore
                 var builderTemplate = new DatabaseBuilderTemplate();
                 var databaseTemplate = new MemoryDatabaseTemplate();
                 var immutableBuilderTemplate = new ImmutableBuilderTemplate();
-                builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = usingNamespace;
-                builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;");
-                builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = list.ToArray();
+                var resolverTemplate = new MessagePackResolverTemplate();
+                builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
+                builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;");
+                builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
 
                 logger(WriteToFile(outputDirectory, "DatabaseBuilder", builderTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, "ImmutableBuilder", immutableBuilderTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, "MemoryDatabase", databaseTemplate.TransformText()));
+                logger(WriteToFile(outputDirectory, "MasterMemoryResolver", resolverTemplate.TransformText()));
             }
             {
                 var tableDir = Path.Combine(outputDirectory, "Tables");

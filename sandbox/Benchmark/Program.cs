@@ -63,6 +63,7 @@ namespace Benchmark
         LiteDB_Test2 liteDb2;
 
         MemcachedClient localMemcached;
+        Dictionary<int, TestDoc> dictionary;
 
         const int QueryId = 741;
 
@@ -85,12 +86,18 @@ namespace Benchmark
             liteDb2 = new LiteDB_Test2(5000);
             liteDb2.Prepare(); liteDb2.Insert(); liteDb2.CreateIndex();
 
-            var config = new MemcachedClientConfiguration(new LoggerDummy(), new Dummy());
-            localMemcached = new MemcachedClient(new LoggerDummy(), config);
+            dictionary = new Dictionary<int, TestDoc>();
             foreach (var item in MakeDoc(5000))
             {
-                localMemcached.Add("testdoc2." + item.id, item, 9999);
+                dictionary.Add(item.id, item);
             }
+
+            //var config = new MemcachedClientConfiguration(new LoggerDummy(), new Dummy());
+            //localMemcached = new MemcachedClient(new LoggerDummy(), config);
+            //foreach (var item in MakeDoc(5000))
+            //{
+            //    localMemcached.Add("testdoc2." + item.id, item, 9999);
+            //}
         }
 
         public IEnumerable<TestDoc> MakeDoc(int count)
@@ -166,11 +173,17 @@ namespace Benchmark
             return inmemoryLiteDb._db.FindOne("col", LiteDB.Query.EQ("_id", QueryId));
         }
 
-        [Benchmark]
-        public object LocalMemcachedQuery()
-        {
-            return localMemcached.Get("testdoc2." + QueryId);
-        }
+        //[Benchmark]
+        //public object LocalMemcachedQuery()
+        //{
+        //    return localMemcached.Get("testdoc2." + QueryId);
+        //}
+
+        //[Benchmark]
+        //public TestDoc DictionaryQuery()
+        //{
+        //    return dictionary.TryGetValue(QueryId, out var r) ? r : null;
+        //}
     }
 
 

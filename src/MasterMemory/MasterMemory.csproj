@@ -1,17 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>MasterMemory</RootNamespace>
-    <AssemblyName>MasterMemory</AssemblyName>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>MasterMemory</RootNamespace>
+        <AssemblyName>MasterMemory</AssemblyName>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.7.3.7" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MessagePack" Version="1.7.3.7" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
+    </ItemGroup>
+
+    <!-- Copy files for Unity -->
+    <PropertyGroup>
+        <DestinationRoot>$(ProjectDir)..\MasterMemory.Unity\Assets\Scripts\MasterMemory\</DestinationRoot>
+        <TestDestination>$(ProjectDir)..\MasterMemory.Unity\Assets\Tests\</TestDestination>
+    </PropertyGroup>
+    <ItemGroup>
+        <TargetFiles1 Include="$(ProjectDir)\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;_InternalVisibleTo.cs" />
+        <TargetFiles2 Include="$(ProjectDir)\..\MasterMemory.Annotations\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
+        <TargetFiles3 Include="$(ProjectDir)\..\..\tests\MasterMemory.Tests\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
+    </ItemGroup>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Copy SourceFiles="@(TargetFiles1)" DestinationFiles="$(DestinationRoot)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(TargetFiles2)" DestinationFiles="$(DestinationRoot)\Annotations\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(TargetFiles3)" DestinationFiles="$(TestDestination)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+    </Target>
 
 </Project>

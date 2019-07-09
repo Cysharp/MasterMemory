@@ -119,3 +119,7 @@ nuget/tools/*
 *.nupkg
 
 .vs
+
+# Unity
+Library/
+Temp/

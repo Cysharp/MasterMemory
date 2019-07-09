@@ -25,6 +25,13 @@ namespace MasterMemory.GeneratorCore
         public GenerationContext[] GenerationContexts { get; set; }
     }
 
+    public partial class MessagePackResolverTemplate
+    {
+        public string Namespace { get; set; }
+        public string Using { get; set; }
+        public GenerationContext[] GenerationContexts { get; set; }
+    }
+
     public partial class TableTemplate
     {
         public string Namespace { get; set; }
