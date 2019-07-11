@@ -18,7 +18,9 @@ namespace MasterMemory.Tests
 
         public IMessagePackFormatter<T> GetFormatter<T>()
         {
-            return GeneratedResolver.Instance.GetFormatter<T>() ?? StandardResolver.Instance.GetFormatter<T>();
+            return MasterMemoryResolver.Instance.GetFormatter<T>()
+                ?? GeneratedResolver.Instance.GetFormatter<T>()
+                ?? StandardResolver.Instance.GetFormatter<T>();
         }
     }
 }

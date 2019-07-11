@@ -1,5 +1,4 @@
-﻿using MasterMemory.Annotations;
-using MessagePack;
+﻿using MessagePack;
 
 namespace MasterMemory.Tests
 {

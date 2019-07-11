@@ -1,5 +1,4 @@
 ﻿using ConsoleApp;
-using MasterMemory.Annotations;
 using MasterMemory;
 using MessagePack;
 using System.Collections.Generic;

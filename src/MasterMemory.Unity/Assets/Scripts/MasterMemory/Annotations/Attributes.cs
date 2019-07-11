@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MasterMemory.Annotations
+namespace MasterMemory
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class MemoryTableAttribute : Attribute

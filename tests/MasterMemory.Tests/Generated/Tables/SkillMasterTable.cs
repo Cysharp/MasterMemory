@@ -1,5 +1,4 @@
-﻿using MasterMemory.Annotations;
-using MasterMemory.Tests;
+﻿using MasterMemory.Tests;
 using MasterMemory;
 using MessagePack;
 using System.Collections.Generic;

@@ -1,5 +1,4 @@
-﻿using MasterMemory.Annotations;
-using MasterMemory.Internal;
+﻿using MasterMemory.Internal;
 using MessagePack;
 using MessagePack.Formatters;
 using System;

@@ -19,6 +19,7 @@
         <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>database, embedded, inmemory, unity</PackageTags>
+        <RootNamespace>MasterMemory</RootNamespace>
     </PropertyGroup>
 
 </Project>
