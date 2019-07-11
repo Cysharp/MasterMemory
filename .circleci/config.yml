@@ -45,13 +45,13 @@ jobs:
           name: Build Linux(Mono)
           command: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -projectPath . -executeMethod UnitTestBuilder.BuildUnitTest /headless /ScriptBackend Mono2x /BuildTarget StandaloneLinux64
           working_directory: src/MasterMemory.Unity
-      - run: ./bin/UnitTest/StandaloneLinux64_Mono2x/test
+      - run: ./src/MasterMemory.Unity/bin/UnitTest/StandaloneLinux64_Mono2x/test
       - run:
           name: Export unitypackage
           command: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -projectPath . -executeMethod PackageExporter.Export
           working_directory: src/MasterMemory.Unity
       - store_artifacts:
-          path: ./MasterMemory.Unity.unitypackage
+          path: ./src/MasterMemory.Unity/MasterMemory.Unity.unitypackage
           destination: /MasterMemory.Unity.unitypackage
   # .NET Core debug/test, release/push
   build-test:
