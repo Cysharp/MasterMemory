@@ -1,75 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard1.4</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>MasterMemory</RootNamespace>
+        <AssemblyName>MasterMemory</AssemblyName>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG;NETSTANDARD1_4;</DefineConstants>
-  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="MessagePack" Version="1.7.3.7" />
+    </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard1.4\MasterMemory.xml</DocumentationFile>
-    <NoWarn>1701;1702;1705;1591</NoWarn>
-    <DefineConstants>TRACE;RELEASE;NETSTANDARD1_4;</DefineConstants>
-  </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="src\*.meta" />
-    <None Remove="src\Internal\*.meta" />
-  </ItemGroup>
+    <!-- Copy files for Unity -->
+    <PropertyGroup>
+        <DestinationRoot>$(ProjectDir)..\MasterMemory.Unity\Assets\Scripts\MasterMemory\</DestinationRoot>
+        <TestDestination>$(ProjectDir)..\MasterMemory.Unity\Assets\Tests\</TestDestination>
+    </PropertyGroup>
+    <ItemGroup>
+        <TargetFiles1 Include="$(ProjectDir)\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;_InternalVisibleTo.cs" />
+        <TargetFiles2 Include="$(ProjectDir)\..\MasterMemory.Annotations\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
+        <TargetFiles3 Include="$(ProjectDir)\..\..\tests\MasterMemory.Tests\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
+    </ItemGroup>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Copy SourceFiles="@(TargetFiles1)" DestinationFiles="$(DestinationRoot)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(TargetFiles2)" DestinationFiles="$(DestinationRoot)\Annotations\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(TargetFiles3)" DestinationFiles="$(TestDestination)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+    </Target>
 
-  <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="src\Internal\DictionaryView.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>DictionaryView.cs</LastGenOutput>
-    </None>
-    <None Update="src\Internal\LookupView.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>LookupView.cs</LastGenOutput>
-    </None>
-    <None Update="src\Internal\MemoryKeyComparer.tt">
-      <LastGenOutput>MemoryKeyComparer.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
-    <None Update="src\Internal\MemoryKeyMemory.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>MemoryKeyMemory.cs</LastGenOutput>
-    </None>
-    <None Update="src\MemoryKeyComparer.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>MemoryKeyComparer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="src\Internal\DictionaryView.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>DictionaryView.tt</DependentUpon>
-    </Compile>
-    <Compile Update="src\Internal\LookupView.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LookupView.tt</DependentUpon>
-    </Compile>
-    <Compile Update="src\Internal\MemoryKeyMemory.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MemoryKeyMemory.tt</DependentUpon>
-    </Compile>
-    <Compile Update="src\MemoryKeyComparer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>MemoryKeyComparer.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
 </Project>

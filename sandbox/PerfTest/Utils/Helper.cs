@@ -8,17 +8,16 @@ using System.Threading.Tasks;
 using LiteDB;
 using ZeroFormatter;
 using MessagePack;
+using MasterMemory.Annotations;
 
 namespace TestPerfLiteDB
 {
-    [MessagePackObject]
+    [MemoryTable("TestDoc"), MessagePackObject(true)]
     public class TestDoc
     {
-        [Key(0)]
+        [PrimaryKey]
         public int id { get; set; }
-        [Key(1)]
         public string name { get; set; }
-        [Key(2)]
         public string lorem { get; set; }
     }
 

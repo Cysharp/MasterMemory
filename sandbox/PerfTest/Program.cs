@@ -26,14 +26,13 @@ namespace TestPerfLiteDB
             RunTest("SQLite: no journal", new SQLite_Test(5000, null, false));
             RunTest("SQLite: in-memory", new SQLite_Test(5000, null, false, true));
 
-            
+
 
             RunTest("Dictionary", new Dictionary_Test(5000));
             RunTest("ConcurrentDictionary", new ConcurrentDictionary_Test(5000));
             RunTest("ImmutableDictionary", new ImmutableDictionary_Test(5000));
-              
-            RunTest("MasterMemory: Plain", new MasterMemory_Test(5000));
-            RunTest("MasterMemory: Loaded", new MasterMemoryDatabase_Test(5000));
+
+            RunTest("MasterMemory", new MasterMemory_Test(5000));
 
             Console.ReadKey();
 

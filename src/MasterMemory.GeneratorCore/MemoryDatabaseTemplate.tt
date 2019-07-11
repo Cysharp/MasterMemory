@@ -1,0 +1,53 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#= Using #>
+
+namespace <#= Namespace #>
+{
+   public sealed class MemoryDatabase : MemoryDatabaseBase
+   {
+<# foreach(var item in GenerationContexts) { #>
+        public <#= item.ClassName #>Table <#= item.ClassName #>Table { get; private set; }
+<# } #>
+
+        public MemoryDatabase(
+<# for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; #>
+            <#= item.ClassName #>Table <#= item.ClassName #>Table<#= (i == GenerationContexts.Length - 1) ? "" : "," #>
+<# } #>
+        )
+        {
+<# for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; #>
+            this.<#= item.ClassName #>Table = <#= item.ClassName #>Table;
+<# } #>
+        }
+
+        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
+            : base(databaseBinary, internString, formatterResolver)
+        {
+        }
+
+        protected override void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, MessagePack.IFormatterResolver resolver)
+        {
+<# foreach(var item in GenerationContexts) { #>
+            this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, headerOffset, databaseBinary, resolver, xs => new <#= item.ClassName #>Table(xs));
+<# } #>
+        }
+
+        public ImmutableBuilder ToImmutableBuilder()
+        {
+            return new ImmutableBuilder(this);
+        }
+
+        public DatabaseBuilder ToDatabaseBuilder()
+        {
+            var builder = new DatabaseBuilder();
+<# foreach(var item in GenerationContexts) { #>
+            builder.Append(this.<#= item.ClassName #>Table.GetRawDataUnsafe());
+<# } #>
+            return builder;
+        }
+    }
+}
