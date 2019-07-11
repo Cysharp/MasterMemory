@@ -18,6 +18,7 @@ namespace MasterMemory.Tests.Tables
             this.primaryIndexSelector = x => (x.SkillId, x.SkillLevel);
         }
 
+
         public SkillMaster FindBySkillIdAndSkillLevel((int SkillId, int SkillLevel) key)
         {
             return FindUniqueCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default, key);

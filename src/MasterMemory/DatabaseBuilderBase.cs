@@ -38,8 +38,10 @@ namespace MasterMemory
                 throw new InvalidOperationException("TableName is already appended in builder. TableName: " + tableName.TableName + " Type:" + typeof(T).FullName);
             }
 
+            if (datasource == null) return;
+
             // sort(as indexed data-table)
-            var source = FastSort(datasource, indexSelector, comparer);
+                var source = FastSort(datasource, indexSelector, comparer);
 
             // write data and store header-data.
             var offset = index;

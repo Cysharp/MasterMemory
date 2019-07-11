@@ -22,6 +22,8 @@ namespace MasterMemory.Tests.Tables
             this.secondaryIndex0 = CloneAndSortBy(this.secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default);
         }
 
+        public RangeView<UserLevel> SortByExp => new RangeView<UserLevel>(secondaryIndex0, 0, secondaryIndex0.Length, true);
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 		public UserLevel FindByLevel(int key)
         {
@@ -29,7 +31,7 @@ namespace MasterMemory.Tests.Tables
             var hi = data.Length - 1;
             while (lo <= hi)
             {
-                var mid = (int)(((uint)hi + (uint)lo) >> 1);
+				var mid = (int)(((uint)hi + (uint)lo) >> 1);
                 var selected = data[mid].Level;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
                 if (found == 0) { return data[mid]; }

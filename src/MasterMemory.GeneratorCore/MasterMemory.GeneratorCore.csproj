@@ -25,11 +25,6 @@
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
         </Compile>
-        <Compile Update="RuntimeTextTemplate1.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>RuntimeTextTemplate1.tt</DependentUpon>
-        </Compile>
         <Compile Update="TableTemplate.cs">
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
@@ -58,10 +53,6 @@
         <None Update="MemoryDatabaseTemplate.tt">
             <LastGenOutput>MemoryDatabaseTemplate.cs</LastGenOutput>
             <Generator>TextTemplatingFilePreprocessor</Generator>
-        </None>
-        <None Update="RuntimeTextTemplate1.tt">
-            <Generator>TextTemplatingFileGenerator</Generator>
-            <LastGenOutput>RuntimeTextTemplate1.cs</LastGenOutput>
         </None>
         <None Update="TableTemplate.tt">
             <LastGenOutput>TableTemplate.cs</LastGenOutput>

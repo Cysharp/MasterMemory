@@ -134,12 +134,12 @@ namespace MasterMemory.GeneratorCore
             #line hidden
             this.Write(@"        }
 
-        public MemoryDatabase(byte[] databaseBinary, bool internString = true, IFormatterResolver formatterResolver = null)
+        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
             : base(databaseBinary, internString, formatterResolver)
         {
         }
 
-        protected override void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, IFormatterResolver resolver)
+        protected override void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, MessagePack.IFormatterResolver resolver)
         {
 ");
             

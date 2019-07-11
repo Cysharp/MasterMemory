@@ -42,7 +42,7 @@ namespace MasterMemory
             }
         }
 
-        internal RangeView(T[] orderedData, int left, int right, bool ascendant)
+        public RangeView(T[] orderedData, int left, int right, bool ascendant)
         {
             if (right < left) hasValue = false;
 

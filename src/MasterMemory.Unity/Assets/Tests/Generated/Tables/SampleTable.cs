@@ -46,6 +46,14 @@ namespace MasterMemory.Tests.Tables
             this.secondaryIndex4 = CloneAndSortBy(this.secondaryIndex4Selector, System.Collections.Generic.Comparer<string>.Default);
         }
 
+        public RangeView<Sample> SortByIdAndAgeAndFirstNameAndLastName => new RangeView<Sample>(secondaryIndex1, 0, secondaryIndex1.Length, true);
+        public RangeView<Sample> SortByIdAndAge => new RangeView<Sample>(secondaryIndex2, 0, secondaryIndex2.Length, true);
+        public RangeView<Sample> SortByIdAndAgeAndFirstName => new RangeView<Sample>(secondaryIndex3, 0, secondaryIndex3.Length, true);
+        public RangeView<Sample> SortByAge => new RangeView<Sample>(secondaryIndex5, 0, secondaryIndex5.Length, true);
+        public RangeView<Sample> SortByFirstNameAndAge => new RangeView<Sample>(secondaryIndex6, 0, secondaryIndex6.Length, true);
+        public RangeView<Sample> SortByFirstNameAndLastName => new RangeView<Sample>(secondaryIndex0, 0, secondaryIndex0.Length, true);
+        public RangeView<Sample> SortByFirstName => new RangeView<Sample>(secondaryIndex4, 0, secondaryIndex4.Length, true);
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 		public Sample FindById(int key)
         {
@@ -53,7 +61,7 @@ namespace MasterMemory.Tests.Tables
             var hi = data.Length - 1;
             while (lo <= hi)
             {
-                var mid = (int)(((uint)hi + (uint)lo) >> 1);
+				var mid = (int)(((uint)hi + (uint)lo) >> 1);
                 var selected = data[mid].Id;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
                 if (found == 0) { return data[mid]; }
