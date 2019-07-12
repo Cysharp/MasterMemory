@@ -10,8 +10,6 @@
         <TargetFramework>netcoreapp3.0</TargetFramework>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>dotnet-mmgen</ToolCommandName>
-        <PublishSingleFile>true</PublishSingleFile>
-        <PublishTrimmed>true</PublishTrimmed>
         <IncludeSymbolsInSingleFile>true</IncludeSymbolsInSingleFile>
     </PropertyGroup>
 
