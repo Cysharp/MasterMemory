@@ -81,12 +81,12 @@ jobs:
     executor: dotnet3
     steps:
       - checkout
-      - run: dotnet build ./src/MasterMemory.Generator/ -c Release -o ./bin/MasterMemory.Generator/dotnet
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r win-x64 -o ./bin/MasterMemory.Generator/win-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r linux-x64 -o ./bin/MasterMemory.Generator/linux-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r osx-x64 -o ./bin/MasterMemory.Generator/osx-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./bin/MasterMemory.Generator/dotnet /p:CIBuild=true;PublishSingleFile=false;PublishTrimmed=false
+      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./bin/MasterMemory.Generator/win-x64 -r win-x64 /p:CIBuild=true
+      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./bin/MasterMemory.Generator/linux-x64 -r linux-x64 /p:CIBuild=true
+      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./bin/MasterMemory.Generator/osx-x64 -r osx-x64 /p:CIBuild=true
       - run: apt update && apt install zip -y
-      - run: zip -r MasterMemory.Generator.zip ./src/MasterMemory.Generator/bin/MasterMemory.Generator
+      - run: zip -r MasterMemory.Generator.zip ./bin/MasterMemory.Generator
       - store_artifacts:
           path: MasterMemory.Generator.zip
           destination: MasterMemory.Generator.zip

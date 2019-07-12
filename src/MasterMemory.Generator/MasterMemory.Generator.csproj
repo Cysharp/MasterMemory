@@ -1,16 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MicroBatchFramework" Version="1.2.0" />
-  </ItemGroup>
+    <PropertyGroup Condition="'$(CIBuild)' == 'true'">
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>dotnet-mmgen</ToolCommandName>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IncludeSymbolsInSingleFile>true</IncludeSymbolsInSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MasterMemory.GeneratorCore\MasterMemory.GeneratorCore.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MicroBatchFramework" Version="1.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MasterMemory.GeneratorCore\MasterMemory.GeneratorCore.csproj" />
+    </ItemGroup>
 
 </Project>
