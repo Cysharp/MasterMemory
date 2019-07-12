@@ -25,7 +25,8 @@
         <PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
         <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-    <PackageTags>database, embedded, inmemory, unity</PackageTags>
+        <PackageTags>database, embedded, inmemory, unity</PackageTags>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="MicroBatchFramework" Version="1.2.0" />
