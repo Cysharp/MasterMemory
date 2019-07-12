@@ -6,6 +6,12 @@ executors:
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       NUGET_XMLDOC_MODE: skip
+  dotnet3:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.0
+    environment:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      NUGET_XMLDOC_MODE: skip
   unity:
     # https://hub.docker.com/r/gableroux/unity3d/tags
     parameters:
@@ -66,37 +72,45 @@ jobs:
       - checkout
       - run: dotnet build -c Release -p:Version=${CIRCLE_TAG}
       - run: dotnet test -c Release --no-build
-      # publish codegen
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r win-x64 -o ./bin/MasterMemory.Generator/win-x64
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r linux-x64 -o ./bin/MasterMemory.Generator/linux-x64
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r osx-x64 -o ./bin/MasterMemory.Generator/osx-x64
-      - run: apt update && apt install zip -y
-      - run: zip -r MasterMemory.Generator.zip ./src/MasterMemory.Generator/bin/MasterMemory.Generator
-      - store_artifacts:
-          path: MasterMemory.Generator.zip
-          destination: MasterMemory.Generator.zip
       # NuGet pack and push
       - run: dotnet pack ./src/MasterMemory/MasterMemory.csproj -c Release --no-build -p:Version=${CIRCLE_TAG}
       - run: dotnet pack ./src/MasterMemory.Annotations/MasterMemory.Annotations.csproj -c Release --no-build -p:Version=${CIRCLE_TAG}
       - run: dotnet nuget push ./src/MasterMemory/bin/Release/MasterMemory.${CIRCLE_TAG}.nupkg -s https://www.nuget.org/api/v2/package -k ${NUGET_KEY}
       - run: dotnet nuget push ./src/MasterMemory.Annotations/bin/Release/MasterMemory.Annotations.${CIRCLE_TAG}.nupkg -s https://www.nuget.org/api/v2/package -k ${NUGET_KEY}
+  build-codegen:
+    executor: dotnet3
+    steps:
+      - checkout
+      - run: dotnet build ./src/MasterMemory.Generator/ -c Release -o ./bin/MasterMemory.Generator/dotnet
+      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r win-x64 -o ./bin/MasterMemory.Generator/win-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r linux-x64 -o ./bin/MasterMemory.Generator/linux-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release --self-contained -r osx-x64 -o ./bin/MasterMemory.Generator/osx-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+      - run: apt update && apt install zip -y
+      - run: zip -r MasterMemory.Generator.zip ./src/MasterMemory.Generator/bin/MasterMemory.Generator
+      - store_artifacts:
+          path: MasterMemory.Generator.zip
+          destination: MasterMemory.Generator.zip
 workflows:
   version: 2
   build-and-push:
     jobs:
-      - build-unity:
-          unity_version: 2019.1.2f1
-          unity_license: ${UNITY_LICENSE_2019_1}
+      # - build-unity:
+      #     unity_version: 2019.1.2f1
+      #     unity_license: ${UNITY_LICENSE_2019_1}
+      #     filters:
+      #       tags:
+      #         only: /.*/
+      # - build-test:
+      #     filters:
+      #       tags:
+      #         only: /.*/
+      # - build-push:
+      #     filters:
+      #       tags:
+      #         only: /^\d\.\d\.\d.*/
+      #       branches:
+      #         ignore: /.*/
+      - build-codegen:
           filters:
             tags:
               only: /.*/
-      - build-test:
-          filters:
-            tags:
-              only: /.*/
-      - build-push:
-          filters:
-            tags:
-              only: /^\d\.\d\.\d.*/
-            branches:
-              ignore: /.*/
