@@ -5,14 +5,13 @@
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <LangVersion>latest</LangVersion>
         <PackAsTool>true</PackAsTool>
+        <ToolCommandName>dotnet-mmgen</ToolCommandName>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(CIBuild)' == 'true'">
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <PackAsTool>true</PackAsTool>
-        <ToolCommandName>dotnet-mmgen</ToolCommandName>
         <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>true</PublishTrimmed>
         <IncludeSymbolsInSingleFile>true</IncludeSymbolsInSingleFile>
