@@ -62,7 +62,7 @@ jobs:
       - persist_to_workspace:
           root: ./src/MasterMemory.Unity/
           paths:
-            - /MasterMemory.Unity.unitypackage
+            - ./MasterMemory.Unity.unitypackage
   # .NET Core debug/test, release/push
   build-test:
     executor: dotnet
@@ -98,7 +98,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - MasterMemory.Generator.zip
+            - ./MasterMemory.Generator.zip
   # upload to github by ghr
   upload-github:
     executor: go
