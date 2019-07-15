@@ -18,6 +18,9 @@ executors:
       version: {type: string}
     docker:
       - image: gableroux/unity3d:<< parameters.version >>
+  go:
+    docker:
+      - image: circleci/golang
 commands:
   unity_activate:
     parameters:
@@ -56,9 +59,10 @@ jobs:
           name: Export unitypackage
           command: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -projectPath . -executeMethod PackageExporter.Export
           working_directory: src/MasterMemory.Unity
-      - store_artifacts:
-          path: ./src/MasterMemory.Unity/MasterMemory.Unity.unitypackage
-          destination: /MasterMemory.Unity.unitypackage
+      - persist_to_workspace:
+          root: ./src/MasterMemory.Unity/
+          paths:
+            - /MasterMemory.Unity.unitypackage
   # .NET Core debug/test, release/push
   build-test:
     executor: dotnet
@@ -91,9 +95,25 @@ jobs:
       - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/osx-x64 -r osx-x64 -p:CIBuild=true
       - run: apt update && apt install zip -y
       - run: zip -r MasterMemory.Generator.zip ./MasterMemory.Generator
+      - persist_to_workspace:
+          root: .
+          paths:
+            - MasterMemory.Generator.zip
+  # upload to github by ghr
+  upload-github:
+    executor: go
+    steps:
+      - attach_workspace:
+          at: .
+      - run: go get github.com/tcnksm/ghr
+      - run: ghr -t ${GITHUB_API} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} ${CIRCLE_TAG} MasterMemory.Generator.zip
+      - run: ghr -t ${GITHUB_API} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} ${CIRCLE_TAG} MasterMemory.Unity.unitypackage
       - store_artifacts:
           path: MasterMemory.Generator.zip
           destination: MasterMemory.Generator.zip
+      - store_artifacts:
+          path: MasterMemory.Unity.unitypackage
+          destination: MasterMemory.Unity.unitypackage
 workflows:
   version: 2
   build-and-push:
@@ -118,3 +138,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - upload-github:
+          requires:
+            - build-unity
+            - build-codegen
+          filters:
+            tags:
+              only: /^\d\.\d\.\d.*/
+            branches:
+              ignore: /.*/
