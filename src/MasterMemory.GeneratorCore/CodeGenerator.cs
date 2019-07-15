@@ -1,16 +1,20 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Formatting;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace MasterMemory.GeneratorCore
 {
     public class CodeGenerator
     {
-        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, Action<string> logger)
+        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, bool addImmutableConstructor, Action<string> logger)
         {
             var list = new List<GenerationContext>();
 
@@ -64,6 +68,24 @@ namespace MasterMemory.GeneratorCore
                     };
 
                     logger(WriteToFile(tableDir, context.ClassName + "Table", template.TransformText()));
+                }
+            }
+            // Modify
+            {
+                if (addImmutableConstructor)
+                {
+                    var workspace = new AdhocWorkspace();
+                    var byFilePath = list.GroupBy(x => x.InputFilePath);
+
+                    foreach (var context in byFilePath)
+                    {
+                        var newFile = BuildRecordConstructorFile(workspace, context.Select(x => x.OriginalClassDeclaration));
+                        if (newFile != null)
+                        {
+                            File.WriteAllText(context.Key, newFile);
+                            logger("Modified " + context.Key);
+                        }
+                    }
                 }
             }
         }
@@ -127,6 +149,8 @@ namespace MasterMemory.GeneratorCore
                 if (context.PrimaryKey != null)
                 {
                     context.UsingStrings = usingStrings;
+                    context.OriginalClassDeclaration = classDecl;
+                    context.InputFilePath = filePath;
                     yield return context;
                 }
             }
@@ -274,6 +298,63 @@ namespace MasterMemory.GeneratorCore
 
             secondaryKey.Properties = list.OrderBy(x => x.KeyOrder).ToArray();
             return secondaryKey;
+        }
+
+        string BuildRecordConstructorFile(AdhocWorkspace workspace, IEnumerable<ClassDeclarationSyntax> classDeclarations)
+        {
+            // using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
+            var modify = false;
+            var editor = new SyntaxEditor(classDeclarations.First().SyntaxTree.GetRoot(), workspace);
+            foreach (var classDeclaration in classDeclarations)
+            {
+                var members = classDeclaration.Members.OfType<PropertyDeclarationSyntax>()
+                    .Where(x => x.Modifiers.Any(y => y.IsKind(SyntaxKind.PublicKeyword)))
+                    .ToArray();
+
+                var parameters = ParameterList(SeparatedList(members.Select(x => Parameter(attributeLists: default, modifiers: default, type: x.Type, x.Identifier, @default: null))));
+
+                var parameterStrings = parameters.Parameters.Select(x => x.Type.ToFullStringTrim()).ToArray();
+
+                // check existing constructor
+                var matchedConstructor = classDeclaration.Members.OfType<ConstructorDeclarationSyntax>()
+                    .Where(x => x.ParameterList.Parameters.Select(y => y.Type.ToFullStringTrim()).SequenceEqual(parameterStrings))
+                    .ToArray();
+
+                if (matchedConstructor.Length != 0)
+                {
+                    continue;
+                }
+
+                var body = members.Select(x => AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression, MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, ThisExpression(), IdentifierName(x.Identifier)),
+                        Token(SyntaxKind.EqualsToken),
+                        IdentifierName(x.Identifier)))
+                    .Select(x => ExpressionStatement(x));
+
+                var recordCtor = ConstructorDeclaration(classDeclaration.Identifier)
+                    .WithModifiers(TokenList(Token(Sy‌​ntaxKind.PublicKeywo‌​rd)))
+                    .WithParameterList(parameters)
+                    .WithBody(Block(body))
+                    .NormalizeWhitespace()
+                    .WithLeadingTrivia(LineFeed)
+                    .WithTrailingTrivia(LineFeed);
+
+                var newClassDecl = classDeclaration.AddMembers(recordCtor);
+
+                modify = true;
+                editor.ReplaceNode(classDeclaration, newClassDecl);
+            }
+
+            if (modify)
+            {
+                var newCodeString = Microsoft.CodeAnalysis.Formatting.Formatter.Format(editor.GetChangedRoot(), workspace).ToFullString();
+                return newCodeString;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 

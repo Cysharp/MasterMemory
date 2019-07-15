@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace MasterMemory.GeneratorCore
 {
@@ -10,6 +11,8 @@ namespace MasterMemory.GeneratorCore
         public PrimaryKey PrimaryKey { get; set; }
         public SecondaryKey[] SecondaryKeys { get; set; }
 
+        public string InputFilePath { get; set; }
+        public ClassDeclarationSyntax OriginalClassDeclaration { get; set; }
     }
 
     public abstract class KeyBase

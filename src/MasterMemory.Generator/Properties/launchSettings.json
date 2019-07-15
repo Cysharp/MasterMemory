@@ -2,7 +2,7 @@
   "profiles": {
     "MasterMemory.Generator": {
       "commandName": "Project",
-      "commandLineArgs": "-i \"C:\\GitHubRepositories\\MasterMemory\\sandbox\\ConsoleApp\" -o \"C:\\GitHubRepositories\\MasterMemory\\sandbox\\ConsoleApp\\Generated\" -n \"ConsoleApp\""
+      "commandLineArgs": "-i \"C:\\Users\\neuecc\\Documents\\Git\\MasterMemory\\sandbox\\ConsoleApp\" -o \"C:\\Users\\neuecc\\Documents\\Git\\MasterMemory\\sandbox\\ConsoleApp\\Generated\" -n \"ConsoleApp\" -c"
     }
   }
 }

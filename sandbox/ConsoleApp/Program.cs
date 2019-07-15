@@ -1,4 +1,4 @@
-﻿using MasterMemory;
+using MasterMemory;
 using MessagePack;
 using System;
 using System.IO;
@@ -9,10 +9,19 @@ namespace ConsoleApp
     public class Monster
     {
         [PrimaryKey]
-        public int MonsterId { get; set; }
-        public string Name { get; set; }
-        public int MaxHp { get; set; }
+        public int MonsterId { get; }
+        public string Name { get; }
+        public int MaxHp { get; }
+
+        public Monster(int MonsterId, string Name, int MaxHp)
+        {
+            this.MonsterId = MonsterId;
+            this.Name = Name;
+            this.MaxHp = MaxHp;
+        }
     }
+
+
 
 
     public enum Gender
@@ -32,6 +41,14 @@ namespace ConsoleApp
         [SecondaryKey(2, keyOrder: 0), NonUnique]
         public Gender Gender { get; set; }
         public string Name { get; set; }
+
+        public Person(int PersonId, int Age, Gender Gender, string Name)
+        {
+            this.PersonId = PersonId;
+            this.Age = Age;
+            this.Gender = Gender;
+            this.Name = Name;
+        }
     }
 
 
@@ -40,9 +57,9 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
-            var bin = new DatabaseBuilder().Append(new[]
+            var bin = new DatabaseBuilder().Append(new Monster[]
             {
-                new Monster { MonsterId = 1, Name = "Foo", MaxHp = 100 }
+                new Monster ( MonsterId : 1, Name : "Foo", MaxHp : 100 )
             }).Build();
 
 
