@@ -18,7 +18,7 @@ namespace MasterMemory.GeneratorCore
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+    #line 1 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "16.0.0.0")]
     public partial class DatabaseBuilderTemplate : DatabaseBuilderTemplateBase
     {
@@ -29,49 +29,51 @@ namespace MasterMemory.GeneratorCore
         public virtual string TransformText()
         {
             
-            #line 6 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+            #line 6 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Using));
             
             #line default
             #line hidden
             this.Write("\r\n\r\nnamespace ");
             
-            #line 8 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+            #line 8 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
             
             #line default
             #line hidden
-            this.Write("\r\n{\r\n   public sealed class DatabaseBuilder : DatabaseBuilderBase\r\n   {\r\n");
+            this.Write("\r\n{\r\n   public sealed class DatabaseBuilder : DatabaseBuilderBase\r\n   {\r\n        " +
+                    "public DatabaseBuilder() : this(null) { }\r\n        public DatabaseBuilder(Messag" +
+                    "ePack.IFormatterResolver resolver) : base(resolver) { }\r\n\r\n");
             
-            #line 12 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+            #line 15 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
  foreach(var item in GenerationContexts) { 
             
             #line default
             #line hidden
             this.Write("        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<");
             
-            #line 13 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+            #line 16 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             
             #line default
             #line hidden
             this.Write("> dataSource)\r\n        {\r\n            AppendCore(dataSource, x => ");
             
-            #line 15 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+            #line 18 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.PrimaryKey.BuildKeyAccessor("x")));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 15 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+            #line 18 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.PrimaryKey.BuildComparer()));
             
             #line default
             #line hidden
-            this.Write(");\r\n\t\t\treturn this;\r\n        }\r\n\r\n");
+            this.Write(");\r\n            return this;\r\n        }\r\n\r\n");
             
-            #line 19 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
+            #line 22 "C:\Users\neuecc\Documents\Git\MasterMemory\src\MasterMemory.GeneratorCore\DatabaseBuilderTemplate.tt"
  } 
             
             #line default

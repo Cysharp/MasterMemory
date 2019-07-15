@@ -9,7 +9,9 @@ using ConsoleApp.Tables;
 namespace ConsoleApp
 {
    public sealed class DatabaseBuilder : DatabaseBuilderBase
-   {
+    {
+        public DatabaseBuilder() : this(null) { }
+        public DatabaseBuilder(MessagePack.IFormatterResolver resolver) : base(resolver) { }
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Monster> dataSource)
         {
             AppendCore(dataSource, x => x.MonsterId, System.Collections.Generic.Comparer<int>.Default);

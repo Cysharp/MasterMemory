@@ -32,7 +32,7 @@ namespace ConsoleApp
     [MemoryTable("person"), MessagePackObject(true)]
     public class Person
     {
-        [PrimaryKey]
+        [PrimaryKey(keyOrder: 1)]
         public int PersonId { get; set; }
         [SecondaryKey(0), NonUnique]
         [SecondaryKey(2, keyOrder: 1), NonUnique]
@@ -63,12 +63,17 @@ namespace ConsoleApp
             }).Build();
 
 
+            // new DatabaseBuilderBase(
+
+
+            //new DatabaseBuilder(
 
 
             var db = new MemoryDatabase(File.ReadAllBytes("db.bin"));
 
             // .PersonTable.FindByPersonIdもコード生成により型が付いてる
             Person person = db.PersonTable.FindByPersonId(10);
+
 
             // 女性の23歳を取得。戻り値は複数。
             RangeView<Person> result = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
@@ -80,6 +85,13 @@ namespace ConsoleApp
 
             // 20歳から29際の人を取得
             RangeView<Person> age2 = db.PersonTable.FindRangeByAge(20, 29);
+
+
+
+            
+
+
+            
 
 
 

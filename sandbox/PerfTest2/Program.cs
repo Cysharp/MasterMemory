@@ -22,8 +22,8 @@ namespace TestPerfLiteDB
             RunTest("LiteDB: in-memory", new LiteDB_Test(5000));
 
             RunTest("SQLite: default", new SQLite_Test(5000, null, true));
-            RunTest("SQLite: encrypted", new SQLite_Test(5000, "mypass", true));
-            RunTest("SQLite: no journal", new SQLite_Test(5000, null, false));
+            //RunTest("SQLite: encrypted", new SQLite_Test(5000, "mypass", true));
+            //RunTest("SQLite: no journal", new SQLite_Test(5000, null, false));
             RunTest("SQLite: in-memory", new SQLite_Test(5000, null, false, true));
 
 

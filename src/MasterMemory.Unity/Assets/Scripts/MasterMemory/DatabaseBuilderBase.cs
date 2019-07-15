@@ -17,11 +17,6 @@ namespace MasterMemory
         readonly Dictionary<string, (int offset, int count)> header = new Dictionary<string, (int offset, int count)>();
         readonly IFormatterResolver resolver;
 
-        public DatabaseBuilderBase()
-            : this(null)
-        {
-        }
-
         public DatabaseBuilderBase(IFormatterResolver resolver)
         {
             this.resolver = resolver;
