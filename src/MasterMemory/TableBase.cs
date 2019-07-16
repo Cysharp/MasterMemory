@@ -87,7 +87,7 @@ namespace MasterMemory
         static protected RangeView<TElement> FindManyRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
         {
             var lo = FindManyClosestCore(indexArray, keySelector, comparer, min, false).FirstIndex;
-            var hi = FindManyClosestCore(indexArray, keySelector, comparer, min, true).LastIndex;
+            var hi = FindManyClosestCore(indexArray, keySelector, comparer, max, true).LastIndex;
             return new RangeView<TElement>(indexArray, lo, hi, ascendant);
         }
     }
