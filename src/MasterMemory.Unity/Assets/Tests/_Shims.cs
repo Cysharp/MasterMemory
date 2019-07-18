@@ -32,10 +32,19 @@ namespace FluentAssertions
         {
             return new Int(value);
         }
+        public static Bool Should(this bool value)
+        {
+            return new Bool(value);
+        }
 
         public static Generic<T> Should<T>(this T value)
         {
             return new Generic<T>(value);
+        }
+
+        public static Collection<T> Should<T>(this T[] value)
+        {
+            return new Collection<T>(value);
         }
 
         public static Collection<T> Should<T>(this IEnumerable<T> value)
@@ -58,6 +67,11 @@ namespace FluentAssertions
             }
 
             public void BeEquivalentTo(T[] expected)
+            {
+                Assert.True(actual.SequenceEqual(expected));
+            }
+
+            public void BeEquivalentTo(IEnumerable<T> expected)
             {
                 Assert.True(actual.SequenceEqual(expected));
             }
@@ -122,6 +136,28 @@ namespace FluentAssertions
                 {
                     Assert.Fail($"Fail BeCloseTo, actual {actual} but expected:{expected} +- {delta}");
                 }
+            }
+        }
+
+
+
+        public class Bool
+        {
+            bool actual;
+
+            public Bool(bool actual)
+            {
+                this.actual = actual;
+            }
+
+            public void BeTrue()
+            {
+                Assert.AreEqual(true, actual);
+            }
+
+            public void BeFalse()
+            {
+                Assert.AreEqual(false, actual);
             }
         }
     }

@@ -265,7 +265,7 @@ namespace MasterMemory.GeneratorCore
             #line default
             #line hidden
             this.Write("        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServic" +
-                    "es.MethodImplOptions.AggressiveInlining)]\r\n\t\tpublic ");
+                    "es.MethodImplOptions.AggressiveInlining)]\r\n        public ");
             
             #line 36 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
@@ -287,8 +287,8 @@ namespace MasterMemory.GeneratorCore
             #line default
             #line hidden
             this.Write(" key)\r\n        {\r\n            var lo = 0;\r\n            var hi = data.Length - 1;\r" +
-                    "\n            while (lo <= hi)\r\n            {\r\n\t\t\t\tvar mid = (int)(((uint)hi + (u" +
-                    "int)lo) >> 1);\r\n                var selected = data[mid].");
+                    "\n            while (lo <= hi)\r\n            {\r\n                var mid = (int)(((" +
+                    "uint)hi + (uint)lo) >> 1);\r\n                var selected = data[mid].");
             
             #line 43 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(item.Properties[0].Name));

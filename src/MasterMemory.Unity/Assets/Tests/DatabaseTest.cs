@@ -60,9 +60,9 @@ namespace MasterMemory.Tests
             var bin = builder.Build();
             var db = new MemoryDatabase(bin);
 
-            db.SampleTable.All.Select(x => x.Id).Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
-            db.SampleTable.AllReverse.Select(x => x.Id).Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }.Reverse());
-            db.SampleTable.SortByAge.Select(x => x.Id).OrderBy(x => x).Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            db.SampleTable.All.Select(x => x.Id).ToArray().Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            db.SampleTable.AllReverse.Select(x => x.Id).ToArray().Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }.Reverse());
+            db.SampleTable.SortByAge.Select(x => x.Id).OrderBy(x => x).ToArray().Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
         }
 
         [Fact]
