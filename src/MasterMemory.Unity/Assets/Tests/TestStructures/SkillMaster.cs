@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 
 namespace MasterMemory.Tests
 {
@@ -12,5 +12,20 @@ namespace MasterMemory.Tests
         public int AttackPower { get; set; }
         public string SkillName { get; set; }
         public string Description { get; set; }
+
+        public SkillMaster()
+        {
+
+        }
+
+        public SkillMaster(int SkillId, int SkillLevel, int AttackPower, string SkillName, string Description)
+        {
+            this.SkillId = SkillId;
+            this.SkillLevel = SkillLevel;
+            this.AttackPower = AttackPower;
+            this.SkillName = SkillName;
+            this.Description = Description;
+        }
+
     }
 }

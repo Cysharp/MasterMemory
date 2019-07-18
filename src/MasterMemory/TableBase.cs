@@ -10,8 +10,8 @@ namespace MasterMemory
 
         // Common Properties
         public int Count => data.Length;
-        public RangeView<TElement> All => new RangeView<TElement>(data, 0, data.Length, true);
-        public RangeView<TElement> AllReverse => new RangeView<TElement>(data, 0, data.Length, false);
+        public RangeView<TElement> All => new RangeView<TElement>(data, 0, data.Length - 1, true);
+        public RangeView<TElement> AllReverse => new RangeView<TElement>(data, 0, data.Length - 1, false);
         public TElement[] GetRawDataUnsafe() => data;
 
         public TableBase(TElement[] sortedData)

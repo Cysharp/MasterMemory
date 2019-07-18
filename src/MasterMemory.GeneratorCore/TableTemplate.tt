@@ -27,7 +27,7 @@ namespace <#= Namespace #>.Tables
         }
 
 <# for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var item = GenerationContext.SecondaryKeys[i]; #>
-        public RangeView<<#= GenerationContext.ClassName #>> SortBy<#= item.BuildMethodName() #> => new RangeView<<#= GenerationContext.ClassName #>>(<#= item.TableName #>, 0, <#= item.TableName #>.Length, true);
+        public RangeView<<#= GenerationContext.ClassName #>> SortBy<#= item.BuildMethodName() #> => new RangeView<<#= GenerationContext.ClassName #>>(<#= item.TableName #>, 0, <#= item.TableName #>.Length - 1, true);
 <# } #>
 
 <# foreach(var item in new KeyBase[] { GenerationContext.PrimaryKey }.Concat(GenerationContext.SecondaryKeys)) { #>

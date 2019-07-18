@@ -8,25 +8,26 @@ using MasterMemory.Tests.Tables;
 namespace MasterMemory.Tests
 {
    public sealed class DatabaseBuilder : DatabaseBuilderBase
-    {
+   {
         public DatabaseBuilder() : this(null) { }
         public DatabaseBuilder(MessagePack.IFormatterResolver resolver) : base(resolver) { }
+
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Sample> dataSource)
         {
             AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
-			return this;
+            return this;
         }
 
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<SkillMaster> dataSource)
         {
             AppendCore(dataSource, x => (x.SkillId, x.SkillLevel), System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default);
-			return this;
+            return this;
         }
 
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<UserLevel> dataSource)
         {
             AppendCore(dataSource, x => x.Level, System.Collections.Generic.Comparer<int>.Default);
-			return this;
+            return this;
         }
 
     }

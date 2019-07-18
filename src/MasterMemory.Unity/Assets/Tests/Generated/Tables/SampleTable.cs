@@ -1,4 +1,5 @@
-﻿using MasterMemory;
+﻿using MasterMemory.Tests;
+using MasterMemory;
 using MessagePack;
 using System.Collections.Generic;
 using System;
@@ -44,13 +45,13 @@ namespace MasterMemory.Tests.Tables
             this.secondaryIndex4 = CloneAndSortBy(this.secondaryIndex4Selector, System.Collections.Generic.Comparer<string>.Default);
         }
 
-        public RangeView<Sample> SortByIdAndAgeAndFirstNameAndLastName => new RangeView<Sample>(secondaryIndex1, 0, secondaryIndex1.Length, true);
-        public RangeView<Sample> SortByIdAndAge => new RangeView<Sample>(secondaryIndex2, 0, secondaryIndex2.Length, true);
-        public RangeView<Sample> SortByIdAndAgeAndFirstName => new RangeView<Sample>(secondaryIndex3, 0, secondaryIndex3.Length, true);
-        public RangeView<Sample> SortByAge => new RangeView<Sample>(secondaryIndex5, 0, secondaryIndex5.Length, true);
-        public RangeView<Sample> SortByFirstNameAndAge => new RangeView<Sample>(secondaryIndex6, 0, secondaryIndex6.Length, true);
-        public RangeView<Sample> SortByFirstNameAndLastName => new RangeView<Sample>(secondaryIndex0, 0, secondaryIndex0.Length, true);
-        public RangeView<Sample> SortByFirstName => new RangeView<Sample>(secondaryIndex4, 0, secondaryIndex4.Length, true);
+        public RangeView<Sample> SortByIdAndAgeAndFirstNameAndLastName => new RangeView<Sample>(secondaryIndex1, 0, secondaryIndex1.Length - 1, true);
+        public RangeView<Sample> SortByIdAndAge => new RangeView<Sample>(secondaryIndex2, 0, secondaryIndex2.Length - 1, true);
+        public RangeView<Sample> SortByIdAndAgeAndFirstName => new RangeView<Sample>(secondaryIndex3, 0, secondaryIndex3.Length - 1, true);
+        public RangeView<Sample> SortByAge => new RangeView<Sample>(secondaryIndex5, 0, secondaryIndex5.Length - 1, true);
+        public RangeView<Sample> SortByFirstNameAndAge => new RangeView<Sample>(secondaryIndex6, 0, secondaryIndex6.Length - 1, true);
+        public RangeView<Sample> SortByFirstNameAndLastName => new RangeView<Sample>(secondaryIndex0, 0, secondaryIndex0.Length - 1, true);
+        public RangeView<Sample> SortByFirstName => new RangeView<Sample>(secondaryIndex4, 0, secondaryIndex4.Length - 1, true);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 		public Sample FindById(int key)

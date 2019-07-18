@@ -44,13 +44,11 @@ namespace MasterMemory
 
         public RangeView(T[] orderedData, int left, int right, bool ascendant)
         {
-            if (right < left) hasValue = false;
-
+            this.hasValue = (orderedData.Length != 0) && (left <= right); // same index is length = 1
             this.orderedData = orderedData;
             this.left = left;
             this.right = right;
             this.ascendant = ascendant;
-            this.hasValue = orderedData.Length != 0;
         }
 
         public IEnumerator<T> GetEnumerator()

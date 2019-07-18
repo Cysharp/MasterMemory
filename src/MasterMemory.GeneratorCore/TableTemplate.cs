@@ -244,7 +244,7 @@ namespace MasterMemory.GeneratorCore
             
             #line default
             #line hidden
-            this.Write(".Length, true);\r\n");
+            this.Write(".Length - 1, true);\r\n");
             
             #line 31 "C:\GitHubRepositories\MasterMemory\src\MasterMemory.GeneratorCore\TableTemplate.tt"
  } 

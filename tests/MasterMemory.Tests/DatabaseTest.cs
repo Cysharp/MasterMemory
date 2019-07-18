@@ -50,5 +50,31 @@ namespace MasterMemory.Tests
             var tableInfo = MemoryDatabase.GetTableInfo(bin);
             tableInfo[0].TableName.Should().Be("Sample");
         }
+
+        [Fact]
+        public void All()
+        {
+            var builder = new DatabaseBuilder();
+            builder.Append(CreateData());
+
+            var bin = builder.Build();
+            var db = new MemoryDatabase(bin);
+
+            db.SampleTable.All.Select(x => x.Id).Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            db.SampleTable.AllReverse.Select(x => x.Id).Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }.Reverse());
+            db.SampleTable.SortByAge.Select(x => x.Id).OrderBy(x => x).Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+        }
+
+        [Fact]
+        public void EmptyAll()
+        {
+            var builder = new DatabaseBuilder();
+            builder.Append(new Sample[] { });
+
+            var bin = builder.Build();
+            var db = new MemoryDatabase(bin);
+
+            db.SampleTable.All.Any().Should().BeFalse();
+        }
     }
 }

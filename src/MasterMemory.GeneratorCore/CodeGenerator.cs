@@ -310,6 +310,22 @@ namespace MasterMemory.GeneratorCore
             {
                 var members = classDeclaration.Members.OfType<PropertyDeclarationSyntax>()
                     .Where(x => x.Modifiers.Any(y => y.IsKind(SyntaxKind.PublicKeyword)))
+                    .Where(x=>
+                    {
+                        foreach (var attr in x.AttributeLists.SelectMany(y => y.Attributes))
+                        {
+                            var attrName = attr.Name.ToFullString().Trim();
+                            if (attrName == "IgnoreMember" || attrName == "MessagePack.IgnoreMember")
+                            {
+                                return false;
+                            }
+                            if (attrName == "IgnoreDataMember" || attrName == "System.Runtime.Serialization.IgnoreDataMember")
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    })
                     .ToArray();
 
                 var parameters = ParameterList(SeparatedList(members.Select(x => Parameter(attributeLists: default, modifiers: default, type: x.Type, x.Identifier, @default: null))));
