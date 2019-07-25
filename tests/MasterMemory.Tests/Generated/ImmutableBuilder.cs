@@ -1,7 +1,9 @@
-﻿using MasterMemory.Tests;
+﻿using MasterMemory.Tests.TestStructures;
+using MasterMemory.Tests;
 using MasterMemory;
 using MessagePack;
 using System.Collections.Generic;
+using System.Text;
 using System;
 using MasterMemory.Tests.Tables;
 
@@ -28,6 +30,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 table,
                 memory.SkillMasterTable,
+                memory.TestMasterTable,
                 memory.UserLevelTable
             
             );
@@ -41,6 +44,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 table,
                 memory.SkillMasterTable,
+                memory.TestMasterTable,
                 memory.UserLevelTable
             
             );
@@ -54,6 +58,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 table,
                 memory.SkillMasterTable,
+                memory.TestMasterTable,
                 memory.UserLevelTable
             
             );
@@ -66,6 +71,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 memory.SampleTable,
                 table,
+                memory.TestMasterTable,
                 memory.UserLevelTable
             
             );
@@ -79,6 +85,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 memory.SampleTable,
                 table,
+                memory.TestMasterTable,
                 memory.UserLevelTable
             
             );
@@ -92,10 +99,25 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 memory.SampleTable,
                 table,
+                memory.TestMasterTable,
                 memory.UserLevelTable
             
             );
         }
+
+        public void ReplaceAll(System.Collections.Generic.IList<TestMaster> data)
+        {
+            var newData = CloneAndSortBy(data, x => x.TestID, System.Collections.Generic.Comparer<int>.Default);
+            var table = new TestMasterTable(newData);
+            memory = new MemoryDatabase(
+                memory.SampleTable,
+                memory.SkillMasterTable,
+                table,
+                memory.UserLevelTable
+            
+            );
+        }
+
 
         public void ReplaceAll(System.Collections.Generic.IList<UserLevel> data)
         {
@@ -104,6 +126,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 memory.SampleTable,
                 memory.SkillMasterTable,
+                memory.TestMasterTable,
                 table
             
             );
@@ -117,6 +140,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 memory.SampleTable,
                 memory.SkillMasterTable,
+                memory.TestMasterTable,
                 table
             
             );
@@ -130,6 +154,7 @@ namespace MasterMemory.Tests
             memory = new MemoryDatabase(
                 memory.SampleTable,
                 memory.SkillMasterTable,
+                memory.TestMasterTable,
                 table
             
             );

@@ -132,7 +132,7 @@ namespace MasterMemory.GeneratorCore
         {
             get
             {
-                return (this is PrimaryKey) && (IsComparableNumberType);
+                return (this is PrimaryKey) && (IsComparableNumberType) && !IsNonUnique;
             }
         }
     }

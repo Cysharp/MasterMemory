@@ -54,13 +54,13 @@ namespace MasterMemory.Tests.Tables
         public RangeView<Sample> SortByFirstName => new RangeView<Sample>(secondaryIndex4, 0, secondaryIndex4.Length - 1, true);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-		public Sample FindById(int key)
+        public Sample FindById(int key)
         {
             var lo = 0;
             var hi = data.Length - 1;
             while (lo <= hi)
             {
-				var mid = (int)(((uint)hi + (uint)lo) >> 1);
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
                 var selected = data[mid].Id;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
                 if (found == 0) { return data[mid]; }
