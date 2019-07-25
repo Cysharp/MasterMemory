@@ -42,7 +42,11 @@ namespace <#= Namespace #>.Tables
                 var mid = (int)(((uint)hi + (uint)lo) >> 1);
                 var selected = data[mid].<#= item.Properties[0].Name #>;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+<# if(item.IsNonUnique) { #>
+                if (found == 0) { return FindRangeBy<#= item.BuildMethodName() #>(lo, hi); }
+<# } else { #>
                 if (found == 0) { return data[mid]; }
+<# } #>
                 if (found < 0) { lo = mid + 1; }
                 else { hi = mid - 1; }
             }
