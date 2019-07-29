@@ -254,9 +254,9 @@ Both `PrimaryKey` and `SecondaryKey` can add to multiple properties, it will be 
 [MemoryTable("sample")]
 public class Sample
 {
-    [ParimaryKey]
+    [PrimaryKey]
     public int Foo { get; set; }
-    [ParimaryKey]
+    [PrimaryKey]
     public int Bar { get; set; }
 }
 
@@ -267,9 +267,9 @@ db.Sample.FindByFooAndBar((int Foo, int Bar))
 [MemoryTable("sample")]
 public class Sample
 {
-    [ParimaryKey(keyOrder: 1)]
+    [PrimaryKey(keyOrder: 1)]
     public int Foo { get; set; }
-    [ParimaryKey(keyOrder: 0)]
+    [PrimaryKey(keyOrder: 0)]
     public int Bar { get; set; }
 }
 
@@ -282,9 +282,9 @@ Default of `FindBy***` return type is single(if not found, returns `null`). It m
 [MemoryTable("sample")]
 public class Sample
 {
-    [ParimaryKey, NonUnique]
+    [PrimaryKey, NonUnique]
     public int Foo { get; set; }
-    [ParimaryKey, NonUnique]
+    [PrimaryKey, NonUnique]
     public int Bar { get; set; }
 }
 
@@ -295,7 +295,7 @@ RangeView<Sample> q = db.Sample.FindByFooAndBar((int Foo, int Bar))
 [MemoryTable("sample")]
 public class Sample
 {
-    [ParimaryKey]
+    [PrimaryKey]
     [SecondaryKey(0)]
     public int Foo { get; set; }
     [SecondaryKey(0)]
