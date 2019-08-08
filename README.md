@@ -470,7 +470,7 @@ jobs:
     steps:
       - checkout
       - run: dotnet tool install --global MasterMemory.Generator
-      - run: dotnet mmgen -i ./ -o ./MasterMemory -m Test
+      - run: dotnet mmgen -i ./ -o ./MasterMemory -n Test
       /* git push or store artifacts or etc... */
 ```
 
