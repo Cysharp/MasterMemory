@@ -14,6 +14,8 @@ namespace MasterMemory.GeneratorCore
 {
     public class CodeGenerator
     {
+        static readonly Encoding NoBomUtf8 = new UTF8Encoding(false);
+
         public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, bool addImmutableConstructor, Action<string> logger)
         {
             var list = new List<GenerationContext>();
@@ -82,7 +84,7 @@ namespace MasterMemory.GeneratorCore
                         var newFile = BuildRecordConstructorFile(workspace, context.Select(x => x.OriginalClassDeclaration));
                         if (newFile != null)
                         {
-                            File.WriteAllText(context.Key, newFile);
+                            File.WriteAllText(context.Key, newFile, NoBomUtf8);
                             logger("Modified " + context.Key);
                         }
                     }
@@ -93,7 +95,7 @@ namespace MasterMemory.GeneratorCore
         static string WriteToFile(string directory, string fileName, string content)
         {
             var path = Path.Combine(directory, fileName + ".cs");
-            File.WriteAllText(path, content, Encoding.UTF8);
+            File.WriteAllText(path, content, NoBomUtf8);
             return $"Generate {fileName} to: {path}";
         }
 
