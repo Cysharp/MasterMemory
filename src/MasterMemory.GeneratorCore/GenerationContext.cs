@@ -71,9 +71,21 @@ namespace MasterMemory.GeneratorCore
 
         public string BuildComparer()
         {
-            return (StringComparisonOption == null)
-                ? $"System.Collections.Generic.Comparer<{BuildTypeName()}>.Default"
-                : "System.StringComparer." + StringComparisonOption.Split('.').Last();
+            if (!IsStringType)
+            {
+                return $"System.Collections.Generic.Comparer<{BuildTypeName()}>.Default";
+            }
+            else
+            {
+                if (StringComparisonOption != null)
+                {
+                    return "System.StringComparer." + StringComparisonOption.Split('.').Last();
+                }
+                else
+                {
+                    return "System.StringComparer.Ordinal";
+                }
+            }
         }
 
         public bool IsIntType
@@ -84,6 +96,29 @@ namespace MasterMemory.GeneratorCore
                 {
                     var typeName = Properties[0].TypeName;
                     if (typeName == "int" || typeName == "Int32" || typeName == "System.Int32")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool IsStringType
+        {
+            get
+            {
+                if (Properties.Length == 1)
+                {
+                    var typeName = Properties[0].TypeName;
+                    if (typeName == "string" || typeName == "String" || typeName == "System.String")
                     {
                         return true;
                     }

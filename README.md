@@ -308,6 +308,18 @@ db.Sample.FindByFooAndBar((int Foo, int Bar))
 db.Sample.FindByBar(int Bar)
 ```
 
+`[StringComparisonOption]` allow to configure how compare if key is string. Default is `Ordinal`.
+
+```csharp
+[MemoryTable("sample")]
+public class Sample
+{
+    [PrimaryKey]
+    [StringComparisonOption(StringComparison.InvariantCultureIgnoreCase)]
+    public string Foo { get; set; }
+}
+```
+
 MemoryDatabase/RangeView
 ---
 In default, `MemoryDatabase` do all string data automatically interning(see: [Wikipedia/String interning](https://en.wikipedia.org/wiki/String_interning)). If multiple same string value exists in database(ex: "goblin","goblin", "goblin", "goblin", "goblin"....), standard database creates string value per query or store multiple same values. But MasterMemory stores single string value reference, it can save much memory if data is denormalized.
