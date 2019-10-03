@@ -35,7 +35,7 @@ namespace MasterMemory
             if (datasource == null) return;
 
             // sort(as indexed data-table)
-                var source = FastSort(datasource, indexSelector, comparer);
+            var source = FastSort(datasource, indexSelector, comparer);
 
             // write data and store header-data.
             var offset = index;
@@ -63,8 +63,8 @@ namespace MasterMemory
             }
             else
             {
-                var array = new ExpandableArray<TElement>();
-                var sortSource = new ExpandableArray<TKey>();
+                var array = new ExpandableArray<TElement>(null);
+                var sortSource = new ExpandableArray<TKey>(null);
                 foreach (var item in datasource)
                 {
                     array.Add(item);

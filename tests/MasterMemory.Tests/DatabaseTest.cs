@@ -68,13 +68,24 @@ namespace MasterMemory.Tests
         [Fact]
         public void EmptyAll()
         {
-            var builder = new DatabaseBuilder();
-            builder.Append(new Sample[] { });
+            {
+                var builder = new DatabaseBuilder();
+                builder.Append(new Sample[] { });
 
-            var bin = builder.Build();
-            var db = new MemoryDatabase(bin);
+                var bin = builder.Build();
+                var db = new MemoryDatabase(bin);
 
-            db.SampleTable.All.Any().Should().BeFalse();
+                db.SampleTable.All.Any().Should().BeFalse();
+            }
+            {
+                var builder = new DatabaseBuilder();
+                builder.Append(new Sample[] { }.Select(x => x));
+
+                var bin = builder.Build();
+                var db = new MemoryDatabase(bin);
+
+                db.SampleTable.All.Any().Should().BeFalse();
+            }
         }
     }
 }

@@ -7,9 +7,15 @@ namespace MasterMemory.Internal
         internal TElement[] items;
         internal int count;
 
+        public ExpandableArray(object dummy)
+        {
+            items = Array.Empty<TElement>();
+            count = 0;
+        }
+
         internal void Add(TElement item)
         {
-            if (items == null)
+            if (items == null || items.Length == 0)
             {
                 items = new TElement[4];
             }
