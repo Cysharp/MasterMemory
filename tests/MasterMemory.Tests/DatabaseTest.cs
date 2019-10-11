@@ -87,5 +87,26 @@ namespace MasterMemory.Tests
                 db.SampleTable.All.Any().Should().BeFalse();
             }
         }
+
+        [Fact]
+        public void WithNull()
+        {
+            var builder = new DatabaseBuilder();
+            builder.Append(new Sample[] {new Sample
+            {
+                Age = 10,
+                FirstName = null,
+                Id = 999,
+                LastName = "abcde"
+            } });
+
+            var bin = builder.Build();
+            var db = new MemoryDatabase(bin);
+
+            var sample = db.SampleTable.FindById(999);
+            sample.Age.Should().Be(10);
+            sample.FirstName.Should().BeNull();
+            sample.LastName.Should().Be("abcde");
+        }
     }
 }

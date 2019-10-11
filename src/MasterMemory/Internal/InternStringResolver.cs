@@ -25,7 +25,13 @@ namespace MasterMemory.Internal
 
         string IMessagePackFormatter<string>.Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
         {
-            return string.Intern(MessagePackBinary.ReadString(bytes, offset, out readSize));
+            var str = MessagePackBinary.ReadString(bytes, offset, out readSize);
+            if (str == null)
+            {
+                return null;
+            }
+
+            return string.Intern(str);
         }
 
         int IMessagePackFormatter<string>.Serialize(ref byte[] bytes, int offset, string value, IFormatterResolver formatterResolver)
