@@ -23,9 +23,9 @@ namespace MasterMemory.Internal
             return innerResolver.GetFormatter<T>();
         }
 
-        string IMessagePackFormatter<string>.Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
+        string IMessagePackFormatter<string>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            var str = MessagePackBinary.ReadString(bytes, offset, out readSize);
+            var str = reader.ReadString();
             if (str == null)
             {
                 return null;
@@ -34,9 +34,9 @@ namespace MasterMemory.Internal
             return string.Intern(str);
         }
 
-        int IMessagePackFormatter<string>.Serialize(ref byte[] bytes, int offset, string value, IFormatterResolver formatterResolver)
+        void IMessagePackFormatter<string>.Serialize(ref MessagePackWriter writer, string value, MessagePackSerializerOptions options)
         {
-            throw new NotSupportedException();
+            throw new NotImplementedException();
         }
     }
 }

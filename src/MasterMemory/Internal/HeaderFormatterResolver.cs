@@ -8,6 +8,9 @@ namespace MasterMemory.Internal
     // for AOT(IL2CPP) concrete generic formatter.
     internal class HeaderFormatterResolver : IFormatterResolver
     {
+        public static readonly IFormatterResolver Instance = new HeaderFormatterResolver();
+        public static readonly MessagePackSerializerOptions StandardOptions = MessagePackSerializerOptions.Standard.WithResolver(Instance);
+
         public IMessagePackFormatter<T> GetFormatter<T>()
         {
             if (typeof(T) == typeof(Dictionary<string, (int, int)>))
@@ -33,38 +36,27 @@ namespace MasterMemory.Internal
 
     internal sealed class IntIntValueTupleFormatter : IMessagePackFormatter<ValueTuple<int, int>>
     {
-        public int Serialize(ref byte[] bytes, int offset, ValueTuple<int, int> value, IFormatterResolver formatterResolver)
+        public void Serialize(ref MessagePackWriter writer, (int, int) value, MessagePackSerializerOptions options)
         {
-            var startOffset = offset;
-            offset += MessagePackBinary.WriteArrayHeader(ref bytes, offset, 2);
-
-            offset += formatterResolver.GetFormatterWithVerify<int>().Serialize(ref bytes, offset, value.Item1, formatterResolver);
-            offset += formatterResolver.GetFormatterWithVerify<int>().Serialize(ref bytes, offset, value.Item2, formatterResolver);
-
-            return offset - startOffset;
+            writer.WriteArrayHeader(2);
+            writer.WriteInt32(value.Item1);
+            writer.WriteInt32(value.Item2);
         }
 
-        public ValueTuple<int, int> Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
+        public (int, int) Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
-            if (MessagePackBinary.IsNil(bytes, offset))
+            if (reader.IsNil)
             {
                 throw new InvalidOperationException("Data is Nil, ValueTuple can not be null.");
             }
-            else
-            {
-                var startOffset = offset;
-                var count = MessagePackBinary.ReadArrayHeader(bytes, offset, out readSize);
-                if (count != 2) throw new InvalidOperationException("Invalid ValueTuple count");
-                offset += readSize;
 
-                var item1 = formatterResolver.GetFormatterWithVerify<int>().Deserialize(bytes, offset, formatterResolver, out readSize);
-                offset += readSize;
-                var item2 = formatterResolver.GetFormatterWithVerify<int>().Deserialize(bytes, offset, formatterResolver, out readSize);
-                offset += readSize;
+            var count = reader.ReadArrayHeader();
+            if (count != 2) throw new InvalidOperationException("Invalid ValueTuple count");
 
-                readSize = offset - startOffset;
-                return new ValueTuple<int, int>(item1, item2);
-            }
+            var item1 = reader.ReadInt32();
+            var item2 = reader.ReadInt32();
+
+            return new ValueTuple<int, int>(item1, item2);
         }
     }
 }
