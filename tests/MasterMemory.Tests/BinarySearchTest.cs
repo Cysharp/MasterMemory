@@ -15,7 +15,7 @@ namespace MasterMemory.Tests
     {
         public BinarySearchTest()
         {
-            MessagePackSerializer.SetDefaultResolver(MessagePackResolver.Instance);
+            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 
         [Fact]

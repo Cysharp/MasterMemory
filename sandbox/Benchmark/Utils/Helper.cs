@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,6 +17,18 @@ namespace TestPerfLiteDB
         public int id { get; set; }
         public string name { get; set; }
         public string lorem { get; set; }
+
+        public TestDoc()
+        {
+
+        }
+
+        public TestDoc(int id, string name, string lorem)
+        {
+            this.id = id;
+            this.name = name;
+            this.lorem = lorem;
+        }
     }
 
     public static class Helper

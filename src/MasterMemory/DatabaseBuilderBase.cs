@@ -31,13 +31,27 @@ namespace MasterMemory
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
+            AGAIN:
             var nextSize = index + sizeHint;
             if (buffer.Length < nextSize)
             {
                 Array.Resize(ref buffer, Math.Max(buffer.Length * 2, nextSize));
             }
 
-            return new Memory<byte>(buffer, index, sizeHint);
+            if (sizeHint == 0)
+            {
+                var result = new Memory<byte>(buffer, index, buffer.Length - index);
+                if (result.Length == 0)
+                {
+                    sizeHint = 1024;
+                    goto AGAIN;
+                }
+                return result;
+            }
+            else
+            {
+                return new Memory<byte>(buffer, index, sizeHint);
+            }
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
@@ -65,9 +79,12 @@ namespace MasterMemory
 
         public DatabaseBuilderBase(IFormatterResolver resolver)
         {
-            this.options = MessagePackSerializer.DefaultOptions
-                .WithCompression(MessagePackCompression.Lz4Block)
-                .WithResolver(resolver);
+            if (resolver != null)
+            {
+                this.options = MessagePackSerializer.DefaultOptions
+                    .WithCompression(MessagePackCompression.Lz4Block)
+                    .WithResolver(resolver);
+            }
 
         }
 

@@ -45,7 +45,7 @@ namespace MasterMemory.GeneratorCore
                 var immutableBuilderTemplate = new ImmutableBuilderTemplate();
                 var resolverTemplate = new MessagePackResolverTemplate();
                 builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
-                builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;");
+                builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
                 builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
 
                 logger(WriteToFile(outputDirectory, "DatabaseBuilder", builderTemplate.TransformText()));

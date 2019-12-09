@@ -62,7 +62,7 @@ namespace MasterMemory.GeneratorCore
         {
         }
 
-        protected override void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, MessagePack.IFormatterResolver resolver)
+        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
         {
 ");
  foreach(var item in GenerationContexts) { 
@@ -72,7 +72,7 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write("Table>(header, headerOffset, databaseBinary, resolver, xs => new ");
+            this.Write("Table>(header, databaseBinary, options, xs => new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table(xs));\r\n");
  } 

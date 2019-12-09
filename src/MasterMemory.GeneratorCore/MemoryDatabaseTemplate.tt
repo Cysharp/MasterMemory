@@ -30,10 +30,10 @@ namespace <#= Namespace #>
         {
         }
 
-        protected override void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, MessagePack.IFormatterResolver resolver)
+        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
         {
 <# foreach(var item in GenerationContexts) { #>
-            this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, headerOffset, databaseBinary, resolver, xs => new <#= item.ClassName #>Table(xs));
+            this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(xs));
 <# } #>
         }
 
