@@ -16,8 +16,9 @@ namespace MasterMemory.GeneratorCore
     {
         static readonly Encoding NoBomUtf8 = new UTF8Encoding(false);
 
-        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, bool addImmutableConstructor, Action<string> logger)
+        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, string prefixClassName, bool addImmutableConstructor, Action<string> logger)
         {
+            prefixClassName ??= "";
             var list = new List<GenerationContext>();
 
             // Collect
@@ -45,13 +46,14 @@ namespace MasterMemory.GeneratorCore
                 var immutableBuilderTemplate = new ImmutableBuilderTemplate();
                 var resolverTemplate = new MessagePackResolverTemplate();
                 builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
+                builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
                 builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
                 builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
 
-                logger(WriteToFile(outputDirectory, "DatabaseBuilder", builderTemplate.TransformText()));
-                logger(WriteToFile(outputDirectory, "ImmutableBuilder", immutableBuilderTemplate.TransformText()));
-                logger(WriteToFile(outputDirectory, "MemoryDatabase", databaseTemplate.TransformText()));
-                logger(WriteToFile(outputDirectory, "MasterMemoryResolver", resolverTemplate.TransformText()));
+                logger(WriteToFile(outputDirectory, builderTemplate.ClassName, builderTemplate.TransformText()));
+                logger(WriteToFile(outputDirectory, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
+                logger(WriteToFile(outputDirectory, databaseTemplate.ClassName, databaseTemplate.TransformText()));
+                logger(WriteToFile(outputDirectory, resolverTemplate.ClassName, resolverTemplate.TransformText()));
             }
             {
                 var tableDir = Path.Combine(outputDirectory, "Tables");
@@ -312,7 +314,7 @@ namespace MasterMemory.GeneratorCore
             {
                 var members = classDeclaration.Members.OfType<PropertyDeclarationSyntax>()
                     .Where(x => x.Modifiers.Any(y => y.IsKind(SyntaxKind.PublicKeyword)))
-                    .Where(x=>
+                    .Where(x =>
                     {
                         foreach (var attr in x.AttributeLists.SelectMany(y => y.Attributes))
                         {

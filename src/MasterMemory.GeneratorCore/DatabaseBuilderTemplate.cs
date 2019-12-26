@@ -29,11 +29,17 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(Using));
             this.Write("\r\n\r\nnamespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
-            this.Write("\r\n{\r\n   public sealed class DatabaseBuilder : DatabaseBuilderBase\r\n   {\r\n        " +
-                    "public DatabaseBuilder() : this(null) { }\r\n        public DatabaseBuilder(Messag" +
-                    "ePack.IFormatterResolver resolver) : base(resolver) { }\r\n\r\n");
+            this.Write("\r\n{\r\n   public sealed class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" : DatabaseBuilderBase\r\n   {\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("() : this(null) { }\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(MessagePack.IFormatterResolver resolver) : base(resolver) { }\r\n\r\n");
  foreach(var item in GenerationContexts) { 
-            this.Write("        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<");
+            this.Write("        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" Append(System.Collections.Generic.IEnumerable<");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("> dataSource)\r\n        {\r\n            AppendCore(dataSource, x => ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.PrimaryKey.BuildKeyAccessor("x")));

@@ -8,13 +8,13 @@
 
 namespace <#= Namespace #>
 {
-   public sealed class MemoryDatabase : MemoryDatabaseBase
+   public sealed class <#= ClassName #> : MemoryDatabaseBase
    {
 <# foreach(var item in GenerationContexts) { #>
         public <#= item.ClassName #>Table <#= item.ClassName #>Table { get; private set; }
 <# } #>
 
-        public MemoryDatabase(
+        public <#= ClassName #>(
 <# for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; #>
             <#= item.ClassName #>Table <#= item.ClassName #>Table<#= (i == GenerationContexts.Length - 1) ? "" : "," #>
 <# } #>
@@ -25,7 +25,7 @@ namespace <#= Namespace #>
 <# } #>
         }
 
-        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
+        public <#= ClassName #>(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
             : base(databaseBinary, internString, formatterResolver)
         {
         }
@@ -37,14 +37,14 @@ namespace <#= Namespace #>
 <# } #>
         }
 
-        public ImmutableBuilder ToImmutableBuilder()
+        public <#= PrefixClassName #>ImmutableBuilder ToImmutableBuilder()
         {
-            return new ImmutableBuilder(this);
+            return new <#= PrefixClassName #>ImmutableBuilder(this);
         }
 
-        public DatabaseBuilder ToDatabaseBuilder()
+        public <#= PrefixClassName #>DatabaseBuilder ToDatabaseBuilder()
         {
-            var builder = new DatabaseBuilder();
+            var builder = new <#= PrefixClassName #>DatabaseBuilder();
 <# foreach(var item in GenerationContexts) { #>
             builder.Append(this.<#= item.ClassName #>Table.GetRawDataUnsafe());
 <# } #>

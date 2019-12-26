@@ -29,23 +29,18 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(Using));
             this.Write("\r\n\r\nnamespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
-            this.Write(@"
-{
-   public sealed class ImmutableBuilder : ImmutableBuilderBase
-   {
-        MemoryDatabase memory;
-
-        public ImmutableBuilder(MemoryDatabase memory)
-        {
-            this.memory = memory;
-        }
-
-        public MemoryDatabase Build()
-        {
-            return memory;
-        }
-
-");
+            this.Write("\r\n{\r\n   public sealed class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" : ImmutableBuilderBase\r\n   {\r\n        ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("MemoryDatabase memory;\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("MemoryDatabase memory)\r\n        {\r\n            this.memory = memory;\r\n        }\r\n" +
+                    "\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("MemoryDatabase Build()\r\n        {\r\n            return memory;\r\n        }\r\n\r\n");
  for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; 
             this.Write("        public void ReplaceAll(System.Collections.Generic.IList<");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
@@ -55,7 +50,9 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.PrimaryKey.BuildComparer()));
             this.Write(");\r\n            var table = new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write("Table(newData);\r\n            memory = new MemoryDatabase(\r\n");
+            this.Write("Table(newData);\r\n            memory = new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("MemoryDatabase(\r\n");
  for(var j = 0; j < GenerationContexts.Length; j++) { var item2 = GenerationContexts[j]; 
             this.Write("                ");
             this.Write(this.ToStringHelper.ToStringWithCulture((i == j) ? "table" : "memory." + item2.ClassName + "Table"));
@@ -80,7 +77,9 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.PrimaryKey.BuildComparer()));
             this.Write(");\r\n            var table = new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write("Table(newData);\r\n            memory = new MemoryDatabase(\r\n");
+            this.Write("Table(newData);\r\n            memory = new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("MemoryDatabase(\r\n");
  for(var j = 0; j < GenerationContexts.Length; j++) { var item2 = GenerationContexts[j]; 
             this.Write("                ");
             this.Write(this.ToStringHelper.ToStringWithCulture((i == j) ? "table" : "memory." + item2.ClassName + "Table"));
@@ -101,7 +100,9 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.PrimaryKey.BuildComparer()));
             this.Write(");\r\n            var table = new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write("Table(newData);\r\n            memory = new MemoryDatabase(\r\n");
+            this.Write("Table(newData);\r\n            memory = new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("MemoryDatabase(\r\n");
  for(var j = 0; j < GenerationContexts.Length; j++) { var item2 = GenerationContexts[j]; 
             this.Write("                ");
             this.Write(this.ToStringHelper.ToStringWithCulture((i == j) ? "table" : "memory." + item2.ClassName + "Table"));
