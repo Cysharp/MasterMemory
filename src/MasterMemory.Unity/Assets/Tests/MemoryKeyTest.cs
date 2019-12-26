@@ -10,7 +10,7 @@ namespace MasterMemory.Tests
     {
         public MemoryKeyMemoryTest()
         {
-            MessagePackSerializer.SetDefaultResolver(MessagePackResolver.Instance);
+            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 
         Sample[] CreateData()

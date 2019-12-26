@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using System.Buffers;
 
 namespace MasterMemory
 {
@@ -17,26 +18,27 @@ namespace MasterMemory
 
         public MemoryDatabaseBase(byte[] databaseBinary, bool internString = true, IFormatterResolver formatterResolver = null)
         {
+            var reader = new MessagePackReader(databaseBinary);
             var formatter = new DictionaryFormatter<string, (int, int)>();
-            var header = formatter.Deserialize(databaseBinary, 0, new HeaderFormatterResolver(), out var headerOffset);
 
-            var resolver = formatterResolver ?? MessagePackSerializer.DefaultResolver;
+            var header = formatter.Deserialize(ref reader, HeaderFormatterResolver.StandardOptions);
+            var resolver = formatterResolver ?? MessagePackSerializer.DefaultOptions.Resolver;
             if (internString)
             {
                 resolver = new InternStringResolver(resolver);
             }
 
-            Init(header, headerOffset, databaseBinary, resolver);
+            Init(header, databaseBinary.AsMemory((int)reader.Consumed), MessagePackSerializer.DefaultOptions.WithResolver(resolver).WithCompression(MessagePackCompression.Lz4Block));
         }
 
-        protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, IFormatterResolver resolver, Func<T[], TView> createView)
+        protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, Func<T[], TView> createView)
         {
             var tableName = typeof(T).GetCustomAttribute<MemoryTableAttribute>();
             if (tableName == null) throw new InvalidOperationException("Type is not annotated MemoryTableAttribute. Type:" + typeof(T).FullName);
 
             if (header.TryGetValue(tableName.TableName, out var segment))
             {
-                var data = LZ4MessagePackSerializer.Deserialize<T[]>(new ArraySegment<byte>(databaseBinary, headerOffset + segment.offset, segment.count), resolver);
+                var data = MessagePackSerializer.Deserialize<T[]>(databaseBinary.Slice(segment.offset, segment.count), options);
                 return createView(data);
             }
             else
@@ -45,12 +47,13 @@ namespace MasterMemory
             }
         }
 
-        protected abstract void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, IFormatterResolver resolver);
+        protected abstract void Init(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options);
 
         public static TableInfo[] GetTableInfo(byte[] databaseBinary, bool storeTableData = true)
         {
             var formatter = new DictionaryFormatter<string, (int, int)>();
-            var header = formatter.Deserialize(databaseBinary, 0, new HeaderFormatterResolver(), out var headerOffset);
+            var reader = new MessagePackReader(databaseBinary);
+            var header = formatter.Deserialize(ref reader, HeaderFormatterResolver.StandardOptions);
 
             return header.Select(x => new TableInfo(x.Key, x.Value.Item2, storeTableData ? databaseBinary : null, x.Value.Item1)).ToArray();
         }
@@ -78,11 +81,17 @@ namespace MasterMemory
 
         public string DumpAsJson()
         {
+            return DumpAsJson(MessagePackSerializer.DefaultOptions);
+        }
+
+        public string DumpAsJson(MessagePackSerializerOptions options)
+        {
             if (binaryData == null)
             {
                 throw new InvalidOperationException("DumpAsJson can only call from GetTableInfo(storeTableData = true).");
             }
-            return LZ4MessagePackSerializer.ToJson(binaryData);
+
+            return MessagePackSerializer.ConvertToJson(binaryData, options.WithCompression(MessagePackCompression.Lz4Block));
         }
     }
 }

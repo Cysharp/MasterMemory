@@ -2,13 +2,7 @@ version: 2.1
 executors:
   dotnet:
     docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:2.2
-    environment:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-      NUGET_XMLDOC_MODE: skip
-  dotnet3:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.0
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       NUGET_XMLDOC_MODE: skip
@@ -87,7 +81,7 @@ jobs:
       - run: dotnet nuget push ./src/MasterMemory.MSBuild.Tasks/bin/Release/MasterMemory.MSBuild.Tasks.${CIRCLE_TAG}.nupkg -s https://www.nuget.org/api/v2/package -k ${NUGET_KEY}
   # self-contained single-file codegen
   build-codegen:
-    executor: dotnet3
+    executor: dotnet
     steps:
       - checkout
       - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/win-x64 -r win-x64 -p:CIBuild=true

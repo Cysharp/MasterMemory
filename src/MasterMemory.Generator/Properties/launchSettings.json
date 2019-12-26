@@ -2,7 +2,7 @@
   "profiles": {
     "MasterMemory.Generator": {
       "commandName": "Project",
-      "commandLineArgs": "-i \"C:\\GitHubRepositories\\MasterMemory\\tests\\MasterMemory.Tests\" -o \"C:\\GitHubRepositories\\MasterMemory\\tests\\MasterMemory.Tests\\Generated\" -n \"MasterMemory.Tests\" -c"
+      "commandLineArgs": "-i \"C:\\GitHubRepositories\\MasterMemory\\sandbox\\Benchmark\" -o \"C:\\GitHubRepositories\\MasterMemory\\sandbox\\Benchmark\\Generated\" -n \"TestPerfLiteDB\" -c"
     }
   }
 }

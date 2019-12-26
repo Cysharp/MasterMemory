@@ -8,16 +8,16 @@
 
 namespace <#= Namespace #>
 {
-   public sealed class ImmutableBuilder : ImmutableBuilderBase
+   public sealed class <#= ClassName #> : ImmutableBuilderBase
    {
-        MemoryDatabase memory;
+        <#= PrefixClassName #>MemoryDatabase memory;
 
-        public ImmutableBuilder(MemoryDatabase memory)
+        public <#= ClassName #>(<#= PrefixClassName #>MemoryDatabase memory)
         {
             this.memory = memory;
         }
 
-        public MemoryDatabase Build()
+        public <#= PrefixClassName #>MemoryDatabase Build()
         {
             return memory;
         }
@@ -27,7 +27,7 @@ namespace <#= Namespace #>
         {
             var newData = CloneAndSortBy(data, x => <#= item.PrimaryKey.BuildKeyAccessor("x") #>, <#= item.PrimaryKey.BuildComparer() #>);
             var table = new <#= item.ClassName #>Table(newData);
-            memory = new MemoryDatabase(
+            memory = new <#= PrefixClassName #>MemoryDatabase(
 <# for(var j = 0; j < GenerationContexts.Length; j++) { var item2 = GenerationContexts[j]; #>
                 <#= (i == j) ? "table" : "memory." + item2.ClassName + "Table"  #><#= (j == GenerationContexts.Length - 1) ? "" : "," #>
 <# } #>            
@@ -40,7 +40,7 @@ namespace <#= Namespace #>
             var data = RemoveCore(memory.<#= item.ClassName #>Table.GetRawDataUnsafe(), keys, x => <#= item.PrimaryKey.BuildKeyAccessor("x") #>, <#= item.PrimaryKey.BuildComparer() #>);
             var newData = CloneAndSortBy(data, x => <#= item.PrimaryKey.BuildKeyAccessor("x") #>, <#= item.PrimaryKey.BuildComparer() #>);
             var table = new <#= item.ClassName #>Table(newData);
-            memory = new MemoryDatabase(
+            memory = new <#= PrefixClassName #>MemoryDatabase(
 <# for(var j = 0; j < GenerationContexts.Length; j++) { var item2 = GenerationContexts[j]; #>
                 <#= (i == j) ? "table" : "memory." + item2.ClassName + "Table"  #><#= (j == GenerationContexts.Length - 1) ? "" : "," #>
 <# } #>            
@@ -52,7 +52,7 @@ namespace <#= Namespace #>
             var data = DiffCore(memory.<#= item.ClassName #>Table.GetRawDataUnsafe(), addOrReplaceData, x => <#= item.PrimaryKey.BuildKeyAccessor("x") #>, <#= item.PrimaryKey.BuildComparer() #>);
             var newData = CloneAndSortBy(data, x => <#= item.PrimaryKey.BuildKeyAccessor("x") #>, <#= item.PrimaryKey.BuildComparer() #>);
             var table = new <#= item.ClassName #>Table(newData);
-            memory = new MemoryDatabase(
+            memory = new <#= PrefixClassName #>MemoryDatabase(
 <# for(var j = 0; j < GenerationContexts.Length; j++) { var item2 = GenerationContexts[j]; #>
                 <#= (i == j) ? "table" : "memory." + item2.ClassName + "Table"  #><#= (j == GenerationContexts.Length - 1) ? "" : "," #>
 <# } #>            

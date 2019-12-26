@@ -297,6 +297,18 @@
  <Reference Include="UnityEditor.Purchasing">
  <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.purchasing@2.0.6/Editor/UnityEditor.Purchasing.dll</HintPath>
  </Reference>
+ <Reference Include="System.Threading.Tasks.Extensions">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Threading.Tasks.Extensions.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Buffers">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Buffers.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Runtime.CompilerServices.Unsafe">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Memory">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Memory.dll</HintPath>
+ </Reference>
  <Reference Include="nunit.framework">
  <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.ext.nunit@1.0.0/net35/unity-custom/nunit.framework.dll</HintPath>
  </Reference>
@@ -659,6 +671,10 @@
     <ProjectReference Include="Assembly-CSharp.csproj">
       <Project>{431770E5-D98C-F61A-FA79-2FCB2910E962}</Project>
       <Name>Assembly-CSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="MessagePack.csproj">
+      <Project>{40F11225-D2E5-8E44-AFA4-8CA3A83A83D3}</Project>
+      <Name>MessagePack</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -8,13 +8,13 @@
 
 namespace <#= Namespace #>
 {
-   public sealed class DatabaseBuilder : DatabaseBuilderBase
+   public sealed class <#= ClassName #> : DatabaseBuilderBase
    {
-        public DatabaseBuilder() : this(null) { }
-        public DatabaseBuilder(MessagePack.IFormatterResolver resolver) : base(resolver) { }
+        public <#= ClassName #>() : this(null) { }
+        public <#= ClassName #>(MessagePack.IFormatterResolver resolver) : base(resolver) { }
 
 <# foreach(var item in GenerationContexts) { #>
-        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<<#= item.ClassName #>> dataSource)
+        public <#= ClassName #> Append(System.Collections.Generic.IEnumerable<<#= item.ClassName #>> dataSource)
         {
             AppendCore(dataSource, x => <#= item.PrimaryKey.BuildKeyAccessor("x") #>, <#= item.PrimaryKey.BuildComparer() #>);
             return this;

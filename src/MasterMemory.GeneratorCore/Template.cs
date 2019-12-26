@@ -8,34 +8,44 @@ namespace MasterMemory.GeneratorCore
     {
         public string Namespace { get; set; }
         public string Using { get; set; }
+        public string PrefixClassName { get; set; }
         public GenerationContext[] GenerationContexts { get; set; }
+
+        public string ClassName => PrefixClassName + "DatabaseBuilder";
     }
 
     public partial class MemoryDatabaseTemplate
     {
         public string Namespace { get; set; }
         public string Using { get; set; }
+        public string PrefixClassName { get; set; }
         public GenerationContext[] GenerationContexts { get; set; }
+        public string ClassName => PrefixClassName + "MemoryDatabase";
     }
 
     public partial class ImmutableBuilderTemplate
     {
         public string Namespace { get; set; }
         public string Using { get; set; }
+        public string PrefixClassName { get; set; }
         public GenerationContext[] GenerationContexts { get; set; }
+        public string ClassName => PrefixClassName + "ImmutableBuilder";
     }
 
     public partial class MessagePackResolverTemplate
     {
         public string Namespace { get; set; }
         public string Using { get; set; }
+        public string PrefixClassName { get; set; }
         public GenerationContext[] GenerationContexts { get; set; }
+        public string ClassName => PrefixClassName + "MasterMemoryResolver";
     }
 
     public partial class TableTemplate
     {
         public string Namespace { get; set; }
         public string Using { get; set; }
+        public string PrefixClassName { get; set; }
         public GenerationContext GenerationContext { get; set; }
     }
 }

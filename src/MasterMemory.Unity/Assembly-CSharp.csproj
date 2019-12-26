@@ -63,81 +63,6 @@
      <Compile Include="Assets\Scripts\MasterMemory\MemoryDatabaseBase.cs" />
      <Compile Include="Assets\Scripts\MasterMemory\RangeView.cs" />
      <Compile Include="Assets\Scripts\MasterMemory\TableBase.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Attributes.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\FloatBits.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\CollectionFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\DictionaryFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\DynamicObjectTypeFallbackFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\EnumAsStringFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\ForceSizePrimitiveFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\IMessagePackFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\IgnoreFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\MultiDimentionalArrayFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\NullableFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\OldSpecFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\PrimitiveFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\PrimitiveObjectFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\StandardClassLibraryFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\TupleFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\TypelessFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\UnsafeBinaryFormatters.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Formatters\ValueTupleFormatter.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\IFormatterResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\IMessagePackSerializationCallbackReceiver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\ArrayPool.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\AsymmetricKeyHashTable.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\AutomataDictionary.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\ByteArrayComparer.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\ByteArrayStringHashTable.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\DynamicAssembly.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\ExpressionUtility.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\FarmHash.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\GuidBits.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\ILGeneratorExtensions.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\ReflectionExtensions.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\ThreadsafeTypeKeyHashTable.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\TinyJsonReader.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\UnsafeMemory.Low.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Internal\UnsafeMemory.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Helper.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Safe.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Safe32.Dirty.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Safe64.Dirty.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Unsafe.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Unsafe32.Dirty.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Unsafe64.Dirty.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\Codec\LZ4Codec.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\LZ4MessagePackSerializer.JSON.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\LZ4MessagePackSerializer.NonGeneric.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\LZ4\LZ4MessagePackSerializer.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\MessagePackBinary.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\MessagePackCode.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\MessagePackSerializer.Json.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\MessagePackSerializer.NonGeneric.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\MessagePackSerializer.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Nil.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\AttributeFormatterResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\BuiltinResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\CompositeResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\ContractlessReflectionObjectResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicEnumAsStringResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicEnumResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicGenericResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicObjectResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\DynamicUnionResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\NativeDateTimeResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\OldSpecResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\PrimitiveObjectResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\StandardResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\TypelessContractlessStandardResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\TypelessObjectResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Resolvers\UnsafeBinaryResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Shims\Reflection.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\StringEncoding.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Unity\Formatters.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\Unity\UnityResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\UnsafeExtensions\UnityBlitResolver.cs" />
-     <Compile Include="Assets\Scripts\MessagePack\UnsafeExtensions\UnsafeBlitFormatter.cs" />
      <Compile Include="Assets\Tests\BinarySearchTest.cs" />
      <Compile Include="Assets\Tests\DatabaseTest.cs" />
      <Compile Include="Assets\Tests\Generated\DatabaseBuilder.cs" />
@@ -147,6 +72,7 @@
      <Compile Include="Assets\Tests\Generated\MessagePackGenerated.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\SampleTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\SkillMasterTable.cs" />
+     <Compile Include="Assets\Tests\Generated\Tables\TestMasterTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\UserLevelTable.cs" />
      <Compile Include="Assets\Tests\MemoryKeyTest.cs" />
      <Compile Include="Assets\Tests\MemoryTest.cs" />
@@ -154,6 +80,7 @@
      <Compile Include="Assets\Tests\RangeViewTest.cs" />
      <Compile Include="Assets\Tests\TestStructures\Sample.cs" />
      <Compile Include="Assets\Tests\TestStructures\SkillMaster.cs" />
+     <Compile Include="Assets\Tests\TestStructures\TestMaster.cs" />
      <Compile Include="Assets\Tests\TestStructures\UserLevel.cs" />
      <Compile Include="Assets\Tests\_Shims.cs" />
  <Reference Include="UnityEditor.TestRunner">
@@ -377,6 +304,18 @@
  </Reference>
  <Reference Include="Unity.Analytics.Tracker">
  <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Threading.Tasks.Extensions">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Threading.Tasks.Extensions.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Buffers">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Buffers.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Runtime.CompilerServices.Unsafe">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Memory">
+ <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Memory.dll</HintPath>
  </Reference>
  <Reference Include="nunit.framework">
  <HintPath>C:/GitHubRepositories/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.ext.nunit@1.0.0/net35/unity-custom/nunit.framework.dll</HintPath>
@@ -735,6 +674,12 @@
  <Reference Include="Boo.Lang">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.3.0a2/Editor/Data/MonoBleedingEdge/lib/mono/unityscript/Boo.Lang.dll</HintPath>
  </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="MessagePack.csproj">
+      <Project>{40F11225-D2E5-8E44-AFA4-8CA3A83A83D3}</Project>
+      <Name>MessagePack</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -14,13 +14,15 @@ namespace MasterMemory.MSBuild.Tasks
         [Required]
         public string OutputDirectory { get; set; }
 
+        public string PrefixClassName { get; set; }
+
         public bool AddImmutableConstructor { get; set; }
 
         public override bool Execute()
         {
             try
             {
-                new CodeGenerator().GenerateFile(UsingNamespace, InputDirectory, OutputDirectory, AddImmutableConstructor, x => this.Log.LogMessage(x));
+                new CodeGenerator().GenerateFile(UsingNamespace, InputDirectory, OutputDirectory, PrefixClassName, AddImmutableConstructor, x => this.Log.LogMessage(x));
             }
             catch (Exception ex)
             {

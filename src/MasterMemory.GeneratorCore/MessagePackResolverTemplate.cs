@@ -29,13 +29,14 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(Using));
             this.Write("\r\n\r\nnamespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
-            this.Write(@"
-{
-    public class MasterMemoryResolver : global::MessagePack.IFormatterResolver
-    {
-        public static readonly global::MessagePack.IFormatterResolver Instance = new MasterMemoryResolver();
-
-        MasterMemoryResolver()
+            this.Write("\r\n{\r\n    public class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" : global::MessagePack.IFormatterResolver\r\n    {\r\n        public static readonly " +
+                    "global::MessagePack.IFormatterResolver Instance = new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("();\r\n\r\n        ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(@"()
         {
 
         }
@@ -51,7 +52,9 @@ namespace MasterMemory.GeneratorCore
 
             static FormatterCache()
             {
-                var f = MasterMemoryResolverGetFormatterHelper.GetFormatter(typeof(T));
+                var f = ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(@"GetFormatterHelper.GetFormatter(typeof(T));
                 if (f != null)
                 {
                     formatter = (global::MessagePack.Formatters.IMessagePackFormatter<T>)f;
@@ -60,13 +63,13 @@ namespace MasterMemory.GeneratorCore
         }
     }
 
-    internal static class MasterMemoryResolverGetFormatterHelper
-    {
-        static readonly global::System.Collections.Generic.Dictionary<Type, int> lookup;
-
-        static MasterMemoryResolverGetFormatterHelper()
-        {
-            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(");
+    internal static class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("GetFormatterHelper\r\n    {\r\n        static readonly global::System.Collections.Gen" +
+                    "eric.Dictionary<Type, int> lookup;\r\n\r\n        static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("GetFormatterHelper()\r\n        {\r\n            lookup = new global::System.Collecti" +
+                    "ons.Generic.Dictionary<Type, int>(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContexts.Length));
             this.Write(")\r\n            {\r\n");
  for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; 

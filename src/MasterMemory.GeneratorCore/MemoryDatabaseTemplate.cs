@@ -29,7 +29,9 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(Using));
             this.Write("\r\n\r\nnamespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
-            this.Write("\r\n{\r\n   public sealed class MemoryDatabase : MemoryDatabaseBase\r\n   {\r\n");
+            this.Write("\r\n{\r\n   public sealed class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" : MemoryDatabaseBase\r\n   {\r\n");
  foreach(var item in GenerationContexts) { 
             this.Write("        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
@@ -37,7 +39,9 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table { get; private set; }\r\n");
  } 
-            this.Write("\r\n        public MemoryDatabase(\r\n");
+            this.Write("\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(\r\n");
  for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; 
             this.Write("            ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
@@ -55,14 +59,14 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table;\r\n");
  } 
-            this.Write(@"        }
-
-        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
+            this.Write("        }\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(@"(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
             : base(databaseBinary, internString, formatterResolver)
         {
         }
 
-        protected override void Init(Dictionary<string, (int offset, int count)> header, int headerOffset, byte[] databaseBinary, MessagePack.IFormatterResolver resolver)
+        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
         {
 ");
  foreach(var item in GenerationContexts) { 
@@ -72,14 +76,19 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write("Table>(header, headerOffset, databaseBinary, resolver, xs => new ");
+            this.Write("Table>(header, databaseBinary, options, xs => new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table(xs));\r\n");
  } 
-            this.Write("        }\r\n\r\n        public ImmutableBuilder ToImmutableBuilder()\r\n        {\r\n   " +
-                    "         return new ImmutableBuilder(this);\r\n        }\r\n\r\n        public Databas" +
-                    "eBuilder ToDatabaseBuilder()\r\n        {\r\n            var builder = new DatabaseB" +
-                    "uilder();\r\n");
+            this.Write("        }\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("ImmutableBuilder ToImmutableBuilder()\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("ImmutableBuilder(this);\r\n        }\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("DatabaseBuilder ToDatabaseBuilder()\r\n        {\r\n            var builder = new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("DatabaseBuilder();\r\n");
  foreach(var item in GenerationContexts) { 
             this.Write("            builder.Append(this.");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));

@@ -8,11 +8,11 @@
 
 namespace <#= Namespace #>
 {
-    public class MasterMemoryResolver : global::MessagePack.IFormatterResolver
+    public class <#= ClassName #> : global::MessagePack.IFormatterResolver
     {
-        public static readonly global::MessagePack.IFormatterResolver Instance = new MasterMemoryResolver();
+        public static readonly global::MessagePack.IFormatterResolver Instance = new <#= ClassName #>();
 
-        MasterMemoryResolver()
+        <#= ClassName #>()
         {
 
         }
@@ -28,7 +28,7 @@ namespace <#= Namespace #>
 
             static FormatterCache()
             {
-                var f = MasterMemoryResolverGetFormatterHelper.GetFormatter(typeof(T));
+                var f = <#= ClassName #>GetFormatterHelper.GetFormatter(typeof(T));
                 if (f != null)
                 {
                     formatter = (global::MessagePack.Formatters.IMessagePackFormatter<T>)f;
@@ -37,11 +37,11 @@ namespace <#= Namespace #>
         }
     }
 
-    internal static class MasterMemoryResolverGetFormatterHelper
+    internal static class <#= ClassName #>GetFormatterHelper
     {
         static readonly global::System.Collections.Generic.Dictionary<Type, int> lookup;
 
-        static MasterMemoryResolverGetFormatterHelper()
+        static <#= ClassName #>GetFormatterHelper()
         {
             lookup = new global::System.Collections.Generic.Dictionary<Type, int>(<#= GenerationContexts.Length #>)
             {

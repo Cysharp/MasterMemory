@@ -438,7 +438,7 @@ public class Person
 
 Code Generator
 ---
-MasterMemory has three kinds of code-generator. `MSBuild Task`, `Standalone Cli Tool`, `.NET Core Global Tools`.
+MasterMemory has three kinds of code-generator. `MSBuild Task`, `Standalone Cli Tool`, `.NET Core Global/Local Tools`.
 
 MSBuild Task(`MasterMemory.MSBuild.Tasks`) is recommended way to use in .NET Core csproj.
 
@@ -447,6 +447,7 @@ MSBuild Task(`MasterMemory.MSBuild.Tasks`) is recommended way to use in .NET Cor
     UsingNamespace="string:required"
     InputDirectory="string:required"
     OutputDirectory="string:required"
+    PrefixClassName="string:optional"
     AddImmutableConstructor="bool:optional"
 />
 ```
@@ -458,6 +459,7 @@ argument list:
 -i, -inputDirectory: Input file directory(search recursive).
 -o, -outputDirectory: Output file directory.
 -n, -usingNamespace: Namespace of generated files.
+-p, -prefixClassName: [default=]Prefix of class names.
 -c, -addImmutableConstructor: [default=False]Add immutable constructor to MemoryTable class.
 ```
 

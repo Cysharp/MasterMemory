@@ -11,7 +11,7 @@ namespace MasterMemory.Tests
     {
         public MemoryTest()
         {
-            MessagePackSerializer.SetDefaultResolver(MessagePackResolver.Instance);
+            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 
         Sample[] CreateData()

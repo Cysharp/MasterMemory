@@ -1,25 +1,91 @@
 ﻿using MasterMemory.Internal;
 using MessagePack;
-using MessagePack.Formatters;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace MasterMemory
 {
+    class ByteBufferWriter : IBufferWriter<byte>
+    {
+        byte[] buffer;
+        int index;
+
+        public int CurrentOffset => index;
+        public ReadOnlySpan<byte> WrittenSpan => buffer.AsSpan(0, index);
+        public ReadOnlyMemory<byte> WrittenMemory => new ReadOnlyMemory<byte>(buffer, 0, index);
+
+        public ByteBufferWriter()
+        {
+            buffer = new byte[1024];
+            index = 0;
+        }
+
+        public void Advance(int count)
+        {
+            index += count;
+        }
+
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            AGAIN:
+            var nextSize = index + sizeHint;
+            if (buffer.Length < nextSize)
+            {
+                Array.Resize(ref buffer, Math.Max(buffer.Length * 2, nextSize));
+            }
+
+            if (sizeHint == 0)
+            {
+                var result = new Memory<byte>(buffer, index, buffer.Length - index);
+                if (result.Length == 0)
+                {
+                    sizeHint = 1024;
+                    goto AGAIN;
+                }
+                return result;
+            }
+            else
+            {
+                return new Memory<byte>(buffer, index, sizeHint);
+            }
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            return GetMemory(sizeHint).Span;
+        }
+    }
+
     public abstract class DatabaseBuilderBase
     {
-        byte[] byteBuffer = new byte[1024];
-        int index = 0;
+        readonly ByteBufferWriter bufferWriter = new ByteBufferWriter();
 
         // TableName, (Offset, Count)
         readonly Dictionary<string, (int offset, int count)> header = new Dictionary<string, (int offset, int count)>();
-        readonly IFormatterResolver resolver;
+        readonly MessagePackSerializerOptions options;
+
+        public DatabaseBuilderBase(MessagePackSerializerOptions options)
+        {
+            // options keep null to lazily use default options
+            if (options != null)
+            {
+                options = options.WithCompression(MessagePackCompression.Lz4Block);
+            }
+        }
 
         public DatabaseBuilderBase(IFormatterResolver resolver)
         {
-            this.resolver = resolver;
+            if (resolver != null)
+            {
+                this.options = MessagePackSerializer.DefaultOptions
+                    .WithCompression(MessagePackCompression.Lz4Block)
+                    .WithResolver(resolver);
+            }
+
         }
 
         protected void AppendCore<T, TKey>(IEnumerable<T> datasource, Func<T, TKey> indexSelector, IComparer<TKey> comparer)
@@ -38,10 +104,12 @@ namespace MasterMemory
             var source = FastSort(datasource, indexSelector, comparer);
 
             // write data and store header-data.
-            var offset = index;
-            var count = LZ4MessagePackSerializer.SerializeToBlock(ref byteBuffer, index, source, resolver ?? MessagePackSerializer.DefaultResolver);
-            header.Add(tableName.TableName, (offset, count));
-            index += count;
+            var useOption = options ?? MessagePackSerializer.DefaultOptions.WithCompression(MessagePackCompression.Lz4Block);
+
+            var offset = bufferWriter.CurrentOffset;
+            MessagePackSerializer.Serialize(bufferWriter, source, useOption);
+
+            header.Add(tableName.TableName, (offset, bufferWriter.CurrentOffset - offset));
         }
 
         static TElement[] FastSort<TElement, TKey>(IEnumerable<TElement> datasource, Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
@@ -89,8 +157,9 @@ namespace MasterMemory
 
         public void WriteToStream(Stream stream)
         {
-            MessagePackSerializer.Serialize(stream, header, new HeaderFormatterResolver());
-            stream.Write(byteBuffer, 0, index);
+            MessagePackSerializer.Serialize(stream, header, HeaderFormatterResolver.StandardOptions);
+            MemoryMarshal.TryGetArray(bufferWriter.WrittenMemory, out var segment);
+            stream.Write(segment.Array, segment.Offset, segment.Count);
         }
     }
 }

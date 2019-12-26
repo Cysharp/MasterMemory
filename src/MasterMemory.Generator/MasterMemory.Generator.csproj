@@ -31,7 +31,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MicroBatchFramework" Version="1.2.0" />
+        <PackageReference Include="MicroBatchFramework" Version="1.6.1" />
     </ItemGroup>
 
     <ItemGroup>
