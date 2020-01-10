@@ -41,6 +41,20 @@
         <TargetFiles2 Include="$(ProjectDir)\..\MasterMemory.Annotations\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
         <TargetFiles3 Include="$(ProjectDir)\..\..\tests\MasterMemory.Tests\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
     </ItemGroup>
+    <ItemGroup>
+      <TargetFiles1 Remove="ByteBufferWriter.cs" />
+      <TargetFiles1 Remove="Validation\ExpressionDumper.cs" />
+      <TargetFiles1 Remove="Validation\ExpressionParameterNameModifier.cs" />
+      <TargetFiles1 Remove="Validation\FilteredSet.cs" />
+      <TargetFiles1 Remove="Validation\IAssertionCollector.cs" />
+      <TargetFiles1 Remove="Validation\IValidatable.cs" />
+      <TargetFiles1 Remove="Validation\ReferenceSet.cs" />
+      <TargetFiles1 Remove="Validation\SelectedSet.cs" />
+      <TargetFiles1 Remove="Validation\ValidatableSet.cs" />
+      <TargetFiles1 Remove="Validation\ValidateResult.cs" />
+      <TargetFiles1 Remove="Validation\ValidationDatabase.cs" />
+      <TargetFiles1 Remove="Validation\Validator.cs" />
+    </ItemGroup>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Copy SourceFiles="@(TargetFiles1)" DestinationFiles="$(DestinationRoot)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
         <Copy SourceFiles="@(TargetFiles2)" DestinationFiles="$(DestinationRoot)\Annotations\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />

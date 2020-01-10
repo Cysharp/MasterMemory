@@ -94,7 +94,21 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table.GetRawDataUnsafe());\r\n");
  } 
-            this.Write("            return builder;\r\n        }\r\n    }\r\n}");
+            this.Write("            return builder;\r\n        }\r\n\r\n        public ValidateResult Validate(" +
+                    ")\r\n        {\r\n            var result = new ValidateResult();\r\n            var da" +
+                    "tabase = new ValidationDatabase(new object[]\r\n            {\r\n");
+ foreach(var item in GenerationContexts) { 
+            this.Write("                ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
+            this.Write("Table,\r\n");
+ } 
+            this.Write("            });\r\n\r\n");
+ foreach(var item in GenerationContexts) { 
+            this.Write("            ValidateTable(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
+            this.Write("Table.All, database, result);\r\n");
+ } 
+            this.Write("\r\n            return result;\r\n        }\r\n    }\r\n}");
             return this.GenerationEnvironment.ToString();
         }
     }

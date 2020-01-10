@@ -12,27 +12,27 @@ using System;
 
 namespace ConsoleApp.Tables
 {
-   public sealed partial class MonsterTable : TableBase<Monster>
+   public sealed partial class QuestTable : TableBase<Quest>
    {
-        readonly Func<Monster, int> primaryIndexSelector;
+        readonly Func<Quest, int> primaryIndexSelector;
 
 
-        public MonsterTable(Monster[] sortedData)
+        public QuestTable(Quest[] sortedData)
             : base(sortedData)
         {
-            this.primaryIndexSelector = x => x.MonsterId;
+            this.primaryIndexSelector = x => x.Id;
         }
 
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public Monster FindByMonsterId(int key)
+        public Quest FindById(int key)
         {
             var lo = 0;
             var hi = data.Length - 1;
             while (lo <= hi)
             {
                 var mid = (int)(((uint)hi + (uint)lo) >> 1);
-                var selected = data[mid].MonsterId;
+                var selected = data[mid].Id;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
                 if (found == 0) { return data[mid]; }
                 if (found < 0) { lo = mid + 1; }
@@ -41,12 +41,12 @@ namespace ConsoleApp.Tables
             return default;
         }
 
-        public Monster FindClosestByMonsterId(int key, bool selectLower = true)
+        public Quest FindClosestById(int key, bool selectLower = true)
         {
             return FindUniqueClosestCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, key, selectLower);
         }
 
-        public RangeView<Monster> FindRangeByMonsterId(int min, int max, bool ascendant = true)
+        public RangeView<Quest> FindRangeById(int min, int max, bool ascendant = true)
         {
             return FindUniqueRangeCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, min, max, ascendant);
         }

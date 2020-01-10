@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Buffers;
+using MasterMemory.Validation;
 
 namespace MasterMemory
 {
@@ -56,6 +57,24 @@ namespace MasterMemory
             var header = formatter.Deserialize(ref reader, HeaderFormatterResolver.StandardOptions);
 
             return header.Select(x => new TableInfo(x.Key, x.Value.Item2, storeTableData ? databaseBinary : null, x.Value.Item1)).ToArray();
+        }
+
+        protected void ValidateTable<TElement>(IReadOnlyList<TElement> table, ValidationDatabase database, ValidateResult result)
+        {
+            var onceCalled = new System.Runtime.CompilerServices.StrongBox<bool>(false);
+            foreach (var item in table)
+            {
+                if (item is IValidatable<TElement> validatable)
+                {
+                    var validator = new Validator<TElement>(database, item, result, onceCalled);
+                    validatable.Validate(validator);
+                }
+                else
+                {
+                    // all elements is not validatable, return immediately.
+                    return;
+                }
+            }
         }
     }
 

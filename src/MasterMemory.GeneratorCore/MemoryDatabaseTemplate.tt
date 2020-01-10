@@ -50,5 +50,22 @@ namespace <#= Namespace #>
 <# } #>
             return builder;
         }
+
+        public ValidateResult Validate()
+        {
+            var result = new ValidateResult();
+            var database = new ValidationDatabase(new object[]
+            {
+<# foreach(var item in GenerationContexts) { #>
+                <#= item.ClassName #>Table,
+<# } #>
+            });
+
+<# foreach(var item in GenerationContexts) { #>
+            ValidateTable(<#= item.ClassName #>Table.All, database, result);
+<# } #>
+
+            return result;
+        }
     }
 }
