@@ -1,16 +1,19 @@
-﻿using MasterMemory.GeneratorCore;
-using MicroBatchFramework;
+﻿using ConsoleAppFramework;
+using MasterMemory.GeneratorCore;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace MasterMemory.Generator
 {
-    public class Program : BatchBase
+    public class Program : ConsoleAppBase
     {
         static async Task Main(string[] args)
         {
-            await BatchHost.CreateDefaultBuilder().RunBatchEngineAsync<Program>(args);
+            await Host.CreateDefaultBuilder()
+                .ConfigureLogging(x => x.ReplaceToSimpleConsole())
+                .RunConsoleAppFrameworkAsync<Program>(args);
         }
 
         public void Execute(
