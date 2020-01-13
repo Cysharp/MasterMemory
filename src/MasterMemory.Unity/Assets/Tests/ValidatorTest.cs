@@ -19,6 +19,16 @@ namespace MasterMemory.Tests
             MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 
+        MemoryDatabase CreateDatabase(Fail[] data1)
+        {
+
+            var bin = new DatabaseBuilder()
+                .Append(data1)
+                .Build();
+
+            return new MemoryDatabase(bin, internString: false);
+        }
+
         MemoryDatabase CreateDatabase(SingleMaster[] data1)
         {
 
@@ -254,12 +264,25 @@ namespace MasterMemory.Tests
             var results = validateResult.FailedResults.Select(x => x.message).Where(x => x.Contains("ValidateAction faile")).ToArray();
 
             results[0].Should().Be("ValidateAction failed: >= -90!!!");
-            results[1].Should().Be("ValidateAction failed: (this.Cost <= 1000), Cost = 1001");
+            results[1].Should().Be("ValidateAction failed: (value(MasterMemory.Tests.TestStructures.QuestMaster).Cost <= 1000)");
         }
 
         [Fact]
         public void Fail()
         {
+            var validateResult = CreateDatabase(new Fail[]
+            {
+                new Fail { Id = 1},
+                new Fail { Id = 2},
+                new Fail { Id = 3},
+            }).Validate();
+            output.WriteLine(validateResult.FormatFailedResults());
+            validateResult.IsValidationFailed.Should().BeTrue();
+
+            var msg = validateResult.FailedResults.Select(x => x.message).ToArray();
+            msg[0].Should().Be("Failed Id:1");
+            msg[1].Should().Be("Failed Id:2");
+            msg[2].Should().Be("Failed Id:3");
         }
     }
 }

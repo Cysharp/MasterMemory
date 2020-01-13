@@ -52,6 +52,12 @@ namespace MasterMemory.Tests
             return this;
         }
 
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Fail> dataSource)
+        {
+            AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            return this;
+        }
+
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Sample> dataSource)
         {
             AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);

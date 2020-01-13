@@ -22,8 +22,4 @@
         <RootNamespace>MasterMemory</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="MessagePack.Annotations" Version="2.0.335" />
-    </ItemGroup>
-
 </Project>

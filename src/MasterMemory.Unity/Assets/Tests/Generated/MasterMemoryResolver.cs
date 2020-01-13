@@ -46,7 +46,7 @@ namespace MasterMemory.Tests
 
         static MasterMemoryResolverGetFormatterHelper()
         {
-            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(10)
+            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(11)
             {
                 {typeof(QuestMaster[]), 0 },
                 {typeof(ItemMaster[]), 1 },
@@ -54,10 +54,11 @@ namespace MasterMemory.Tests
                 {typeof(ItemMasterEmptyValidate[]), 3 },
                 {typeof(SequentialCheckMaster[]), 4 },
                 {typeof(SingleMaster[]), 5 },
-                {typeof(Sample[]), 6 },
-                {typeof(SkillMaster[]), 7 },
-                {typeof(TestMaster[]), 8 },
-                {typeof(UserLevel[]), 9 },
+                {typeof(Fail[]), 6 },
+                {typeof(Sample[]), 7 },
+                {typeof(SkillMaster[]), 8 },
+                {typeof(TestMaster[]), 9 },
+                {typeof(UserLevel[]), 10 },
             };
         }
 
@@ -74,10 +75,11 @@ namespace MasterMemory.Tests
                 case 3: return new MessagePack.Formatters.ArrayFormatter<ItemMasterEmptyValidate>();
                 case 4: return new MessagePack.Formatters.ArrayFormatter<SequentialCheckMaster>();
                 case 5: return new MessagePack.Formatters.ArrayFormatter<SingleMaster>();
-                case 6: return new MessagePack.Formatters.ArrayFormatter<Sample>();
-                case 7: return new MessagePack.Formatters.ArrayFormatter<SkillMaster>();
-                case 8: return new MessagePack.Formatters.ArrayFormatter<TestMaster>();
-                case 9: return new MessagePack.Formatters.ArrayFormatter<UserLevel>();
+                case 6: return new MessagePack.Formatters.ArrayFormatter<Fail>();
+                case 7: return new MessagePack.Formatters.ArrayFormatter<Sample>();
+                case 8: return new MessagePack.Formatters.ArrayFormatter<SkillMaster>();
+                case 9: return new MessagePack.Formatters.ArrayFormatter<TestMaster>();
+                case 10: return new MessagePack.Formatters.ArrayFormatter<UserLevel>();
                 default: return null;
             }
         }

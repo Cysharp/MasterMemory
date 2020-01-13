@@ -36,6 +36,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -56,6 +57,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -76,6 +78,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -95,6 +98,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -115,6 +119,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -135,6 +140,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -154,6 +160,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -174,6 +181,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -194,6 +202,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -213,6 +222,7 @@ namespace MasterMemory.Tests
                 table,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -233,6 +243,7 @@ namespace MasterMemory.Tests
                 table,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -253,6 +264,7 @@ namespace MasterMemory.Tests
                 table,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -272,6 +284,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 table,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -292,6 +305,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 table,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -312,6 +326,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 table,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -331,6 +346,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 table,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -351,6 +367,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 table,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -371,6 +388,69 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 table,
+                memory.FailTable,
+                memory.SampleTable,
+                memory.SkillMasterTable,
+                memory.TestMasterTable,
+                memory.UserLevelTable
+            
+            );
+        }
+
+        public void ReplaceAll(System.Collections.Generic.IList<Fail> data)
+        {
+            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var table = new FailTable(newData);
+            memory = new MemoryDatabase(
+                memory.QuestMasterTable,
+                memory.ItemMasterTable,
+                memory.QuestMasterEmptyValidateTable,
+                memory.ItemMasterEmptyValidateTable,
+                memory.SequentialCheckMasterTable,
+                memory.SingleMasterTable,
+                table,
+                memory.SampleTable,
+                memory.SkillMasterTable,
+                memory.TestMasterTable,
+                memory.UserLevelTable
+            
+            );
+        }
+
+        public void RemoveFail(int[] keys)
+        {
+            var data = RemoveCore(memory.FailTable.GetRawDataUnsafe(), keys, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var table = new FailTable(newData);
+            memory = new MemoryDatabase(
+                memory.QuestMasterTable,
+                memory.ItemMasterTable,
+                memory.QuestMasterEmptyValidateTable,
+                memory.ItemMasterEmptyValidateTable,
+                memory.SequentialCheckMasterTable,
+                memory.SingleMasterTable,
+                table,
+                memory.SampleTable,
+                memory.SkillMasterTable,
+                memory.TestMasterTable,
+                memory.UserLevelTable
+            
+            );
+        }
+
+        public void Diff(Fail[] addOrReplaceData)
+        {
+            var data = DiffCore(memory.FailTable.GetRawDataUnsafe(), addOrReplaceData, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var table = new FailTable(newData);
+            memory = new MemoryDatabase(
+                memory.QuestMasterTable,
+                memory.ItemMasterTable,
+                memory.QuestMasterEmptyValidateTable,
+                memory.ItemMasterEmptyValidateTable,
+                memory.SequentialCheckMasterTable,
+                memory.SingleMasterTable,
+                table,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -390,6 +470,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 table,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -410,6 +491,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 table,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -430,6 +512,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 table,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -449,6 +532,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 table,
                 memory.TestMasterTable,
@@ -469,6 +553,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 table,
                 memory.TestMasterTable,
@@ -489,6 +574,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 table,
                 memory.TestMasterTable,
@@ -508,6 +594,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 table,
@@ -528,6 +615,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -548,6 +636,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,
@@ -568,6 +657,7 @@ namespace MasterMemory.Tests
                 memory.ItemMasterEmptyValidateTable,
                 memory.SequentialCheckMasterTable,
                 memory.SingleMasterTable,
+                memory.FailTable,
                 memory.SampleTable,
                 memory.SkillMasterTable,
                 memory.TestMasterTable,

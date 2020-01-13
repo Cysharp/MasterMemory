@@ -99,4 +99,16 @@ namespace MasterMemory.Tests.TestStructures
             }
         }
     }
+
+    [MemoryTable("fail")]
+    public class Fail : IValidatable<Fail>
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public void Validate(IValidator<Fail> validator)
+        {
+            validator.Fail("Failed Id:" + Id);
+        }
+    }
 }

@@ -19,6 +19,7 @@ namespace MasterMemory.Tests
         public ItemMasterEmptyValidateTable ItemMasterEmptyValidateTable { get; private set; }
         public SequentialCheckMasterTable SequentialCheckMasterTable { get; private set; }
         public SingleMasterTable SingleMasterTable { get; private set; }
+        public FailTable FailTable { get; private set; }
         public SampleTable SampleTable { get; private set; }
         public SkillMasterTable SkillMasterTable { get; private set; }
         public TestMasterTable TestMasterTable { get; private set; }
@@ -31,6 +32,7 @@ namespace MasterMemory.Tests
             ItemMasterEmptyValidateTable ItemMasterEmptyValidateTable,
             SequentialCheckMasterTable SequentialCheckMasterTable,
             SingleMasterTable SingleMasterTable,
+            FailTable FailTable,
             SampleTable SampleTable,
             SkillMasterTable SkillMasterTable,
             TestMasterTable TestMasterTable,
@@ -43,6 +45,7 @@ namespace MasterMemory.Tests
             this.ItemMasterEmptyValidateTable = ItemMasterEmptyValidateTable;
             this.SequentialCheckMasterTable = SequentialCheckMasterTable;
             this.SingleMasterTable = SingleMasterTable;
+            this.FailTable = FailTable;
             this.SampleTable = SampleTable;
             this.SkillMasterTable = SkillMasterTable;
             this.TestMasterTable = TestMasterTable;
@@ -62,6 +65,7 @@ namespace MasterMemory.Tests
             this.ItemMasterEmptyValidateTable = ExtractTableData<ItemMasterEmptyValidate, ItemMasterEmptyValidateTable>(header, databaseBinary, options, xs => new ItemMasterEmptyValidateTable(xs));
             this.SequentialCheckMasterTable = ExtractTableData<SequentialCheckMaster, SequentialCheckMasterTable>(header, databaseBinary, options, xs => new SequentialCheckMasterTable(xs));
             this.SingleMasterTable = ExtractTableData<SingleMaster, SingleMasterTable>(header, databaseBinary, options, xs => new SingleMasterTable(xs));
+            this.FailTable = ExtractTableData<Fail, FailTable>(header, databaseBinary, options, xs => new FailTable(xs));
             this.SampleTable = ExtractTableData<Sample, SampleTable>(header, databaseBinary, options, xs => new SampleTable(xs));
             this.SkillMasterTable = ExtractTableData<SkillMaster, SkillMasterTable>(header, databaseBinary, options, xs => new SkillMasterTable(xs));
             this.TestMasterTable = ExtractTableData<TestMaster, TestMasterTable>(header, databaseBinary, options, xs => new TestMasterTable(xs));
@@ -82,6 +86,7 @@ namespace MasterMemory.Tests
             builder.Append(this.ItemMasterEmptyValidateTable.GetRawDataUnsafe());
             builder.Append(this.SequentialCheckMasterTable.GetRawDataUnsafe());
             builder.Append(this.SingleMasterTable.GetRawDataUnsafe());
+            builder.Append(this.FailTable.GetRawDataUnsafe());
             builder.Append(this.SampleTable.GetRawDataUnsafe());
             builder.Append(this.SkillMasterTable.GetRawDataUnsafe());
             builder.Append(this.TestMasterTable.GetRawDataUnsafe());
@@ -100,6 +105,7 @@ namespace MasterMemory.Tests
                 ItemMasterEmptyValidateTable,
                 SequentialCheckMasterTable,
                 SingleMasterTable,
+                FailTable,
                 SampleTable,
                 SkillMasterTable,
                 TestMasterTable,
@@ -118,6 +124,8 @@ namespace MasterMemory.Tests
             ValidateTable(SequentialCheckMasterTable.All, database, result);
             ((ITableUniqueValidate)SingleMasterTable).ValidateUnique(result);
             ValidateTable(SingleMasterTable.All, database, result);
+            ((ITableUniqueValidate)FailTable).ValidateUnique(result);
+            ValidateTable(FailTable.All, database, result);
             ((ITableUniqueValidate)SampleTable).ValidateUnique(result);
             ValidateTable(SampleTable.All, database, result);
             ((ITableUniqueValidate)SkillMasterTable).ValidateUnique(result);
