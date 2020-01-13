@@ -5,9 +5,11 @@ using MasterMemory;
 using MessagePack;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq.Expressions;
 using System.Linq;
+using System.Reflection;
 using System;
 
 namespace ConsoleApp.Tables
@@ -53,7 +55,25 @@ namespace ConsoleApp.Tables
                 if (found < 0) { lo = mid + 1; }
                 else { hi = mid - 1; }
             }
-            return default;
+            return ThrowKeyNotFound(key);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public bool TryFindByPersonId(int key, out Person result)
+        {
+            var lo = 0;
+            var hi = data.Length - 1;
+            while (lo <= hi)
+            {
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
+                var selected = data[mid].PersonId;
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { result = data[mid]; return true; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            result = default;
+            return false;
         }
 
         public Person FindClosestByPersonId(int key, bool selectLower = true)
@@ -115,6 +135,33 @@ namespace ConsoleApp.Tables
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
             ValidateUniqueCore(data, primaryIndexSelector, "PersonId", resultSet);       
+        }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(Person), typeof(PersonTable), "person",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(Person).GetProperty("PersonId")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Person).GetProperty("Age")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Person).GetProperty("Gender")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Person).GetProperty("Name")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Person).GetProperty("PersonId"),
+                    }, true, true, System.Collections.Generic.Comparer<int>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Person).GetProperty("Age"),
+                    }, false, false, System.Collections.Generic.Comparer<int>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Person).GetProperty("Gender"),
+                        typeof(Person).GetProperty("Age"),
+                    }, false, false, System.Collections.Generic.Comparer<(Gender Gender, int Age)>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Person).GetProperty("Gender"),
+                    }, false, false, System.Collections.Generic.Comparer<Gender>.Default),
+                });
         }
     }
 }

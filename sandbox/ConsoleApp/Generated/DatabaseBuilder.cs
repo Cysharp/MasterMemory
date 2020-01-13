@@ -5,9 +5,11 @@ using MasterMemory;
 using MessagePack;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq.Expressions;
 using System.Linq;
+using System.Reflection;
 using System;
 using ConsoleApp.Tables;
 
@@ -38,7 +40,19 @@ namespace ConsoleApp
 
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Item> dataSource)
         {
-            AppendCore(dataSource, x => x.RewardId, System.Collections.Generic.Comparer<int>.Default);
+            AppendCore(dataSource, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
+            return this;
+        }
+
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Test1> dataSource)
+        {
+            AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            return this;
+        }
+
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Test2> dataSource)
+        {
+            AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             return this;
         }
 

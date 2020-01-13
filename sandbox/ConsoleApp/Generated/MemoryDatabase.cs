@@ -5,32 +5,40 @@ using MasterMemory;
 using MessagePack;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq.Expressions;
 using System.Linq;
+using System.Reflection;
 using System;
 using ConsoleApp.Tables;
 
 namespace ConsoleApp
 {
-    public sealed class MemoryDatabase : MemoryDatabaseBase
-    {
+   public sealed class MemoryDatabase : MemoryDatabaseBase
+   {
         public MonsterTable MonsterTable { get; private set; }
         public PersonTable PersonTable { get; private set; }
         public QuestTable QuestTable { get; private set; }
         public ItemTable ItemTable { get; private set; }
+        public Test1Table Test1Table { get; private set; }
+        public Test2Table Test2Table { get; private set; }
 
         public MemoryDatabase(
             MonsterTable MonsterTable,
             PersonTable PersonTable,
             QuestTable QuestTable,
-            ItemTable ItemTable
+            ItemTable ItemTable,
+            Test1Table Test1Table,
+            Test2Table Test2Table
         )
         {
             this.MonsterTable = MonsterTable;
             this.PersonTable = PersonTable;
             this.QuestTable = QuestTable;
             this.ItemTable = ItemTable;
+            this.Test1Table = Test1Table;
+            this.Test2Table = Test2Table;
         }
 
         public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
@@ -44,6 +52,8 @@ namespace ConsoleApp
             this.PersonTable = ExtractTableData<Person, PersonTable>(header, databaseBinary, options, xs => new PersonTable(xs));
             this.QuestTable = ExtractTableData<Quest, QuestTable>(header, databaseBinary, options, xs => new QuestTable(xs));
             this.ItemTable = ExtractTableData<Item, ItemTable>(header, databaseBinary, options, xs => new ItemTable(xs));
+            this.Test1Table = ExtractTableData<Test1, Test1Table>(header, databaseBinary, options, xs => new Test1Table(xs));
+            this.Test2Table = ExtractTableData<Test2, Test2Table>(header, databaseBinary, options, xs => new Test2Table(xs));
         }
 
         public ImmutableBuilder ToImmutableBuilder()
@@ -58,19 +68,23 @@ namespace ConsoleApp
             builder.Append(this.PersonTable.GetRawDataUnsafe());
             builder.Append(this.QuestTable.GetRawDataUnsafe());
             builder.Append(this.ItemTable.GetRawDataUnsafe());
+            builder.Append(this.Test1Table.GetRawDataUnsafe());
+            builder.Append(this.Test2Table.GetRawDataUnsafe());
             return builder;
         }
 
         public ValidateResult Validate()
         {
             var result = new ValidateResult();
-            var database = new ValidationDatabase(System.Linq.Enumerable.Where(new object[]
+            var database = new ValidationDatabase(new object[]
             {
                 MonsterTable,
                 PersonTable,
                 QuestTable,
                 ItemTable,
-            }, x => x != null).ToArray());
+                Test1Table,
+                Test2Table,
+            });
 
             ((ITableUniqueValidate)MonsterTable).ValidateUnique(result);
             ValidateTable(MonsterTable.All, database, result);
@@ -80,6 +94,10 @@ namespace ConsoleApp
             ValidateTable(QuestTable.All, database, result);
             ((ITableUniqueValidate)ItemTable).ValidateUnique(result);
             ValidateTable(ItemTable.All, database, result);
+            ((ITableUniqueValidate)Test1Table).ValidateUnique(result);
+            ValidateTable(Test1Table.All, database, result);
+            ((ITableUniqueValidate)Test2Table).ValidateUnique(result);
+            ValidateTable(Test2Table.All, database, result);
 
             return result;
         }

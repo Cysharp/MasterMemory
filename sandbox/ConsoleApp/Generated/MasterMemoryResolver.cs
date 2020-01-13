@@ -5,9 +5,11 @@ using MasterMemory;
 using MessagePack;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq.Expressions;
 using System.Linq;
+using System.Reflection;
 using System;
 using ConsoleApp.Tables;
 
@@ -48,12 +50,14 @@ namespace ConsoleApp
 
         static MasterMemoryResolverGetFormatterHelper()
         {
-            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(4)
+            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(6)
             {
                 {typeof(Monster[]), 0 },
                 {typeof(Person[]), 1 },
                 {typeof(Quest[]), 2 },
                 {typeof(Item[]), 3 },
+                {typeof(Test1[]), 4 },
+                {typeof(Test2[]), 5 },
             };
         }
 
@@ -68,6 +72,8 @@ namespace ConsoleApp
                 case 1: return new MessagePack.Formatters.ArrayFormatter<Person>();
                 case 2: return new MessagePack.Formatters.ArrayFormatter<Quest>();
                 case 3: return new MessagePack.Formatters.ArrayFormatter<Item>();
+                case 4: return new MessagePack.Formatters.ArrayFormatter<Test1>();
+                case 5: return new MessagePack.Formatters.ArrayFormatter<Test2>();
                 default: return null;
             }
         }

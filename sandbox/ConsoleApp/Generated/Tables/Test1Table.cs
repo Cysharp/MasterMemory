@@ -14,27 +14,27 @@ using System;
 
 namespace ConsoleApp.Tables
 {
-   public sealed partial class ItemTable : TableBase<Item>, ITableUniqueValidate
+   public sealed partial class Test1Table : TableBase<Test1>, ITableUniqueValidate
    {
-        readonly Func<Item, int> primaryIndexSelector;
+        readonly Func<Test1, int> primaryIndexSelector;
 
 
-        public ItemTable(Item[] sortedData)
+        public Test1Table(Test1[] sortedData)
             : base(sortedData)
         {
-            this.primaryIndexSelector = x => x.ItemId;
+            this.primaryIndexSelector = x => x.Id;
         }
 
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public Item FindByItemId(int key)
+        public Test1 FindById(int key)
         {
             var lo = 0;
             var hi = data.Length - 1;
             while (lo <= hi)
             {
                 var mid = (int)(((uint)hi + (uint)lo) >> 1);
-                var selected = data[mid].ItemId;
+                var selected = data[mid].Id;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
                 if (found == 0) { return data[mid]; }
                 if (found < 0) { lo = mid + 1; }
@@ -44,14 +44,14 @@ namespace ConsoleApp.Tables
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public bool TryFindByItemId(int key, out Item result)
+        public bool TryFindById(int key, out Test1 result)
         {
             var lo = 0;
             var hi = data.Length - 1;
             while (lo <= hi)
             {
                 var mid = (int)(((uint)hi + (uint)lo) >> 1);
-                var selected = data[mid].ItemId;
+                var selected = data[mid].Id;
                 var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
                 if (found == 0) { result = data[mid]; return true; }
                 if (found < 0) { lo = mid + 1; }
@@ -61,12 +61,12 @@ namespace ConsoleApp.Tables
             return false;
         }
 
-        public Item FindClosestByItemId(int key, bool selectLower = true)
+        public Test1 FindClosestById(int key, bool selectLower = true)
         {
             return FindUniqueClosestCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, key, selectLower);
         }
 
-        public RangeView<Item> FindRangeByItemId(int min, int max, bool ascendant = true)
+        public RangeView<Test1> FindRangeById(int min, int max, bool ascendant = true)
         {
             return FindUniqueRangeCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, min, max, ascendant);
         }
@@ -74,19 +74,19 @@ namespace ConsoleApp.Tables
 
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
-            ValidateUniqueCore(data, primaryIndexSelector, "ItemId", resultSet);       
+            ValidateUniqueCore(data, primaryIndexSelector, "Id", resultSet);       
         }
 
         public static MasterMemory.Meta.MetaTable CreateMetaTable()
         {
-            return new MasterMemory.Meta.MetaTable(typeof(Item), typeof(ItemTable), "item",
+            return new MasterMemory.Meta.MetaTable(typeof(Test1), typeof(Test1Table), "Test1",
                 new MasterMemory.Meta.MetaProperty[]
                 {
-                    new MasterMemory.Meta.MetaProperty(typeof(Item).GetProperty("ItemId")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Test1).GetProperty("Id")),
                 },
                 new MasterMemory.Meta.MetaIndex[]{
                     new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
-                        typeof(Item).GetProperty("ItemId"),
+                        typeof(Test1).GetProperty("Id"),
                     }, true, true, System.Collections.Generic.Comparer<int>.Default),
                 });
         }

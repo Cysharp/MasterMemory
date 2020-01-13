@@ -8,6 +8,51 @@ using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Text;
+
+// IValidatableを実装すると検証対象になる
+[MemoryTable("quest_master"), MessagePackObject(true)]
+public class Quest : IValidatable<Quest>
+{
+    // UniqueKeyの場合はValidate時にデフォルトで重複かの検証がされる
+    [PrimaryKey]
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int RewardId { get; set; }
+    public int Cost { get; set; }
+
+    void IValidatable<Quest>.Validate(IValidator<Quest> validator)
+    {
+        // 外部キー的に参照したいコレクションを取り出せる
+        var items = validator.GetReferenceSet<Item>();
+
+        // RewardIdが0以上のとき(0は報酬ナシのための特別なフラグとするため入力を許容する)
+        if (this.RewardId > 0)
+        {
+            // Itemsのマスタに必ず含まれてなければ検証エラー（エラーが出ても続行はしてすべての検証結果を出す)
+            items.Exists(x => x.RewardId, x => x.ItemId);
+        }
+
+        // コストは10..20でなければ検証エラー
+        validator.Validate(x => x.Cost >= 10);
+        validator.Validate(x => x.Cost <= 20);
+
+        // 以下で囲った部分は一度しか呼ばれないため、データセット全体の検証をしたい時に使える
+        if (validator.CallOnce())
+        {
+            var quests = validator.GetTableSet();
+            // インデックス生成したもの以外のユニークどうかの検証(0は重複するため除いておく)
+            quests.Where(x => x.RewardId != 0).Unique(x => x.RewardId);
+        }
+    }
+}
+
+[MemoryTable("item"), MessagePackObject(true)]
+public class Item
+{
+    [PrimaryKey]
+    public int ItemId { get; set; }
+}
 
 namespace ConsoleApp
 {
@@ -68,68 +113,7 @@ namespace ConsoleApp
 
 
 
-    // IValidatableを実装すると検証対象になる
-    [MemoryTable("quest"), MessagePackObject(true)]
-    public class Quest : IValidatable<Quest>
-    {
-        [PrimaryKey]
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public int RewardId { get; set; }
-        public int Cost { get; set; }
-
-        void IValidatable<Quest>.Validate(IValidator<Quest> validator)
-        {
-            // relation貼ってる的なもののコレクションを取り出せる
-            var items = validator.GetReferenceSet<Item>();
-            // RewardIdが0以上のとき(0は報酬ナシのための特別なフラグという意味)
-            //if (this.RewardId > 0)
-            {
-                // Itemsのマスタに必ず含まれてなければ検証エラー（エラーが出ても続行はしてすべての検証結果を出す)
-                //items.Select(x => x.RewardId).Any(x => x.Id, EqualityComparer<int>.Default);
-            }
-
-            //items.ExistsIn(x => x.Id, x => x.RewardId);
-
-            //validator.Validate(x => x.Cost >= 20 && x.Cost <= 20);
-
-            //foreach (var item in items.)
-
-
-
-            //validator.ValidateAction(() => this.Cost >= 20);
-
-
-            // コストは10..20でなければ検証エラー
-            //validator.Validate(x => x.Cost >= 20);
-            //validator.Validate(x => x.Cost <= 20);
-
-            // 一度しか呼ばれないゾーンなのでデータセット全体の検証をしたい時に使える。
-
-            if (validator.CallOnce())
-            {
-                Console.WriteLine("OnceCalled");
-
-                var quests = validator.GetTableSet();
-
-                // quests.NotEmpty();
-                quests.Unique(x => x.Id);
-                quests.Sequential(x => x.Id);
-
-
-
-
-
-            }
-        }
-    }
-
-    [MemoryTable("item"), MessagePackObject(true)]
-    public class Item
-    {
-        [PrimaryKey]
-        public int RewardId { get; set; }
-    }
+    
 
     class ByteBufferWriter : IBufferWriter<byte>
     {
@@ -221,14 +205,14 @@ namespace ConsoleApp
             {
                 new Quest { Id= 1, Name = "foo", Cost = 10, RewardId = 100 },
                 new Quest { Id= 2, Name = "bar", Cost = 20, RewardId = 101 },
-                new Quest { Id= 3, Name = "baz", Cost = 30, RewardId = 100 },
-                new Quest { Id= 3, Name = "too", Cost = 40, RewardId = 199 },
+                new Quest { Id= 3, Name = "baz", Cost = 30, RewardId = 0 },
+                new Quest { Id= 3, Name = "too", Cost = 40, RewardId = 0 },
             })
             .Append(new Item[]
             {
-                new Item { RewardId = 100 },
-                new Item { RewardId = 101 },
-                new Item { RewardId = 199 },
+                new Item { ItemId = 100 },
+                new Item { ItemId = 101 },
+                new Item { ItemId = 199 },
             })
             .Build();
 
@@ -238,6 +222,37 @@ namespace ConsoleApp
             var db = new MemoryDatabase(bin);
 
 
+            // テーブル情報、プロパティ情報、インデックス情報が取れるので自由に加工する
+            var metaDb = MetaMemoryDatabase.GetMetaDatabase();
+            foreach (var table in metaDb.GetTableInfos())
+            {
+                // CSVのヘッダ生成
+                var sb = new StringBuilder();
+                foreach (var prop in table.Properties)
+                {
+                    if (sb.Length != 0) sb.Append(",");
+
+                    // そのまま, LowerCamelCase, SnakeCaseに変換した名前が取得可能
+                    sb.Append(prop.NameSnakeCase);
+                }
+                Console.WriteLine(sb.ToString());
+                File.WriteAllText(table.TableName + ".csv", sb.ToString(), new UTF8Encoding(false));
+            }
+
+
+
+            // 検証結果取得。データベースの構築自体は検証とは無関係に構築ができるので、
+            // （開発時用などに）不整合のまま出してもいいし、(リリース時では)弾くなどご自由に。
+            var validateResult = db.Validate();
+            if (validateResult.IsValidationFailed)
+            {
+                // 検証失敗データを文字列形式でフォーマットして出力
+                Console.WriteLine(validateResult.FormatFailedResults());
+
+                // List<(Type, string)> で検証データを取得して、自分でカスタムで出力することも可能
+                // MDやHTMLに整形してSlackやレポーターに投げるなど自由に
+                // validateResult.FailedResults
+            }
 
             // new MetaMemoryDatabase()
 

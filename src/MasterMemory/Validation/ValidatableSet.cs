@@ -55,5 +55,10 @@ namespace MasterMemory.Validation
                 }
             }
         }
+
+        public ValidatableSet<TElement> Where(Func<TElement, bool> predicate)
+        {
+            return new ValidatableSet<TElement>(tableData.Where(predicate).ToArray(), resultSet);
+        }
     }
 }
