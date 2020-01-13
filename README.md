@@ -16,7 +16,8 @@ Concept
 * **TypeSafe**, 100% Type safe by pre code-generation.
 * **Fast load speed**,  MasterMemory save data by [MessagePack for C#, a fastest C# serializer](https://github.com/neuecc/MessagePack-CSharp) so load speed is blazing fast.
 * **Flexible Search**, Supports multiple key, multiple result, range/closest query.
-
+* **Validator**, You can define custom data validation by C#.
+* **Metadata**, To make custom importer/exporter, get the all database metadata.
 
 These features are suitable for master data management(write-once, read-heavy) on embedded application such as role-playing game. MasterMemory has better performance than any other database solutions. [PalDB](https://github.com/linkedin/PalDB) developed by LinkedIn has a similar concept(embeddable write-once key-value store), but the implementation and performance characteristics are completely different.
 
@@ -62,9 +63,9 @@ Edit the `.csproj`, add [MasterMemory.MSBuild.Tasks](https://www.nuget.org/packa
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="MasterMemory" Version="1.1.7" />
+    <PackageReference Include="MasterMemory" Version="2.0.1" />
     <!-- Install MSBuild Task(with PrivateAssets="All", it means to use dependency only in build time). -->
-    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="1.1.7" PrivateAssets="All" />
+    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.1" PrivateAssets="All" />
 </ItemGroup>
 
 <!-- Call code generator before-build. -->
@@ -127,8 +128,7 @@ You can invoke all indexed query by IntelliSense.
 
 Getting Started(Unity)
 ---
-Check the [releases](https://github.com/Cysharp/MasterMemory/releases) page, download `MasterMemory.Unity.unitypackage`(runtime) and `MasterMemory.Generator.zip`(cli code-generator). MasterMemory also depends on MessagePack-CSharp so you have to download `MessagePack.Unity.1.7.3.5.unitypackage` and `MessagePackUniversalCodeGenerator.zip
-` from [MessagePack-CSharp/releases page](https://github.com/neuecc/MessagePack-CSharp/releases).
+Check the [releases](https://github.com/Cysharp/MasterMemory/releases) page, download `MasterMemory.Unity.unitypackage`(runtime) and `MasterMemory.Generator.zip`(cli code-generator). MasterMemory also depends on MessagePack-CSharp so you have to download `MessagePack.Unity.2.*.*.unitypackage` and `mpc.zip` from [MessagePack-CSharp/releases page](https://github.com/neuecc/MessagePack-CSharp/releases).
 
 Prepare the example table definition like following.
 
@@ -163,11 +163,14 @@ public class Person
 use the MasterMemory code generator by commandline. Commandline tool support platforms are `win-x64`, `osx-x64` and `linux-x64`.
 
 ```
-argument list:
--i, -inputDirectory: Input file directory(search recursive).
--o, -outputDirectory: Output file directory.
--n, -usingNamespace: Namespace of generated files.
--c, -addImmutableConstructor: [default=False]Add immutable constructor to MemoryTable class.
+Usage: MasterMemory.Generator [options...]
+
+Options:
+  -i, -inputDirectory <String>              Input file directory(search recursive). (Required)
+  -o, -outputDirectory <String>             Output file directory. (Required)
+  -n, -usingNamespace <String>              Namespace of generated files. (Required)
+  -p, -prefixClassName <String>             Prefix of class names. (Default: )
+  -c, -addImmutableConstructor <Boolean>    Add immutable constructor to MemoryTable class. (Default: False)
 ```
 
 ```bash
@@ -176,9 +179,7 @@ MasterMemory.Generator.exe -i "C:\UnitySample" -o "C:\UnitySample\Generated" -n 
 
 Also you need to generated MessagePack-CSharp code generation.
 
-> It is useful to create an editor extension to invoke command-line tool. Here is the sample of ***[MagicOnion](https://github.com/Cysharp/MagicOnion) - Unified Realtime/API Engine for .NET Core and Unity***'s code generator extension sample. [MagicOnion/.../samples.../Editor/MenuItems.cs](https://github.com/Cysharp/MagicOnion/blob/master/samples/ChatApp/ChatApp.Unity/Assets/Editor/MenuItems.cs). It has a similar option of MasterMemoryGenerator.
-
-Additional steps, Additional steps, you have to set up to use generated resolver.
+Additional steps, you have to set up to use generated resolver.
 
 ```csharp
 public static class Initializer
@@ -242,7 +243,7 @@ All table(marked by `MemoryTableAttribute`) and methods(created by `PrimaryKeyAt
 
 You can invoke all indexed query by IntelliSense.
 
-Datatable configuration
+DataTable configuration
 ---
 Element type of datatable must be marked by `[MemoryTable(tableName)]`, datatable is generated from marked type. `string tableName` is saved in database binary, you can rename class name if tableName is same.
 
@@ -328,11 +329,14 @@ Use intern or not is selected in constructor. If you want to disable automatical
 
 `MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)`.
 
-MemoryDatabase has three query methods.
+MemoryDatabase has three(or four) query methods.
 
 * `T|RangeView<T>` FindBy***(TKey key)
+* bool TryFindBy***(TKey key, out T result)
 * `T|RangeView<T>` FindClosestBy***(TKey key, bool selectLower = true)
 * `RangeView<T>` FindRangeBy***(TKey min, TKey max, bool ascendant = true)
+
+If index key is unique, generates `FindBy***` and `TryFindBy***` methods and then `FindBy***` throws `KeyNotFoundException` when key is not found.
 
 `By***` is generated by `PrimaryKey` and `SecondaryKey` defines.
 
@@ -436,6 +440,128 @@ public class Person
 }
 ```
 
+Validator
+---
+You can validate data by `MemoryDatabase.Validate` method. In default, it check unique key(data duplicated) and you can define custom validate logics.
+
+```csharp
+// Implements IValidatable<T> to targeted validation
+[MemoryTable("quest_master"), MessagePackObject(true)]
+public class Quest : IValidatable<Quest>
+{
+    // If index is Unique, validate duplicate in default.
+    [PrimaryKey]
+    public int Id { get; }
+    public string Name { get; }
+    public int RewardId { get; }
+    public int Cost { get; }
+
+    void IValidatable<Quest>.Validate(IValidator<Quest> validator)
+    {
+        // get the external reference table
+        var items = validator.GetReferenceSet<Item>();
+
+        // Custom if logics.
+        if (this.RewardId > 0)
+        {
+            // RewardId must exists in Item.ItemId
+            items.Exists(x => x.RewardId, x => x.ItemId);
+        }
+
+        // Range check, Cost must be 10..20
+        validator.Validate(x => x.Cost >= 10);
+        validator.Validate(x => x.Cost <= 20);
+
+        // In this region, only called once so enable to validate overall of tables.
+        if (validator.CallOnce())
+        {
+            var quests = validator.GetTableSet();
+            // Check unique othe than index property.
+            quests.Where(x => x.RewardId != 0).Unique(x => x.RewardId);
+        }
+    }
+}
+
+[MemoryTable("item_master"), MessagePackObject(true)]
+public class Item
+{
+    [PrimaryKey]
+    public int ItemId { get; }
+}
+
+void Main()
+{
+    var db = new MemoryDatabase(bin);
+
+    // Get the validate result.
+    var validateResult = db.Validate();
+    if (validateResult.IsValidationFailed)
+    {
+        // Output string format.
+        Console.WriteLine(validateResult.FormatFailedResults());
+
+        // Get the raw List<(Type, string)>.
+        // validateResult.FailedResults
+    }
+}
+```
+
+Following is list of validation methods.
+
+```csharp
+// all void methods are assert function, it stores message to ValidateResult if failed.
+interface IValidator<T>
+{
+    ValidatableSet<T> GetTableSet();
+    ReferenceSet<T, TRef> GetReferenceSet<TRef>();
+    void Validate(Expression<Func<T, bool>> predicate);
+    void Validate(Func<T, bool> predicate, string message);
+    void ValidateAction(Expression<Func<bool>> predicate);
+    void ValidateAction(Func<bool> predicate, string message);
+    void Fail(string message);
+    bool CallOnce();
+}
+
+class ReferenceSet<TElement, TReference>
+{
+    void Exists<TProperty>(Expression<Func<TElement, TProperty>> elementSelector, Expression<Func<TReference, TProperty>> referenceElementSelector);
+    void Exists<TProperty>(Expression<Func<TElement, TProperty>> elementSelector, Expression<Func<TReference, TProperty>> referenceElementSelector, EqualityComparer<TProperty> equalityComparer);
+}
+
+class ValidatableSet<TElement>
+{
+    void Unique<TProperty>(Expression<Func<TElement, TProperty>> selector);
+    void Unique<TProperty>(Expression<Func<TElement, TProperty>> selector, IEqualityComparer<TProperty> equalityComparer);
+    void Unique<TProperty>(Func<TElement, TProperty> selector, string message);
+    void Unique<TProperty>(Func<TElement, TProperty> selector, IEqualityComparer<TProperty> equalityComparer, string message);
+    void Sequential(Expression<Func<TElement, SByte|Int16|Int32|...>> selector, bool distinct = false);
+    ValidatableSet<TElement> Where(Func<TElement, bool> predicate);
+}
+```
+
+Metadata
+---
+You can get the table-info, properties, indexes by metadata api. It helps to make custom importer/exporter application.
+
+```csharp
+var metaDb = MetaMemoryDatabase.GetMetaDatabase();
+foreach (var table in metaDb.GetTableInfos())
+{
+    // for example, generate CSV header
+    var sb = new StringBuilder();
+    foreach (var prop in table.Properties)
+    {
+        if (sb.Length != 0) sb.Append(",");
+
+        // Name can convert to LowerCamelCase or SnakeCase.
+        sb.Append(prop.NameSnakeCase);
+    }
+    File.WriteAllText(table.TableName + ".csv", sb.ToString(), new UTF8Encoding(false));
+}
+```
+
+If creates console-app, our [ConsoleAppFramework](https://github.com/Cysharp/ConsoleAppFramework/) can easy to make helper applications.
+
 Code Generator
 ---
 MasterMemory has three kinds of code-generator. `MSBuild Task`, `Standalone Cli Tool`, `.NET Core Global/Local Tools`.
@@ -455,15 +581,17 @@ MSBuild Task(`MasterMemory.MSBuild.Tasks`) is recommended way to use in .NET Cor
 Standalone Cli Tool(`MasterMemory.Generator`) is built by .NET Core 3, self-contained single executable binary. It can be used for Unity and other separated use-case.
 
 ```
-argument list:
--i, -inputDirectory: Input file directory(search recursive).
--o, -outputDirectory: Output file directory.
--n, -usingNamespace: Namespace of generated files.
--p, -prefixClassName: [default=]Prefix of class names.
--c, -addImmutableConstructor: [default=False]Add immutable constructor to MemoryTable class.
+Usage: MasterMemory.Generator [options...]
+
+Options:
+  -i, -inputDirectory <String>              Input file directory(search recursive). (Required)
+  -o, -outputDirectory <String>             Output file directory. (Required)
+  -n, -usingNamespace <String>              Namespace of generated files. (Required)
+  -p, -prefixClassName <String>             Prefix of class names. (Default: )
+  -c, -addImmutableConstructor <Boolean>    Add immutable constructor to MemoryTable class. (Default: False)
 ```
 
-`.NET Core Global Tools` can install from NuGet, it is same as Standalone Cli Tool.
+`.NET Core Global/Local Tools` can install from NuGet, it is same as Standalone Cli Tool.
 
 `dotnet tool install --global MasterMemory.Generator`
 
