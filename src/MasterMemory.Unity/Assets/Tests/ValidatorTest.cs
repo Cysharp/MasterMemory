@@ -13,11 +13,19 @@ namespace MasterMemory.Tests
     {
         readonly Xunit.Abstractions.ITestOutputHelper output;
 
+#if UNITY_2018_3_OR_NEWER
+        public ValidatorTest()
+        {
+            this.output = new Xunit.Abstractions.DebugLogTestOutputHelper();
+            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
+        }
+#else
         public ValidatorTest(Xunit.Abstractions.ITestOutputHelper output)
         {
             this.output = output;
             MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
+#endif
 
         MemoryDatabase CreateDatabase(Fail[] data1)
         {

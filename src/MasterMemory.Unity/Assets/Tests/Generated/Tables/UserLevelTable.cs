@@ -8,8 +8,8 @@ using System;
 
 namespace MasterMemory.Tests.Tables
 {
-    public sealed partial class UserLevelTable : TableBase<UserLevel>, ITableUniqueValidate
-    {
+   public sealed partial class UserLevelTable : TableBase<UserLevel>, ITableUniqueValidate
+   {
         readonly Func<UserLevel, int> primaryIndexSelector;
 
         readonly UserLevel[] secondaryIndex0;
@@ -74,7 +74,7 @@ namespace MasterMemory.Tests.Tables
         {
             return FindUniqueCoreInt(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default, key);
         }
-
+        
         public bool TryFindByExp(int key, out UserLevel result)
         {
             return TryFindUniqueCoreInt(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default, key, out result);
@@ -93,8 +93,8 @@ namespace MasterMemory.Tests.Tables
 
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
-            ValidateUniqueCore(data, primaryIndexSelector, "Level", resultSet);
-            ValidateUniqueCore(secondaryIndex0, secondaryIndex0Selector, "Exp", resultSet);
+            ValidateUniqueCore(data, primaryIndexSelector, "Level", resultSet);       
+            ValidateUniqueCore(secondaryIndex0, secondaryIndex0Selector, "Exp", resultSet);       
         }
 
         public static MasterMemory.Meta.MetaTable CreateMetaTable()

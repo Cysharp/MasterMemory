@@ -24,6 +24,29 @@ namespace Xunit
     }
 }
 
+namespace Xunit.Abstractions
+{
+    public interface ITestOutputHelper
+    {
+        void WriteLine(String message);
+        void WriteLine(String format, params Object[] args);
+    }
+
+    public class DebugLogTestOutputHelper : ITestOutputHelper
+    {
+        public void WriteLine(string message)
+        {
+            UnityEngine.Debug.Log(message);
+        }
+
+        public void WriteLine(string format, params object[] args)
+        {
+            UnityEngine.Debug.Log(string.Format(format, args));
+        }
+    }
+}
+
+
 namespace FluentAssertions
 {
     public static class FluentAssertionsExtensions

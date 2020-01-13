@@ -60,7 +60,8 @@ namespace MasterMemory.Tests
                 item.Id.Should().Be(f.Id);
             }
 
-            table.FindById(110).Should().BeNull();
+            Assert.Throws<KeyNotFoundException>(() => table.FindById(110));
+            table.TryFindById(110, out _).Should().BeFalse();
         }
 
         [Fact]
@@ -75,8 +76,10 @@ namespace MasterMemory.Tests
                 item.Id.Should().Be(f.Id);
             }
 
-            table.FindByFirstNameAndLastName(("aaa", "___")).Should().BeNull();
-            table.FindByFirstNameAndLastName(("___", "foo")).Should().BeNull();
+            Assert.Throws<KeyNotFoundException>(() => table.FindByFirstNameAndLastName(("aaa", "___")));
+            Assert.Throws<KeyNotFoundException>(() => table.FindByFirstNameAndLastName(("___", "foo")));
+            table.TryFindByFirstNameAndLastName(("aaa", "___"), out _).Should().BeFalse();
+            table.TryFindByFirstNameAndLastName(("___", "foo"), out _).Should().BeFalse();
         }
 
         [Fact]
@@ -84,7 +87,7 @@ namespace MasterMemory.Tests
         {
             var data = CreateData();
             var table = CreateTable(data);
-            
+
             {
                 table.FindClosestByAge(56, true).First.Age.Should().Be(49);
                 table.FindClosestByAge(56, false).First.Age.Should().Be(59);
@@ -149,7 +152,7 @@ namespace MasterMemory.Tests
             //new Sample { Id = 2, Age = 89, FirstName = "aaa", LastName = "bar" },
             //new Sample { Id = 4, Age = 89, FirstName = "aaa", LastName = "tako" },
             //new Sample { Id = 9, Age = 99, FirstName = "aaa", LastName = "ika" },
-            
+
             table.FindClosestByFirstNameAndAge(("aaa", 10), true).First.Age.Should().Be(19);
             table.FindClosestByFirstNameAndAge(("aaa", 92), true).First.Age.Should().Be(89);
             table.FindClosestByFirstNameAndAge(("aaa", 120), true).First.Age.Should().Be(99);
@@ -171,7 +174,7 @@ namespace MasterMemory.Tests
         {
             var data = CreateData();
             var table = CreateTable(data);
-            
+
             table.FindByFirstNameAndAge(("aaa", 89)).Select(x => x.Id).Should().BeEquivalentTo(new[] { 2, 4 });
             table.FindByFirstNameAndAge(("aaa", 89)).Reverse.Select(x => x.Id).Should().BeEquivalentTo(new[] { 4, 2 });
         }

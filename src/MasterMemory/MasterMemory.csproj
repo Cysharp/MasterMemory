@@ -31,6 +31,23 @@
         <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="Validation\ValidatableSet.Sequential.tt">
+            <Generator>TextTemplatingFileGenerator</Generator>
+            <LastGenOutput>ValidatableSet.Sequential.cs</LastGenOutput>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Validation\ValidatableSet.Sequential.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>ValidatableSet.Sequential.tt</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
     <!-- Copy files for Unity -->
     <PropertyGroup>
         <DestinationRoot>$(ProjectDir)..\MasterMemory.Unity\Assets\Scripts\MasterMemory\</DestinationRoot>
@@ -40,35 +57,6 @@
         <TargetFiles1 Include="$(ProjectDir)\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;_InternalVisibleTo.cs" />
         <TargetFiles2 Include="$(ProjectDir)\..\MasterMemory.Annotations\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
         <TargetFiles3 Include="$(ProjectDir)\..\..\tests\MasterMemory.Tests\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
-    </ItemGroup>
-    <ItemGroup>
-      <TargetFiles1 Remove="ByteBufferWriter.cs" />
-      <TargetFiles1 Remove="Meta\Meta.cs" />
-      <TargetFiles1 Remove="Validation\ExpressionDumper.cs" />
-      <TargetFiles1 Remove="Validation\ExpressionParameterNameModifier.cs" />
-      <TargetFiles1 Remove="Validation\ITableUniqueValidate.cs" />
-      <TargetFiles1 Remove="Validation\IValidatable.cs" />
-      <TargetFiles1 Remove="Validation\ReferenceSet.cs" />
-      <TargetFiles1 Remove="Validation\ValidatableSet.cs" />
-      <TargetFiles1 Remove="Validation\ValidateResult.cs" />
-      <TargetFiles1 Remove="Validation\ValidationDatabase.cs" />
-      <TargetFiles1 Remove="Validation\Validator.cs" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Update="Validation\ValidatableSet.Sequential.tt">
-        <Generator>TextTemplatingFileGenerator</Generator>
-        <LastGenOutput>ValidatableSet.Sequential.cs</LastGenOutput>
-      </None>
-    </ItemGroup>
-    <ItemGroup>
-      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-    </ItemGroup>
-    <ItemGroup>
-      <Compile Update="Validation\ValidatableSet.Sequential.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>ValidatableSet.Sequential.tt</DependentUpon>
-      </Compile>
     </ItemGroup>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Copy SourceFiles="@(TargetFiles1)" DestinationFiles="$(DestinationRoot)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />

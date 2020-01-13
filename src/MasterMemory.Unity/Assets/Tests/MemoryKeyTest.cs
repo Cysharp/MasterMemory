@@ -3,6 +3,7 @@ using System.Linq;
 using MasterMemory.Tests.Tables;
 using FluentAssertions;
 using MessagePack;
+using System.Collections.Generic;
 
 namespace MasterMemory.Tests
 {
@@ -44,15 +45,15 @@ namespace MasterMemory.Tests
             var table = CreateTable();
 
             table.FindById(8).Id.Should().Be(8);
-            table.FindById(100).Should().BeNull();
+            Assert.Throws<KeyNotFoundException>(() => table.FindById(100));
 
             table.FindByIdAndAge((4, 89)).Id.Should().Be(4);
 
-            table.FindByIdAndAge((4, 899)).Should().BeNull();
-            table.FindByIdAndAge((5, 89)).Should().BeNull();
+            Assert.Throws<KeyNotFoundException>(() => table.FindByIdAndAge((4, 899)));
+            Assert.Throws<KeyNotFoundException>(() => table.FindByIdAndAge((5, 89)));
 
             table.FindByIdAndAgeAndFirstName((6, 29, "bbb")).Id.Should().Be(6);
-            table.FindByIdAndAgeAndFirstName((6, 29, "bbbz")).Should().BeNull();
+            Assert.Throws<KeyNotFoundException>(() => table.FindByIdAndAgeAndFirstName((6, 29, "bbbz")));
         }
 
         [Fact]
