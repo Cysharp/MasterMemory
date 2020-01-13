@@ -22,6 +22,11 @@ namespace MasterMemory.GeneratorCore
             var list = new List<GenerationContext>();
 
             // Collect
+            if (inputDirectory.EndsWith(".csproj"))
+            {
+                throw new InvalidOperationException("Path must be directory but it is csproj. inputDirectory:" + inputDirectory);
+            }
+
             foreach (var item in Directory.GetFiles(inputDirectory, "*.cs", SearchOption.AllDirectories))
             {
                 list.AddRange(CreateGenerationContext(item));
@@ -116,8 +121,9 @@ namespace MasterMemory.GeneratorCore
             var usingStrings = root.DescendantNodes()
                 .OfType<UsingDirectiveSyntax>()
                 .Select(x => x.ToFullString().Trim())
-                .Concat(new[] { "using MasterMemory;", "using System;", "using System.Collections.Generic;" })
+                .Concat(new[] { "using MasterMemory", "using MasterMemory.Validation", "using System", "using System.Collections.Generic" })
                 .Concat(ns)
+                .Select(x => x.Trim(';') + ";")
                 .Distinct()
                 .OrderBy(x => x)
                 .ToArray();

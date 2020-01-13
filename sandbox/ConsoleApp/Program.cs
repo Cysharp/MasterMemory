@@ -4,6 +4,8 @@ using MessagePack;
 using System;
 using System.IO;
 using System.Buffers;
+using System.Linq.Expressions;
+using System.Collections.Generic;
 
 namespace ConsoleApp
 {
@@ -46,7 +48,6 @@ namespace ConsoleApp
 
         public Person()
         {
-
         }
 
         public Person(int PersonId, int Age, Gender Gender, string Name)
@@ -61,6 +62,71 @@ namespace ConsoleApp
         {
             return $"{PersonId} {Age} {Gender} {Name}";
         }
+    }
+
+
+
+    // IValidatableを実装すると検証対象になる
+    [MemoryTable("quest"), MessagePackObject(true)]
+    public class Quest : IValidatable<Quest>
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int RewardId { get; set; }
+        public int Cost { get; set; }
+
+        void IValidatable<Quest>.Validate(IValidator<Quest> validator)
+        {
+            // relation貼ってる的なもののコレクションを取り出せる
+            var items = validator.GetReferenceSet<Item>();
+            // RewardIdが0以上のとき(0は報酬ナシのための特別なフラグという意味)
+            //if (this.RewardId > 0)
+            {
+                // Itemsのマスタに必ず含まれてなければ検証エラー（エラーが出ても続行はしてすべての検証結果を出す)
+                //items.Select(x => x.RewardId).Any(x => x.Id, EqualityComparer<int>.Default);
+            }
+
+            //items.ExistsIn(x => x.Id, x => x.RewardId);
+
+            //validator.Validate(x => x.Cost >= 20 && x.Cost <= 20);
+
+            //foreach (var item in items.)
+
+
+
+            //validator.ValidateAction(() => this.Cost >= 20);
+
+
+            // コストは10..20でなければ検証エラー
+            //validator.Validate(x => x.Cost >= 20);
+            //validator.Validate(x => x.Cost <= 20);
+
+            // 一度しか呼ばれないゾーンなのでデータセット全体の検証をしたい時に使える。
+
+            if (validator.CallOnce())
+            {
+                Console.WriteLine("OnceCalled");
+
+                var quests = validator.GetTableSet();
+
+                // quests.NotEmpty();
+                quests.Unique(x => x.Id);
+                quests.Sequential(x => x.Id);
+
+
+                
+
+
+            }
+        }
+    }
+
+    [MemoryTable("item"), MessagePackObject(true)]
+    public class Item
+    {
+        [PrimaryKey]
+        public int RewardId { get; set; }
     }
 
     class ByteBufferWriter : IBufferWriter<byte>
@@ -118,13 +184,6 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
-            var testwriter = new ByteBufferWriter();
-            testwriter.Advance(1024);
-            testwriter.GetSpan(10);
-            testwriter.Advance(10);
-            testwriter.GetSpan(10);
-
-
             var bin = new DatabaseBuilder().Append(new Monster[]
             {
                 new Monster ( MonsterId : 1, Name : "Foo", MaxHp : 100 )
@@ -140,29 +199,44 @@ namespace ConsoleApp
                 new Person { PersonId = 7, Age = 11, Gender = Gender.Female, Name = "Shari Gutierrez" },
                 new Person { PersonId = 8, Age = 63, Gender = Gender.Female, Name = "Lori Wilson" },
                 new Person { PersonId = 9, Age = 34, Gender = Gender.Female, Name = "Lena Ramsey" },
-            }).Build();
+            })
+            .Append(new Quest[]
+            {
+                new Quest { Id= 1, Name = "foo", Cost = 10, RewardId = 100 },
+                new Quest { Id= 2, Name = "bar", Cost = 20, RewardId = 101 },
+                new Quest { Id= 3, Name = "baz", Cost = 30, RewardId = 100 },
+                new Quest { Id= 3, Name = "too", Cost = 40, RewardId = 199 },
+            })
+            .Append(new Item[]
+            {
+                new Item { RewardId = 100 },
+                new Item { RewardId = 101 },
+                new Item { RewardId = 199 },
+            })
+            .Build();
 
 
-            // new DatabaseBuilderBase(
 
 
-            //new DatabaseBuilder(
-            File.WriteAllBytes("db.bin", bin);
+            var db = new MemoryDatabase(bin);
+
+            var result = db.Validate();
 
 
-            var db = new MemoryDatabase(File.ReadAllBytes("db.bin"));
+            Console.WriteLine(result.FormatFailedResults());
+            //var db = new MemoryDatabase(File.ReadAllBytes("db.bin"));
 
 
-            Person person = db.PersonTable.FindByPersonId(10);
+            //Person person = db.PersonTable.FindByPersonId(10);
 
 
-            RangeView<Person> result = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
+            //RangeView<Person> result = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
 
 
-            RangeView<Person> age1 = db.PersonTable.FindClosestByAge(31);
+            //RangeView<Person> age1 = db.PersonTable.FindClosestByAge(31);
 
 
-            RangeView<Person> age2 = db.PersonTable.FindRangeByAge(20, 29);
+            //RangeView<Person> age2 = db.PersonTable.FindRangeByAge(20, 29);
 
 
 

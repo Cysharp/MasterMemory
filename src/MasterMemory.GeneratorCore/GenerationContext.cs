@@ -59,6 +59,18 @@ namespace MasterMemory.GeneratorCore
             }
         }
 
+        public string BuildPropertyTupleName()
+        {
+            if (Properties.Length == 1)
+            {
+                return Properties[0].Name;
+            }
+            else
+            {
+                return "(" + string.Join(", ", Properties.Select(x => x.Name)) + ")";
+            }
+        }
+
         public string BuildFindPrefix()
         {
             return IsNonUnique ? "FindMany" : "FindUnique";

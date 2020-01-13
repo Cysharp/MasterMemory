@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Generated\" />
+    <Folder Include="Generated" />
   </ItemGroup>
 
 </Project>

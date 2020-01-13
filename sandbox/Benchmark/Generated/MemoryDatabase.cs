@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System;
 using TestPerfLiteDB;
 using TestPerfLiteDB.Tables;
+using MasterMemory.Validation;
 
 namespace TestPerfLiteDB
 {
@@ -44,6 +45,19 @@ namespace TestPerfLiteDB
             var builder = new DatabaseBuilder();
             builder.Append(this.TestDocTable.GetRawDataUnsafe());
             return builder;
+        }
+
+        public ValidateResult Validate()
+        {
+            var result = new ValidateResult();
+            var database = new ValidationDatabase(new object[]
+            {
+                TestDocTable,
+            });
+
+            ValidateTable(TestDocTable.All, database, result);
+
+            return result;
         }
     }
 }
