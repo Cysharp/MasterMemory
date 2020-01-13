@@ -12,7 +12,7 @@ using System;
 
 namespace ConsoleApp.Tables
 {
-   public sealed partial class PersonTable : TableBase<Person>
+   public sealed partial class PersonTable : TableBase<Person>, ITableUniqueValidate
    {
         readonly Func<Person, int> primaryIndexSelector;
 
@@ -111,5 +111,10 @@ namespace ConsoleApp.Tables
             return FindManyRangeCore(secondaryIndex1, secondaryIndex1Selector, System.Collections.Generic.Comparer<Gender>.Default, min, max, ascendant);
         }
 
+
+        void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
+        {
+            ValidateUniqueCore(data, primaryIndexSelector, "PersonId", resultSet);       
+        }
     }
 }

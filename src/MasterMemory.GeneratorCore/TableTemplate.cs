@@ -33,7 +33,7 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             this.Write("Table : TableBase<");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
-            this.Write(">\r\n   {\r\n        readonly Func<");
+            this.Write(">, ITableUniqueValidate\r\n   {\r\n        readonly Func<");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.BuildTypeName()));
@@ -163,7 +163,29 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
             this.Write(", min, max, ascendant);\r\n        }\r\n\r\n");
  } 
-            this.Write("    }\r\n}");
+            this.Write("\r\n        void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)\r\n   " +
+                    "     {\r\n");
+ if (!GenerationContext.PrimaryKey.IsNonUnique) { var key = GenerationContext.PrimaryKey; 
+            this.Write("            ValidateUniqueCore(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.TableName));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.SelectorName));
+            this.Write(", \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.BuildPropertyTupleName()));
+            this.Write("\", resultSet);       \r\n");
+ } 
+ for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var key = GenerationContext.SecondaryKeys[i]; 
+      if (!key.IsNonUnique) { 
+            this.Write("            ValidateUniqueCore(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.TableName));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.SelectorName));
+            this.Write(", \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.BuildPropertyTupleName()));
+            this.Write("\", resultSet);       \r\n");
+      } 
+ } 
+            this.Write("        }\r\n    }\r\n}");
             return this.GenerationEnvironment.ToString();
         }
     }

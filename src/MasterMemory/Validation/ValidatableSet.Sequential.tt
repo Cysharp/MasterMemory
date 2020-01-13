@@ -1,0 +1,68 @@
+﻿<#@ template debug="true" hostSpecific="false" #>
+<#@ output extension=".cs" #>
+<#@ Assembly Name="System.Core" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #> 
+<#
+    var targetTypes = new[]
+    {
+        typeof(sbyte),
+        typeof(short),
+        typeof(int),
+        typeof(long),
+        typeof(byte),
+        typeof(ushort),
+        typeof(uint),
+        typeof(ulong),
+    };
+#>
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+namespace MasterMemory.Validation
+{
+    public partial class ValidatableSet<TElement>
+    {
+<# foreach(var t in targetTypes) { #>
+        public void Sequential(Expression<Func<TElement, <#= t.Name #>>> selector, bool distinct = false)
+        {
+            var f = selector.Compile(true);
+            SequentialCore(f, () => selector.ToSpaceBodyString(), distinct);
+        }
+
+        public void Sequential(Func<TElement, <#= t.Name #>> selector, string message, bool distinct = false)
+        {
+            SequentialCore(selector, () => " " + message, distinct);
+        }
+
+        void SequentialCore(Func<TElement, <#= t.Name #>> selector, Func<string> message, bool distinct)
+        {
+            if (tableData.Count == 0) return;
+            var data = tableData.OrderBy(selector).ToArray();
+
+            var prev = selector(data[0]);
+            for (int i = 1; i < data.Length; i++)
+            {
+                var curr = selector(data[i]);
+                if (distinct)
+                {
+                    if (prev == curr) continue;
+                }
+
+                if ((prev + 1) != curr)
+                {
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                }
+
+                prev = curr;
+            }
+        }
+
+<# } #>
+    }
+}

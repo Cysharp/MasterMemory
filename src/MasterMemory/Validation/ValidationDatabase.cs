@@ -8,7 +8,7 @@ namespace MasterMemory.Validation
         // {Type, IReadOnlyList<T> }
         readonly Dictionary<Type, object> dataTables = new Dictionary<Type, object>();
 
-        public ValidationDatabase(object[] tables)
+        public ValidationDatabase(IEnumerable<object> tables)
         {
             foreach (var table in tables)
             {

@@ -44,7 +44,9 @@ namespace MasterMemory
             }
             else
             {
-                return default(TView);
+                // return empty
+                var data = Array.Empty<T>();
+                return createView(data);
             }
         }
 

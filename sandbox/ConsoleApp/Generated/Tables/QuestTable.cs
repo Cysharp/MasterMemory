@@ -12,7 +12,7 @@ using System;
 
 namespace ConsoleApp.Tables
 {
-   public sealed partial class QuestTable : TableBase<Quest>
+   public sealed partial class QuestTable : TableBase<Quest>, ITableUniqueValidate
    {
         readonly Func<Quest, int> primaryIndexSelector;
 
@@ -51,5 +51,10 @@ namespace ConsoleApp.Tables
             return FindUniqueRangeCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, min, max, ascendant);
         }
 
+
+        void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
+        {
+            ValidateUniqueCore(data, primaryIndexSelector, "Id", resultSet);       
+        }
     }
 }

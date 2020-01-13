@@ -22,6 +22,11 @@ namespace MasterMemory.GeneratorCore
             var list = new List<GenerationContext>();
 
             // Collect
+            if (inputDirectory.EndsWith(".csproj"))
+            {
+                throw new InvalidOperationException("Path must be directory but it is csproj. inputDirectory:" + inputDirectory);
+            }
+
             foreach (var item in Directory.GetFiles(inputDirectory, "*.cs", SearchOption.AllDirectories))
             {
                 list.AddRange(CreateGenerationContext(item));

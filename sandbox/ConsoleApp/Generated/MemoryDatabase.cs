@@ -13,8 +13,8 @@ using ConsoleApp.Tables;
 
 namespace ConsoleApp
 {
-   public sealed class MemoryDatabase : MemoryDatabaseBase
-   {
+    public sealed class MemoryDatabase : MemoryDatabaseBase
+    {
         public MonsterTable MonsterTable { get; private set; }
         public PersonTable PersonTable { get; private set; }
         public QuestTable QuestTable { get; private set; }
@@ -64,17 +64,21 @@ namespace ConsoleApp
         public ValidateResult Validate()
         {
             var result = new ValidateResult();
-            var database = new ValidationDatabase(new object[]
+            var database = new ValidationDatabase(System.Linq.Enumerable.Where(new object[]
             {
                 MonsterTable,
                 PersonTable,
                 QuestTable,
                 ItemTable,
-            });
+            }, x => x != null).ToArray());
 
+            ((ITableUniqueValidate)MonsterTable).ValidateUnique(result);
             ValidateTable(MonsterTable.All, database, result);
+            ((ITableUniqueValidate)PersonTable).ValidateUnique(result);
             ValidateTable(PersonTable.All, database, result);
+            ((ITableUniqueValidate)QuestTable).ValidateUnique(result);
             ValidateTable(QuestTable.All, database, result);
+            ((ITableUniqueValidate)ItemTable).ValidateUnique(result);
             ValidateTable(ItemTable.All, database, result);
 
             return result;

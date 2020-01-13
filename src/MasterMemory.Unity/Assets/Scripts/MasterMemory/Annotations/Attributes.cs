@@ -1,13 +1,15 @@
-﻿using System;
+﻿using MessagePack;
+using System;
 
 namespace MasterMemory
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class MemoryTableAttribute : Attribute
+    public class MemoryTableAttribute : MessagePackObjectAttribute
     {
         public string TableName { get; }
 
         public MemoryTableAttribute(string tableName)
+            : base(true)
         {
             this.TableName = tableName;
         }

@@ -104,7 +104,9 @@ namespace MasterMemory.GeneratorCore
  } 
             this.Write("            });\r\n\r\n");
  foreach(var item in GenerationContexts) { 
-            this.Write("            ValidateTable(");
+            this.Write("            ((ITableUniqueValidate)");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
+            this.Write("Table).ValidateUnique(result);\r\n            ValidateTable(");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table.All, database, result);\r\n");
  } 

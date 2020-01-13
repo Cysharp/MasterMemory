@@ -15,6 +15,9 @@ namespace MasterMemory
         ReferenceSet<T, TRef> GetReferenceSet<TRef>();
         void Validate(Expression<Func<T, bool>> predicate);
         void Validate(Func<T, bool> predicate, string message);
+        void ValidateAction(Expression<Func<bool>> predicate);
+        void ValidateAction(Func<bool> predicate, string message);
+        void Fail(string message);
         bool CallOnce();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MasterMemory.Internal;
+using MasterMemory.Validation;
 using System;
 using System.Collections.Generic;
 
@@ -17,6 +18,21 @@ namespace MasterMemory
         public TableBase(TElement[] sortedData)
         {
             this.data = sortedData;
+        }
+
+        // Validate
+
+        static protected void ValidateUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, string message, ValidateResult resultSet)
+        {
+            var set = new HashSet<TKey>();
+            foreach (var item in indexArray)
+            {
+                var v = keySelector(item);
+                if (!set.Add(v))
+                {
+                    resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v);
+                }
+            }
         }
 
         // Util

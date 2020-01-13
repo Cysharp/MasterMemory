@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Buffers;
 using System.Linq.Expressions;
+using System.Collections.Generic;
 
 namespace ConsoleApp
 {
@@ -80,22 +81,43 @@ namespace ConsoleApp
             // relation貼ってる的なもののコレクションを取り出せる
             var items = validator.GetReferenceSet<Item>();
             // RewardIdが0以上のとき(0は報酬ナシのための特別なフラグという意味)
-            if (this.RewardId > 0)
+            //if (this.RewardId > 0)
             {
                 // Itemsのマスタに必ず含まれてなければ検証エラー（エラーが出ても続行はしてすべての検証結果を出す)
-                items.Select(x => x.RewardId).Exists(() => this.Id);
+                //items.Select(x => x.RewardId).Any(x => x.Id, EqualityComparer<int>.Default);
             }
 
+            //items.ExistsIn(x => x.Id, x => x.RewardId);
+
+            //validator.Validate(x => x.Cost >= 20 && x.Cost <= 20);
+
+            //foreach (var item in items.)
+
+
+
+            //validator.ValidateAction(() => this.Cost >= 20);
+
+
             // コストは10..20でなければ検証エラー
-            validator.Validate(x => x.Cost >= 20);
-            validator.Validate(x => x.Cost <= 20);
+            //validator.Validate(x => x.Cost >= 20);
+            //validator.Validate(x => x.Cost <= 20);
 
             // 一度しか呼ばれないゾーンなのでデータセット全体の検証をしたい時に使える。
+
             if (validator.CallOnce())
             {
+                Console.WriteLine("OnceCalled");
+
                 var quests = validator.GetTableSet();
-                // シーケンシャルになってないとダメ
+
+                // quests.NotEmpty();
+                quests.Unique(x => x.Id);
                 quests.Sequential(x => x.Id);
+
+
+                
+
+
             }
         }
     }
@@ -183,7 +205,7 @@ namespace ConsoleApp
                 new Quest { Id= 1, Name = "foo", Cost = 10, RewardId = 100 },
                 new Quest { Id= 2, Name = "bar", Cost = 20, RewardId = 101 },
                 new Quest { Id= 3, Name = "baz", Cost = 30, RewardId = 100 },
-                new Quest { Id= 4, Name = "too", Cost = 40, RewardId = 199 },
+                new Quest { Id= 3, Name = "too", Cost = 40, RewardId = 199 },
             })
             .Append(new Item[]
             {

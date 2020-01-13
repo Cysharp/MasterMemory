@@ -12,7 +12,7 @@ using System;
 
 namespace ConsoleApp.Tables
 {
-   public sealed partial class MonsterTable : TableBase<Monster>
+   public sealed partial class MonsterTable : TableBase<Monster>, ITableUniqueValidate
    {
         readonly Func<Monster, int> primaryIndexSelector;
 
@@ -51,5 +51,10 @@ namespace ConsoleApp.Tables
             return FindUniqueRangeCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<int>.Default, min, max, ascendant);
         }
 
+
+        void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
+        {
+            ValidateUniqueCore(data, primaryIndexSelector, "MonsterId", resultSet);       
+        }
     }
 }
