@@ -53,5 +53,19 @@ namespace MasterMemory.Tests.Tables
         {
             ValidateUniqueCore(data, primaryIndexSelector, "Id", resultSet);       
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(Fail), typeof(FailTable), "fail",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(Fail).GetProperty("Id")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Fail).GetProperty("Id"),
+                    }, true, true, System.Collections.Generic.Comparer<int>.Default),
+                });
+        }
     }
 }

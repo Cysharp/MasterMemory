@@ -43,6 +43,7 @@
     </ItemGroup>
     <ItemGroup>
       <TargetFiles1 Remove="ByteBufferWriter.cs" />
+      <TargetFiles1 Remove="Meta\Meta.cs" />
       <TargetFiles1 Remove="Validation\ExpressionDumper.cs" />
       <TargetFiles1 Remove="Validation\ExpressionParameterNameModifier.cs" />
       <TargetFiles1 Remove="Validation\ITableUniqueValidate.cs" />

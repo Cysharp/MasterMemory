@@ -40,5 +40,24 @@ namespace MasterMemory.Tests.Tables
         {
             ValidateUniqueCore(data, primaryIndexSelector, "(SkillId, SkillLevel)", resultSet);       
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(SkillMaster), typeof(SkillMasterTable), "skillmaster",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(SkillMaster).GetProperty("SkillId")),
+                    new MasterMemory.Meta.MetaProperty(typeof(SkillMaster).GetProperty("SkillLevel")),
+                    new MasterMemory.Meta.MetaProperty(typeof(SkillMaster).GetProperty("AttackPower")),
+                    new MasterMemory.Meta.MetaProperty(typeof(SkillMaster).GetProperty("SkillName")),
+                    new MasterMemory.Meta.MetaProperty(typeof(SkillMaster).GetProperty("Description")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(SkillMaster).GetProperty("SkillId"),
+                        typeof(SkillMaster).GetProperty("SkillLevel"),
+                    }, true, true, System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default),
+                });
+        }
     }
 }

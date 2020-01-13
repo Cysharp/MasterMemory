@@ -2,7 +2,7 @@ using MessagePack;
 
 namespace MasterMemory.Tests
 {
-    [MemoryTable("Sample"), MessagePackObject(true)]
+    [MemoryTable("s_a_m_p_l_e"), MessagePackObject(true)]
     public class Sample
     {
         [PrimaryKey]

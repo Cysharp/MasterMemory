@@ -40,5 +40,20 @@ namespace MasterMemory.Tests.Tables
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(TestMaster), typeof(TestMasterTable), "TestMaster",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(TestMaster).GetProperty("TestID")),
+                    new MasterMemory.Meta.MetaProperty(typeof(TestMaster).GetProperty("Value")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(TestMaster).GetProperty("TestID"),
+                    }, true, false, System.Collections.Generic.Comparer<int>.Default),
+                });
+        }
     }
 }

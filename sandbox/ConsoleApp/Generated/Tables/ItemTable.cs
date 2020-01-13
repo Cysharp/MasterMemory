@@ -12,8 +12,8 @@ using System;
 
 namespace ConsoleApp.Tables
 {
-   public sealed partial class ItemTable : TableBase<Item>, ITableUniqueValidate
-   {
+    public sealed partial class ItemTable : TableBase<Item>, ITableUniqueValidate
+    {
         readonly Func<Item, int> primaryIndexSelector;
 
 
@@ -54,7 +54,7 @@ namespace ConsoleApp.Tables
 
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
-            ValidateUniqueCore(data, primaryIndexSelector, "RewardId", resultSet);       
+            ValidateUniqueCore(data, primaryIndexSelector, "RewardId", resultSet);
         }
     }
 }
