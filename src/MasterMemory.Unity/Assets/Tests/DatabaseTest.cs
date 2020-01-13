@@ -48,7 +48,7 @@ namespace MasterMemory.Tests
             db.SampleTable.FindById(8).Age.Should().Be(49);
 
             var tableInfo = MemoryDatabase.GetTableInfo(bin);
-            tableInfo[0].TableName.Should().Be("Sample");
+            tableInfo[0].TableName.Should().Be("s_a_m_p_l_e");
         }
 
         [Fact]

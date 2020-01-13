@@ -35,7 +35,25 @@ namespace MasterMemory.Tests.Tables
                 if (found < 0) { lo = mid + 1; }
                 else { hi = mid - 1; }
             }
-            return default;
+            return ThrowKeyNotFound(key);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public bool TryFindById(int key, out SingleMaster result)
+        {
+            var lo = 0;
+            var hi = data.Length - 1;
+            while (lo <= hi)
+            {
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
+                var selected = data[mid].Id;
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { result = data[mid]; return true; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            result = default;
+            return false;
         }
 
         public SingleMaster FindClosestById(int key, bool selectLower = true)

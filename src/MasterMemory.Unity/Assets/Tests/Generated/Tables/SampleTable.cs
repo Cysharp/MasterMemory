@@ -69,7 +69,25 @@ namespace MasterMemory.Tests.Tables
                 if (found < 0) { lo = mid + 1; }
                 else { hi = mid - 1; }
             }
-            return default;
+            return ThrowKeyNotFound(key);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public bool TryFindById(int key, out Sample result)
+        {
+            var lo = 0;
+            var hi = data.Length - 1;
+            while (lo <= hi)
+            {
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
+                var selected = data[mid].Id;
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { result = data[mid]; return true; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            result = default;
+            return false;
         }
 
         public Sample FindClosestById(int key, bool selectLower = true)
@@ -86,6 +104,11 @@ namespace MasterMemory.Tests.Tables
         {
             return FindUniqueCore(secondaryIndex1, secondaryIndex1Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName, string LastName)>.Default, key);
         }
+        
+        public bool TryFindByIdAndAgeAndFirstNameAndLastName((int Id, int Age, string FirstName, string LastName) key, out Sample result)
+        {
+            return TryFindUniqueCore(secondaryIndex1, secondaryIndex1Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName, string LastName)>.Default, key, out result);
+        }
 
         public Sample FindClosestByIdAndAgeAndFirstNameAndLastName((int Id, int Age, string FirstName, string LastName) key, bool selectLower = true)
         {
@@ -101,6 +124,11 @@ namespace MasterMemory.Tests.Tables
         {
             return FindUniqueCore(secondaryIndex2, secondaryIndex2Selector, System.Collections.Generic.Comparer<(int Id, int Age)>.Default, key);
         }
+        
+        public bool TryFindByIdAndAge((int Id, int Age) key, out Sample result)
+        {
+            return TryFindUniqueCore(secondaryIndex2, secondaryIndex2Selector, System.Collections.Generic.Comparer<(int Id, int Age)>.Default, key, out result);
+        }
 
         public Sample FindClosestByIdAndAge((int Id, int Age) key, bool selectLower = true)
         {
@@ -115,6 +143,11 @@ namespace MasterMemory.Tests.Tables
         public Sample FindByIdAndAgeAndFirstName((int Id, int Age, string FirstName) key)
         {
             return FindUniqueCore(secondaryIndex3, secondaryIndex3Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName)>.Default, key);
+        }
+        
+        public bool TryFindByIdAndAgeAndFirstName((int Id, int Age, string FirstName) key, out Sample result)
+        {
+            return TryFindUniqueCore(secondaryIndex3, secondaryIndex3Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName)>.Default, key, out result);
         }
 
         public Sample FindClosestByIdAndAgeAndFirstName((int Id, int Age, string FirstName) key, bool selectLower = true)
@@ -160,6 +193,11 @@ namespace MasterMemory.Tests.Tables
         public Sample FindByFirstNameAndLastName((string FirstName, string LastName) key)
         {
             return FindUniqueCore(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<(string FirstName, string LastName)>.Default, key);
+        }
+        
+        public bool TryFindByFirstNameAndLastName((string FirstName, string LastName) key, out Sample result)
+        {
+            return TryFindUniqueCore(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<(string FirstName, string LastName)>.Default, key, out result);
         }
 
         public Sample FindClosestByFirstNameAndLastName((string FirstName, string LastName) key, bool selectLower = true)

@@ -8,8 +8,8 @@ using System;
 
 namespace MasterMemory.Tests.Tables
 {
-   public sealed partial class UserLevelTable : TableBase<UserLevel>, ITableUniqueValidate
-   {
+    public sealed partial class UserLevelTable : TableBase<UserLevel>, ITableUniqueValidate
+    {
         readonly Func<UserLevel, int> primaryIndexSelector;
 
         readonly UserLevel[] secondaryIndex0;
@@ -39,7 +39,25 @@ namespace MasterMemory.Tests.Tables
                 if (found < 0) { lo = mid + 1; }
                 else { hi = mid - 1; }
             }
-            return default;
+            return ThrowKeyNotFound(key);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public bool TryFindByLevel(int key, out UserLevel result)
+        {
+            var lo = 0;
+            var hi = data.Length - 1;
+            while (lo <= hi)
+            {
+                var mid = (int)(((uint)hi + (uint)lo) >> 1);
+                var selected = data[mid].Level;
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { result = data[mid]; return true; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            result = default;
+            return false;
         }
 
         public UserLevel FindClosestByLevel(int key, bool selectLower = true)
@@ -57,6 +75,11 @@ namespace MasterMemory.Tests.Tables
             return FindUniqueCoreInt(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default, key);
         }
 
+        public bool TryFindByExp(int key, out UserLevel result)
+        {
+            return TryFindUniqueCoreInt(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default, key, out result);
+        }
+
         public UserLevel FindClosestByExp(int key, bool selectLower = true)
         {
             return FindUniqueClosestCore(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default, key, selectLower);
@@ -70,8 +93,8 @@ namespace MasterMemory.Tests.Tables
 
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
-            ValidateUniqueCore(data, primaryIndexSelector, "Level", resultSet);       
-            ValidateUniqueCore(secondaryIndex0, secondaryIndex0Selector, "Exp", resultSet);       
+            ValidateUniqueCore(data, primaryIndexSelector, "Level", resultSet);
+            ValidateUniqueCore(secondaryIndex0, secondaryIndex0Selector, "Exp", resultSet);
         }
 
         public static MasterMemory.Meta.MetaTable CreateMetaTable()

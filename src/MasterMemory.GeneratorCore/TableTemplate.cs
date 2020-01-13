@@ -109,9 +109,65 @@ namespace MasterMemory.GeneratorCore
                 if (found < 0) { lo = mid + 1; }
                 else { hi = mid - 1; }
             }
-            return default;
+            return ThrowKeyNotFound(key);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public bool TryFindBy");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
+            this.Write(" key, out ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
+            this.Write(" result)\r\n        {\r\n            var lo = 0;\r\n            var hi = data.Length - " +
+                    "1;\r\n            while (lo <= hi)\r\n            {\r\n                var mid = (int)" +
+                    "(((uint)hi + (uint)lo) >> 1);\r\n                var selected = data[mid].");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.Properties[0].Name));
+            this.Write(@";
+                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
+                if (found == 0) { result = data[mid]; return true; }
+                if (found < 0) { lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            result = default;
+            return false;
         }
 ");
+ } else { 
+ if (!item.IsNonUnique) { 
+            this.Write("        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
+            this.Write(" FindBy");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
+            this.Write(" key)\r\n        {\r\n            return ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildFindPrefix()));
+            this.Write("Core");
+            this.Write(this.ToStringHelper.ToStringWithCulture(!item.IsNonUnique && item.IsIntType ? "Int" : ""));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.TableName));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
+            this.Write(", key);\r\n        }\r\n        \r\n        public bool TryFindBy");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
+            this.Write(" key, out ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
+            this.Write(" result)\r\n        {\r\n            return Try");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildFindPrefix()));
+            this.Write("Core");
+            this.Write(this.ToStringHelper.ToStringWithCulture(!item.IsNonUnique && item.IsIntType ? "Int" : ""));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.TableName));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
+            this.Write(", key, out result);\r\n        }\r\n");
  } else { 
             this.Write("        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
@@ -130,6 +186,7 @@ namespace MasterMemory.GeneratorCore
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
             this.Write(", key);\r\n        }\r\n");
+ } 
  } 
             this.Write("\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));

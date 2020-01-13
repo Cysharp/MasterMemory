@@ -51,19 +51,54 @@ namespace MasterMemory
             return array;
         }
 
+        static protected TElement ThrowKeyNotFound<TKey>(TKey key)
+        {
+            throw new KeyNotFoundException("DataType: " + typeof(TElement).FullName + ", Key: " + key.ToString());
+        }
+
         // Unique
 
         static protected TElement FindUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key)
         {
             var index = BinarySearch.FindFirst(indexArray, key, keySelector, comparer);
-            return (index != -1) ? indexArray[index] : default(TElement);
+            return (index != -1) ? indexArray[index] : ThrowKeyNotFound(key);
         }
 
         // Optimize for IntKey
         static protected TElement FindUniqueCoreInt(TElement[] indexArray, Func<TElement, int> keySelector, IComparer<int> _, int key)
         {
             var index = BinarySearch.FindFirstIntKey(indexArray, key, keySelector);
-            return (index != -1) ? indexArray[index] : default(TElement);
+            return (index != -1) ? indexArray[index] : ThrowKeyNotFound(key);
+        }
+
+        static protected bool TryFindUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, out TElement result)
+        {
+            var index = BinarySearch.FindFirst(indexArray, key, keySelector, comparer);
+            if (index != -1)
+            {
+                result = indexArray[index];
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        static protected bool TryFindUniqueCoreInt(TElement[] indexArray, Func<TElement, int> keySelector, IComparer<int> _, int key, out TElement result)
+        {
+            var index = BinarySearch.FindFirstIntKey(indexArray, key, keySelector);
+            if (index != -1)
+            {
+                result = indexArray[index];
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
         }
 
         static protected TElement FindUniqueClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
