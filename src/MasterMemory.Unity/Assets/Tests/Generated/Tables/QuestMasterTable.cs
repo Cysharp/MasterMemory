@@ -53,5 +53,22 @@ namespace MasterMemory.Tests.Tables
         {
             ValidateUniqueCore(data, primaryIndexSelector, "QuestId", resultSet);       
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(QuestMaster), typeof(QuestMasterTable), "quest_master",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(QuestMaster).GetProperty("QuestId")),
+                    new MasterMemory.Meta.MetaProperty(typeof(QuestMaster).GetProperty("Name")),
+                    new MasterMemory.Meta.MetaProperty(typeof(QuestMaster).GetProperty("RewardItemId")),
+                    new MasterMemory.Meta.MetaProperty(typeof(QuestMaster).GetProperty("Cost")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(QuestMaster).GetProperty("QuestId"),
+                    }, true, true, System.Collections.Generic.Comparer<int>.Default),
+                });
+        }
     }
 }

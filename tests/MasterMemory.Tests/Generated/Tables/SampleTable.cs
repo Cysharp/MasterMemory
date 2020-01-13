@@ -196,5 +196,52 @@ namespace MasterMemory.Tests.Tables
             ValidateUniqueCore(secondaryIndex3, secondaryIndex3Selector, "(Id, Age, FirstName)", resultSet);       
             ValidateUniqueCore(secondaryIndex0, secondaryIndex0Selector, "(FirstName, LastName)", resultSet);       
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(Sample), typeof(SampleTable), "s_a_m_p_l_e",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(Sample).GetProperty("Id")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Sample).GetProperty("Age")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Sample).GetProperty("FirstName")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Sample).GetProperty("LastName")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Sample).GetProperty("Hoge")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("Id"),
+                    }, true, true, System.Collections.Generic.Comparer<int>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("Id"),
+                        typeof(Sample).GetProperty("Age"),
+                        typeof(Sample).GetProperty("FirstName"),
+                        typeof(Sample).GetProperty("LastName"),
+                    }, false, true, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName, string LastName)>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("Id"),
+                        typeof(Sample).GetProperty("Age"),
+                    }, false, true, System.Collections.Generic.Comparer<(int Id, int Age)>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("Id"),
+                        typeof(Sample).GetProperty("Age"),
+                        typeof(Sample).GetProperty("FirstName"),
+                    }, false, true, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName)>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("Age"),
+                    }, false, false, System.Collections.Generic.Comparer<int>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("FirstName"),
+                        typeof(Sample).GetProperty("Age"),
+                    }, false, false, System.Collections.Generic.Comparer<(string FirstName, int Age)>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("FirstName"),
+                        typeof(Sample).GetProperty("LastName"),
+                    }, false, true, System.Collections.Generic.Comparer<(string FirstName, string LastName)>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(Sample).GetProperty("FirstName"),
+                    }, false, false, System.StringComparer.Ordinal),
+                });
+        }
     }
 }

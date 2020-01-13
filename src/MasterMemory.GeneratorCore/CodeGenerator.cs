@@ -48,16 +48,18 @@ namespace MasterMemory.GeneratorCore
 
                 var builderTemplate = new DatabaseBuilderTemplate();
                 var databaseTemplate = new MemoryDatabaseTemplate();
+                var metaDatabaseTemplate = new MetaMemoryDatabaseTemplate();
                 var immutableBuilderTemplate = new ImmutableBuilderTemplate();
                 var resolverTemplate = new MessagePackResolverTemplate();
-                builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
-                builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
-                builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
-                builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
+                builderTemplate.Namespace = databaseTemplate.Namespace = metaDatabaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
+                builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = metaDatabaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
+                builderTemplate.Using = databaseTemplate.Using = metaDatabaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
+                builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = metaDatabaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
 
                 logger(WriteToFile(outputDirectory, builderTemplate.ClassName, builderTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, databaseTemplate.ClassName, databaseTemplate.TransformText()));
+                logger(WriteToFile(outputDirectory, metaDatabaseTemplate.ClassName, metaDatabaseTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, resolverTemplate.ClassName, resolverTemplate.TransformText()));
             }
             {
@@ -138,6 +140,7 @@ namespace MasterMemory.GeneratorCore
                     if (attrName == "MemoryTable" || attrName == "MasterMemory.Annotations.MemoryTable")
                     {
                         context.ClassName = classDecl.Identifier.ToFullString().Trim();
+                        context.MemoryTableName = AttributeExpressionToString(attr.ArgumentList.Arguments[0].Expression) ?? context.ClassName;
 
                         var members = classDecl.Members.OfType<PropertyDeclarationSyntax>()
                             .Select(x => ExtractPropertyAttribute(x))
@@ -150,9 +153,15 @@ namespace MasterMemory.GeneratorCore
                         }
 
                         var secondaryKeys = members.SelectMany(x => x.Item2).GroupBy(x => x.IndexNo).Select(x => AggregateSecondaryKey(x)).ToArray();
+                        var properties = members.Where(x => x.Item3 != null).Select(x => new Property
+                        {
+                            Type = x.Item3.Type.ToFullString(),
+                            Name = x.Item3.Identifier.Text,
+                        }).ToArray();
 
                         context.PrimaryKey = primaryKey;
                         context.SecondaryKeys = secondaryKeys;
+                        context.Properties = properties;
                     }
                 }
 
@@ -166,7 +175,7 @@ namespace MasterMemory.GeneratorCore
             }
         }
 
-        (PrimaryKey, List<SecondaryKey>) ExtractPropertyAttribute(PropertyDeclarationSyntax property)
+        (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax) ExtractPropertyAttribute(PropertyDeclarationSyntax property)
         {
             // Attribute Parterns:
             // Primarykey(keyOrder = 0)
@@ -176,6 +185,7 @@ namespace MasterMemory.GeneratorCore
 
             PrimaryKey resultPrimaryKey = default;
             List<SecondaryKey> secondaryKeys = new List<SecondaryKey>();
+            bool isSerializableProperty = true;
 
             foreach (var attrList in property.AttributeLists)
             {
@@ -245,6 +255,12 @@ namespace MasterMemory.GeneratorCore
                             secondaryKey.StringComparisonOption = option;
                         }
                     }
+                    else if (!property.Modifiers.Any(SyntaxKind.PublicKeyword)
+                        || attrName == "IgnoreMember" || attrName == "MessagePackObject.IgnoreMember"
+                        || attrName == "IgnoreDataMember" || attrName == "System.Runtime.Serialization.IgnoreDataMember")
+                    {
+                        isSerializableProperty = false;
+                    }
                 }
 
                 if (hasNonUnique)
@@ -269,7 +285,7 @@ namespace MasterMemory.GeneratorCore
                 }
             }
 
-            return (resultPrimaryKey, secondaryKeys);
+            return (resultPrimaryKey, secondaryKeys, isSerializableProperty ? property : null);
         }
 
         PrimaryKey AggregatePrimaryKey(IEnumerable<PrimaryKey> primaryKeys)
@@ -381,6 +397,28 @@ namespace MasterMemory.GeneratorCore
             {
                 return null;
             }
+        }
+
+        static string AttributeExpressionToString(ExpressionSyntax expression)
+        {
+            if (expression is InvocationExpressionSyntax ie)
+            {
+                var expr = ie.ArgumentList.Arguments.Last().Expression;
+                if (expr is MemberAccessExpressionSyntax mae)
+                {
+                    return mae.Name?.ToString();
+                }
+                else if (expr is IdentifierNameSyntax inx)
+                {
+                    return inx.Identifier.ValueText;
+                }
+                return null;
+            }
+            else if (expression is LiteralExpressionSyntax le)
+            {
+                return le.Token.ValueText;
+            }
+            return null;
         }
     }
 

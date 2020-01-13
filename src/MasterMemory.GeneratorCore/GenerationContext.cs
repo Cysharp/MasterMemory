@@ -7,12 +7,23 @@ namespace MasterMemory.GeneratorCore
     public class GenerationContext
     {
         public string ClassName { get; set; }
+        public string MemoryTableName { get; set; }
         public string[] UsingStrings { get; set; }
         public PrimaryKey PrimaryKey { get; set; }
         public SecondaryKey[] SecondaryKeys { get; set; }
 
         public string InputFilePath { get; set; }
         public ClassDeclarationSyntax OriginalClassDeclaration { get; set; }
+
+        public Property[] Properties { get; set; }
+        public KeyBase[] Keys => new KeyBase[] { PrimaryKey }.Concat(SecondaryKeys).ToArray();
+
+    }
+
+public class Property
+    {
+        public string Type { get; set; }
+        public string Name { get; set; }
     }
 
     public abstract class KeyBase
@@ -22,6 +33,7 @@ namespace MasterMemory.GeneratorCore
         public KeyProperty[] Properties { get; set; }
         public abstract string SelectorName { get; }
         public abstract string TableName { get; }
+        public abstract bool IsPrimary { get; }
 
         public string BuildKeyAccessor(string lambdaArgument)
         {
@@ -188,6 +200,7 @@ namespace MasterMemory.GeneratorCore
     {
         public override string SelectorName => "primaryIndexSelector";
         public override string TableName => "data";
+        public override bool IsPrimary => true;
     }
 
     public class SecondaryKey : KeyBase
@@ -195,6 +208,7 @@ namespace MasterMemory.GeneratorCore
         public int IndexNo { get; set; }
         public override string SelectorName => $"secondaryIndex{IndexNo}Selector";
         public override string TableName => $"secondaryIndex{IndexNo}";
+        public override bool IsPrimary => false;
     }
 
     public class KeyProperty

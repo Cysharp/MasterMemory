@@ -23,6 +23,15 @@ namespace MasterMemory.GeneratorCore
         public string ClassName => PrefixClassName + "MemoryDatabase";
     }
 
+    public partial class MetaMemoryDatabaseTemplate
+    {
+        public string Namespace { get; set; }
+        public string Using { get; set; }
+        public string PrefixClassName { get; set; }
+        public GenerationContext[] GenerationContexts { get; set; }
+        public string ClassName => PrefixClassName + "MetaMemoryDatabase";
+    }
+
     public partial class ImmutableBuilderTemplate
     {
         public string Namespace { get; set; }

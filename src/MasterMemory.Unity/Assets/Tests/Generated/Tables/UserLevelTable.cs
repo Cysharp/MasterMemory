@@ -73,5 +73,23 @@ namespace MasterMemory.Tests.Tables
             ValidateUniqueCore(data, primaryIndexSelector, "Level", resultSet);       
             ValidateUniqueCore(secondaryIndex0, secondaryIndex0Selector, "Exp", resultSet);       
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(UserLevel), typeof(UserLevelTable), "UserLevel",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(UserLevel).GetProperty("Level")),
+                    new MasterMemory.Meta.MetaProperty(typeof(UserLevel).GetProperty("Exp")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(UserLevel).GetProperty("Level"),
+                    }, true, true, System.Collections.Generic.Comparer<int>.Default),
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(UserLevel).GetProperty("Exp"),
+                    }, false, true, System.Collections.Generic.Comparer<int>.Default),
+                });
+        }
     }
 }

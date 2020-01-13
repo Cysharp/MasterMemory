@@ -53,5 +53,20 @@ namespace MasterMemory.Tests.Tables
         {
             ValidateUniqueCore(data, primaryIndexSelector, "Id", resultSet);       
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(SequentialCheckMaster), typeof(SequentialCheckMasterTable), "sequantial_master",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+                    new MasterMemory.Meta.MetaProperty(typeof(SequentialCheckMaster).GetProperty("Id")),
+                    new MasterMemory.Meta.MetaProperty(typeof(SequentialCheckMaster).GetProperty("Cost")),
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+                        typeof(SequentialCheckMaster).GetProperty("Id"),
+                    }, true, true, System.Collections.Generic.Comparer<int>.Default),
+                });
+        }
     }
 }

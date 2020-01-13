@@ -79,5 +79,25 @@ namespace <#= Namespace #>.Tables
 <#      } #>
 <# } #>
         }
+
+        public static MasterMemory.Meta.MetaTable CreateMetaTable()
+        {
+            return new MasterMemory.Meta.MetaTable(typeof(<#= GenerationContext.ClassName #>), typeof(<#= GenerationContext.ClassName #>Table), "<#= GenerationContext.MemoryTableName #>",
+                new MasterMemory.Meta.MetaProperty[]
+                {
+<# foreach(var prop in GenerationContext.Properties) { #>
+                    new MasterMemory.Meta.MetaProperty(typeof(<#= GenerationContext.ClassName #>).GetProperty("<#= prop.Name #>")),
+<# } #>
+                },
+                new MasterMemory.Meta.MetaIndex[]{
+<# foreach(var key in GenerationContext.Keys) { #>
+                    new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
+<# foreach(var keyProp in key.Properties) { #>
+                        typeof(<#= GenerationContext.ClassName #>).GetProperty("<#= keyProp.Name #>"),
+<# } #>
+                    }, <#= key.IsPrimary.ToString().ToLower() #>, <#= (!key.IsNonUnique).ToString().ToLower() #>, <#= key.BuildComparer() #>),
+<# } #>
+                });
+        }
     }
 }

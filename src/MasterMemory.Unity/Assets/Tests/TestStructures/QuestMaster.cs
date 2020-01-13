@@ -62,7 +62,7 @@ namespace MasterMemory.Tests.TestStructures
         public int ItemId { get; set; }
     }
 
-    [MemoryTable("sequantial_master")]
+    [MemoryTable("sequantial_master"), MessagePackObject(true)]
     public class SequentialCheckMaster : IValidatable<SequentialCheckMaster>
     {
         [PrimaryKey]
@@ -81,7 +81,7 @@ namespace MasterMemory.Tests.TestStructures
         }
     }
 
-    [MemoryTable("single_master")]
+    [MemoryTable("single_master"), MessagePackObject(true)]
     public class SingleMaster : IValidatable<SingleMaster>
     {
         public static int CalledValidateCount;
@@ -100,7 +100,7 @@ namespace MasterMemory.Tests.TestStructures
         }
     }
 
-    [MemoryTable("fail")]
+    [MemoryTable("fail"), MessagePackObject(true)]
     public class Fail : IValidatable<Fail>
     {
         [PrimaryKey]

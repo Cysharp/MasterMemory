@@ -185,7 +185,41 @@ namespace MasterMemory.GeneratorCore
             this.Write("\", resultSet);       \r\n");
       } 
  } 
-            this.Write("        }\r\n    }\r\n}");
+            this.Write("        }\r\n\r\n        public static MasterMemory.Meta.MetaTable CreateMetaTable()\r" +
+                    "\n        {\r\n            return new MasterMemory.Meta.MetaTable(typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
+            this.Write("), typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
+            this.Write("Table), \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.MemoryTableName));
+            this.Write("\",\r\n                new MasterMemory.Meta.MetaProperty[]\r\n                {\r\n");
+ foreach(var prop in GenerationContext.Properties) { 
+            this.Write("                    new MasterMemory.Meta.MetaProperty(typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
+            this.Write(").GetProperty(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(prop.Name));
+            this.Write("\")),\r\n");
+ } 
+            this.Write("                },\r\n                new MasterMemory.Meta.MetaIndex[]{\r\n");
+ foreach(var key in GenerationContext.Keys) { 
+            this.Write("                    new MasterMemory.Meta.MetaIndex(new System.Reflection.Propert" +
+                    "yInfo[] {\r\n");
+ foreach(var keyProp in key.Properties) { 
+            this.Write("                        typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
+            this.Write(").GetProperty(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(keyProp.Name));
+            this.Write("\"),\r\n");
+ } 
+            this.Write("                    }, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.IsPrimary.ToString().ToLower()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture((!key.IsNonUnique).ToString().ToLower()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(key.BuildComparer()));
+            this.Write("),\r\n");
+ } 
+            this.Write("                });\r\n        }\r\n    }\r\n}");
             return this.GenerationEnvironment.ToString();
         }
     }
