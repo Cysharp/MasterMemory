@@ -38,11 +38,6 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>MessagePackResolverTemplate.tt</DependentUpon>
         </Compile>
-        <Compile Update="MetaMemoryDatabaseTemplate.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>MetaMemoryDatabaseTemplate.tt</DependentUpon>
-        </Compile>
     </ItemGroup>
 
     <ItemGroup>
@@ -64,10 +59,6 @@
         </None>
         <None Update="MessagePackResolverTemplate.tt">
             <LastGenOutput>MessagePackResolverTemplate.cs</LastGenOutput>
-            <Generator>TextTemplatingFilePreprocessor</Generator>
-        </None>
-        <None Update="MetaMemoryDatabaseTemplate.tt">
-            <LastGenOutput>MetaMemoryDatabaseTemplate.cs</LastGenOutput>
             <Generator>TextTemplatingFilePreprocessor</Generator>
         </None>
     </ItemGroup>

@@ -63,9 +63,9 @@ Edit the `.csproj`, add [MasterMemory.MSBuild.Tasks](https://www.nuget.org/packa
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="MasterMemory" Version="2.0.1" />
+    <PackageReference Include="MasterMemory" Version="2.0.2" />
     <!-- Install MSBuild Task(with PrivateAssets="All", it means to use dependency only in build time). -->
-    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.1" PrivateAssets="All" />
+    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.2" PrivateAssets="All" />
 </ItemGroup>
 
 <!-- Call code generator before-build. -->
@@ -544,7 +544,7 @@ Metadata
 You can get the table-info, properties, indexes by metadata api. It helps to make custom importer/exporter application.
 
 ```csharp
-var metaDb = MetaMemoryDatabase.GetMetaDatabase();
+var metaDb = MemoryDatabase.GetMetaDatabase();
 foreach (var table in metaDb.GetTableInfos())
 {
     // for example, generate CSV header

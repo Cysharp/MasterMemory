@@ -223,7 +223,7 @@ namespace ConsoleApp
 
 
             // テーブル情報、プロパティ情報、インデックス情報が取れるので自由に加工する
-            var metaDb = MetaMemoryDatabase.GetMetaDatabase();
+            var metaDb = MemoryDatabase.GetMetaDatabase();
             foreach (var table in metaDb.GetTableInfos())
             {
                 // CSVのヘッダ生成

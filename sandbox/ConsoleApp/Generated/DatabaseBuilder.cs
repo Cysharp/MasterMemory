@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System;
 using ConsoleApp.Tables;
 
@@ -20,18 +21,6 @@ namespace ConsoleApp
         public DatabaseBuilder() : this(null) { }
         public DatabaseBuilder(MessagePack.IFormatterResolver resolver) : base(resolver) { }
 
-        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Monster> dataSource)
-        {
-            AppendCore(dataSource, x => x.MonsterId, System.Collections.Generic.Comparer<int>.Default);
-            return this;
-        }
-
-        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Person> dataSource)
-        {
-            AppendCore(dataSource, x => x.PersonId, System.Collections.Generic.Comparer<int>.Default);
-            return this;
-        }
-
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Quest> dataSource)
         {
             AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
@@ -41,6 +30,18 @@ namespace ConsoleApp
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Item> dataSource)
         {
             AppendCore(dataSource, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
+            return this;
+        }
+
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Monster> dataSource)
+        {
+            AppendCore(dataSource, x => x.MonsterId, System.Collections.Generic.Comparer<int>.Default);
+            return this;
+        }
+
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Person> dataSource)
+        {
+            AppendCore(dataSource, x => x.PersonId, System.Collections.Generic.Comparer<int>.Default);
             return this;
         }
 

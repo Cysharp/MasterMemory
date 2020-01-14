@@ -48,18 +48,16 @@ namespace MasterMemory.GeneratorCore
 
                 var builderTemplate = new DatabaseBuilderTemplate();
                 var databaseTemplate = new MemoryDatabaseTemplate();
-                var metaDatabaseTemplate = new MetaMemoryDatabaseTemplate();
                 var immutableBuilderTemplate = new ImmutableBuilderTemplate();
                 var resolverTemplate = new MessagePackResolverTemplate();
-                builderTemplate.Namespace = databaseTemplate.Namespace = metaDatabaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
-                builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = metaDatabaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
-                builderTemplate.Using = databaseTemplate.Using = metaDatabaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
-                builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = metaDatabaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
+                builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
+                builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
+                builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
+                builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
 
                 logger(WriteToFile(outputDirectory, builderTemplate.ClassName, builderTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, databaseTemplate.ClassName, databaseTemplate.TransformText()));
-                logger(WriteToFile(outputDirectory, metaDatabaseTemplate.ClassName, metaDatabaseTemplate.TransformText()));
                 logger(WriteToFile(outputDirectory, resolverTemplate.ClassName, resolverTemplate.TransformText()));
             }
             {

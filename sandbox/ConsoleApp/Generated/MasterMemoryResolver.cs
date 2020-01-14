@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System;
 using ConsoleApp.Tables;
 
@@ -52,10 +53,10 @@ namespace ConsoleApp
         {
             lookup = new global::System.Collections.Generic.Dictionary<Type, int>(6)
             {
-                {typeof(Monster[]), 0 },
-                {typeof(Person[]), 1 },
-                {typeof(Quest[]), 2 },
-                {typeof(Item[]), 3 },
+                {typeof(Quest[]), 0 },
+                {typeof(Item[]), 1 },
+                {typeof(Monster[]), 2 },
+                {typeof(Person[]), 3 },
                 {typeof(Test1[]), 4 },
                 {typeof(Test2[]), 5 },
             };
@@ -68,10 +69,10 @@ namespace ConsoleApp
 
             switch (key)
             {
-                case 0: return new MessagePack.Formatters.ArrayFormatter<Monster>();
-                case 1: return new MessagePack.Formatters.ArrayFormatter<Person>();
-                case 2: return new MessagePack.Formatters.ArrayFormatter<Quest>();
-                case 3: return new MessagePack.Formatters.ArrayFormatter<Item>();
+                case 0: return new MessagePack.Formatters.ArrayFormatter<Quest>();
+                case 1: return new MessagePack.Formatters.ArrayFormatter<Item>();
+                case 2: return new MessagePack.Formatters.ArrayFormatter<Monster>();
+                case 3: return new MessagePack.Formatters.ArrayFormatter<Person>();
                 case 4: return new MessagePack.Formatters.ArrayFormatter<Test1>();
                 case 5: return new MessagePack.Formatters.ArrayFormatter<Test2>();
                 default: return null;

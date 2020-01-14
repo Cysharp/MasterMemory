@@ -285,9 +285,6 @@
  <Reference Include="System.Threading.Tasks.Extensions">
  <HintPath>C:/Users/neuecc/Documents/Git/MasterMemory/src/MasterMemory.Unity/Assets/Plugins/System.Threading.Tasks.Extensions.dll</HintPath>
  </Reference>
- <Reference Include="UnityEngine.Advertisements">
- <HintPath>C:/Users/neuecc/Documents/Git/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.ads@2.0.8/UnityEngine.Advertisements.dll</HintPath>
- </Reference>
  <Reference Include="UnityEditor.Advertisements">
  <HintPath>C:/Users/neuecc/Documents/Git/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.ads@2.0.8/Editor/UnityEditor.Advertisements.dll</HintPath>
  </Reference>
@@ -299,9 +296,6 @@
  </Reference>
  <Reference Include="Unity.Analytics.Tracker">
  <HintPath>C:/Users/neuecc/Documents/Git/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.Purchasing">
- <HintPath>C:/Users/neuecc/Documents/Git/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.purchasing@2.0.6/UnityEngine.Purchasing.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.Purchasing">
  <HintPath>C:/Users/neuecc/Documents/Git/MasterMemory/src/MasterMemory.Unity/Library/PackageCache/com.unity.purchasing@2.0.6/Editor/UnityEditor.Purchasing.dll</HintPath>

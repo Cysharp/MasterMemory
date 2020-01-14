@@ -110,7 +110,41 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table.All, database, result);\r\n");
  } 
-            this.Write("\r\n            return result;\r\n        }\r\n    }\r\n}");
+            this.Write("\r\n            return result;\r\n        }\r\n\r\n        static MasterMemory.Meta.MetaD" +
+                    "atabase metaTable;\r\n\r\n        public static object GetTable(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" db, string tableName)\r\n        {\r\n            switch (tableName)\r\n            {\r" +
+                    "\n");
+ foreach(var item in GenerationContexts) { 
+            this.Write("                case \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.MemoryTableName));
+            this.Write("\":\r\n                    return db.");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
+            this.Write("Table;\r\n");
+ } 
+            this.Write(@"                
+                default:
+                    return null;
+            }
+        }
+
+        public static MasterMemory.Meta.MetaDatabase GetMetaDatabase()
+        {
+            if (metaTable != null) return metaTable;
+
+            var dict = new Dictionary<string, MasterMemory.Meta.MetaTable>();
+");
+ foreach(var item in GenerationContexts) { 
+            this.Write("            dict.Add(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.MemoryTableName));
+            this.Write("\", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
+            this.Write(".Tables.");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
+            this.Write("Table.CreateMetaTable());\r\n");
+ } 
+            this.Write("\r\n            metaTable = new MasterMemory.Meta.MetaDatabase(dict);\r\n            " +
+                    "return metaTable;\r\n        }\r\n    }\r\n}");
             return this.GenerationEnvironment.ToString();
         }
     }

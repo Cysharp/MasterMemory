@@ -11,7 +11,7 @@ namespace MasterMemory.Tests
         [Fact]
         public void Meta()
         {
-            var metaDb = MetaMemoryDatabase.GetMetaDatabase();
+            var metaDb = MemoryDatabase.GetMetaDatabase();
 
             var sampleTable = metaDb.GetTableInfo("s_a_m_p_l_e");
 
