@@ -63,9 +63,9 @@ Edit the `.csproj`, add [MasterMemory.MSBuild.Tasks](https://www.nuget.org/packa
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="MasterMemory" Version="2.0.3" />
+    <PackageReference Include="MasterMemory" Version="2.0.4" />
     <!-- Install MSBuild Task(with PrivateAssets="All", it means to use dependency only in build time). -->
-    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.3" PrivateAssets="All" />
+    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.4" PrivateAssets="All" />
 </ItemGroup>
 
 <!-- Call code generator before-build. -->

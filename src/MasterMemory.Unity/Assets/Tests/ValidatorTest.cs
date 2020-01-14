@@ -112,9 +112,9 @@ namespace MasterMemory.Tests
 
             validateResult.IsValidationFailed.Should().BeTrue();
             validateResult.FailedResults.Count.Should().Be(3); // Q:1,4 + I:2
-            validateResult.FailedResults[0].Should().Be((typeof(QuestMasterEmptyValidate), "Unique failed: QuestId, value = 1"));
-            validateResult.FailedResults[1].Should().Be((typeof(QuestMasterEmptyValidate), "Unique failed: QuestId, value = 4"));
-            validateResult.FailedResults[2].Should().Be((typeof(ItemMasterEmptyValidate), "Unique failed: ItemId, value = 2"));
+            validateResult.FailedResults[0].Message.Should().Be("Unique failed: QuestId, value = 1");
+            validateResult.FailedResults[1].Message.Should().Be("Unique failed: QuestId, value = 4");
+            validateResult.FailedResults[2].Message.Should().Be("Unique failed: ItemId, value = 2");
         }
 
         // test IValidator
@@ -156,8 +156,8 @@ namespace MasterMemory.Tests
             output.WriteLine(validateResult.FormatFailedResults());
             validateResult.IsValidationFailed.Should().BeTrue();
 
-            validateResult.FailedResults[0].Should().Be((typeof(QuestMaster), "Exists failed: QuestMaster.RewardItemId -> ItemMaster.ItemId, value = 5, PK(QuestId) = 4"));
-            validateResult.FailedResults[1].Should().Be((typeof(QuestMaster), "Exists failed: QuestMaster.RewardItemId -> ItemMaster.ItemId, value = 4, PK(QuestId) = 5"));
+            validateResult.FailedResults[0].Message.Should().Be("Exists failed: QuestMaster.RewardItemId -> ItemMaster.ItemId, value = 5, PK(QuestId) = 4");
+            validateResult.FailedResults[1].Message.Should().Be("Exists failed: QuestMaster.RewardItemId -> ItemMaster.ItemId, value = 4, PK(QuestId) = 5");
         }
 
         [Fact]
@@ -177,8 +177,8 @@ namespace MasterMemory.Tests
             output.WriteLine(validateResult.FormatFailedResults());
             validateResult.IsValidationFailed.Should().BeTrue();
 
-            validateResult.FailedResults[0].Should().Be((typeof(QuestMaster), "Unique failed: .Name, value = bar"));
-            validateResult.FailedResults[1].Should().Be((typeof(QuestMaster), "Unique failed: .Name, value = foo"));
+            validateResult.FailedResults[0].Message.Should().Be("Unique failed: .Name, value = bar, PK(QuestId) = 3");
+            validateResult.FailedResults[1].Message.Should().Be("Unique failed: .Name, value = foo, PK(QuestId) = 5");
         }
 
         [Fact]
@@ -206,8 +206,8 @@ namespace MasterMemory.Tests
                 output.WriteLine(validateResult.FormatFailedResults());
                 validateResult.IsValidationFailed.Should().BeTrue();
 
-                validateResult.FailedResults[0].Should().Be((typeof(SequentialCheckMaster), "Sequential failed: .Id, value = (3, 5)"));
-                validateResult.FailedResults[1].Should().Be((typeof(SequentialCheckMaster), "Sequential failed: .Cost, value = (11, 13)"));
+                validateResult.FailedResults[0].Message.Should().Be("Sequential failed: .Id, value = (3, 5), PK(Id) = 5");
+                validateResult.FailedResults[1].Message.Should().Be("Sequential failed: .Cost, value = (11, 13), PK(Id) = 5");
             }
         }
 
@@ -246,8 +246,8 @@ namespace MasterMemory.Tests
             output.WriteLine(validateResult.FormatFailedResults());
             validateResult.IsValidationFailed.Should().BeTrue();
 
-            validateResult.FailedResults[0].Should().Be((typeof(QuestMaster), "Validate failed: >= 0!!!, PK(QuestId) = 1"));
-            validateResult.FailedResults[1].Should().Be((typeof(QuestMaster), "Validate failed: (this.Cost <= 100), Cost = 101, PK(QuestId) = 4"));
+            validateResult.FailedResults[0].Message.Should().Be("Validate failed: >= 0!!!, PK(QuestId) = 1");
+            validateResult.FailedResults[1].Message.Should().Be("Validate failed: (this.Cost <= 100), Cost = 101, PK(QuestId) = 4");
         }
 
         [Fact]
