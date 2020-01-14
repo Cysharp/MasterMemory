@@ -63,7 +63,7 @@ namespace <#= Namespace #>
 
 <# foreach(var item in GenerationContexts) { #>
             ((ITableUniqueValidate)<#= item.ClassName #>Table).ValidateUnique(result);
-            ValidateTable(<#= item.ClassName #>Table.All, database, result);
+            ValidateTable(<#= item.ClassName #>Table.All, database, "<#= item.PrimaryKey.BuildPropertyTupleName() #>", <#= item.ClassName #>Table.PrimaryKeySelector, result);
 <# } #>
 
             return result;

@@ -17,6 +17,7 @@ namespace ConsoleApp.Tables
 {
    public sealed partial class MonsterTable : TableBase<Monster>, ITableUniqueValidate
    {
+        public Func<Monster, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<Monster, int> primaryIndexSelector;
 
 

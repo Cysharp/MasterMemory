@@ -33,7 +33,13 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             this.Write("Table : TableBase<");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
-            this.Write(">, ITableUniqueValidate\r\n   {\r\n        readonly Func<");
+            this.Write(">, ITableUniqueValidate\r\n   {\r\n        public Func<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.BuildTypeName()));
+            this.Write("> PrimaryKeySelector => ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.SelectorName));
+            this.Write(";\r\n        readonly Func<");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.PrimaryKey.BuildTypeName()));

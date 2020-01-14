@@ -30,7 +30,7 @@ namespace MasterMemory
                 var v = keySelector(item);
                 if (!set.Add(v))
                 {
-                    resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v);
+                    resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v, item);
                 }
             }
         }

@@ -10,6 +10,7 @@ namespace <#= Namespace #>.Tables
 {
    public sealed partial class <#= GenerationContext.ClassName #>Table : TableBase<<#= GenerationContext.ClassName #>>, ITableUniqueValidate
    {
+        public Func<<#= GenerationContext.ClassName #>, <#= GenerationContext.PrimaryKey.BuildTypeName() #>> PrimaryKeySelector => <#= GenerationContext.PrimaryKey.SelectorName #>;
         readonly Func<<#= GenerationContext.ClassName #>, <#= GenerationContext.PrimaryKey.BuildTypeName() #>> <#= GenerationContext.PrimaryKey.SelectorName #>;
 
 <# for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var item = GenerationContext.SecondaryKeys[i]; #>

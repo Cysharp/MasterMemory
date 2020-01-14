@@ -11,6 +11,7 @@ namespace MasterMemory.Tests.Tables
 {
    public sealed partial class ItemMasterTable : TableBase<ItemMaster>, ITableUniqueValidate
    {
+        public Func<ItemMaster, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<ItemMaster, int> primaryIndexSelector;
 
 

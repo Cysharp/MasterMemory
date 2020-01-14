@@ -10,6 +10,7 @@ namespace MasterMemory.Tests.Tables
 {
    public sealed partial class UserLevelTable : TableBase<UserLevel>, ITableUniqueValidate
    {
+        public Func<UserLevel, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<UserLevel, int> primaryIndexSelector;
 
         readonly UserLevel[] secondaryIndex0;

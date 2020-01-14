@@ -108,7 +108,11 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
             this.Write("Table).ValidateUnique(result);\r\n            ValidateTable(");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write("Table.All, database, result);\r\n");
+            this.Write("Table.All, database, \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.PrimaryKey.BuildPropertyTupleName()));
+            this.Write("\", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
+            this.Write("Table.PrimaryKeySelector, result);\r\n");
  } 
             this.Write("\r\n            return result;\r\n        }\r\n\r\n        static MasterMemory.Meta.MetaD" +
                     "atabase metaTable;\r\n\r\n        public static object GetTable(");

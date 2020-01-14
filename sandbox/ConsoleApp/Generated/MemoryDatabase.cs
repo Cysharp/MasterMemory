@@ -88,17 +88,17 @@ namespace ConsoleApp
             });
 
             ((ITableUniqueValidate)QuestTable).ValidateUnique(result);
-            ValidateTable(QuestTable.All, database, result);
+            ValidateTable(QuestTable.All, database, "Id", QuestTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)ItemTable).ValidateUnique(result);
-            ValidateTable(ItemTable.All, database, result);
+            ValidateTable(ItemTable.All, database, "ItemId", ItemTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)MonsterTable).ValidateUnique(result);
-            ValidateTable(MonsterTable.All, database, result);
+            ValidateTable(MonsterTable.All, database, "MonsterId", MonsterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)PersonTable).ValidateUnique(result);
-            ValidateTable(PersonTable.All, database, result);
+            ValidateTable(PersonTable.All, database, "PersonId", PersonTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)Test1Table).ValidateUnique(result);
-            ValidateTable(Test1Table.All, database, result);
+            ValidateTable(Test1Table.All, database, "Id", Test1Table.PrimaryKeySelector, result);
             ((ITableUniqueValidate)Test2Table).ValidateUnique(result);
-            ValidateTable(Test2Table.All, database, result);
+            ValidateTable(Test2Table.All, database, "Id", Test2Table.PrimaryKeySelector, result);
 
             return result;
         }

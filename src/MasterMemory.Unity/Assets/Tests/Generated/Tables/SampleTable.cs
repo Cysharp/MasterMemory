@@ -10,6 +10,7 @@ namespace MasterMemory.Tests.Tables
 {
    public sealed partial class SampleTable : TableBase<Sample>, ITableUniqueValidate
    {
+        public Func<Sample, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<Sample, int> primaryIndexSelector;
 
         readonly Sample[] secondaryIndex1;

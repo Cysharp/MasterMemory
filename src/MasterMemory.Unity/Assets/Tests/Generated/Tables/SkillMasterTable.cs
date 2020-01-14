@@ -10,6 +10,7 @@ namespace MasterMemory.Tests.Tables
 {
    public sealed partial class SkillMasterTable : TableBase<SkillMaster>, ITableUniqueValidate
    {
+        public Func<SkillMaster, (int SkillId, int SkillLevel)> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<SkillMaster, (int SkillId, int SkillLevel)> primaryIndexSelector;
 
 

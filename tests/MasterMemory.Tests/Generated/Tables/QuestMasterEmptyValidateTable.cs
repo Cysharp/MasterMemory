@@ -11,6 +11,7 @@ namespace MasterMemory.Tests.Tables
 {
    public sealed partial class QuestMasterEmptyValidateTable : TableBase<QuestMasterEmptyValidate>, ITableUniqueValidate
    {
+        public Func<QuestMasterEmptyValidate, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<QuestMasterEmptyValidate, int> primaryIndexSelector;
 
 

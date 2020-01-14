@@ -17,6 +17,7 @@ namespace ConsoleApp.Tables
 {
    public sealed partial class QuestTable : TableBase<Quest>, ITableUniqueValidate
    {
+        public Func<Quest, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<Quest, int> primaryIndexSelector;
 
 

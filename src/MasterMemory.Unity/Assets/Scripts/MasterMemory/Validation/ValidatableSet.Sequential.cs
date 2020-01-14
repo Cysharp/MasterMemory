@@ -34,7 +34,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;
@@ -68,7 +68,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;
@@ -102,7 +102,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;
@@ -136,7 +136,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;
@@ -170,7 +170,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;
@@ -204,7 +204,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;
@@ -238,7 +238,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;
@@ -272,7 +272,7 @@ namespace MasterMemory.Validation
 
                 if ((prev + 1) != curr)
                 {
-                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr));
+                    resultSet.AddFail(typeof(TElement), "Sequential failed:" + message() + ", value = " + (prev, curr) + ", " + BuildPkMessage(data[i]), data[i]);
                 }
 
                 prev = curr;

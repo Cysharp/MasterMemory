@@ -113,27 +113,27 @@ namespace MasterMemory.Tests
             });
 
             ((ITableUniqueValidate)QuestMasterTable).ValidateUnique(result);
-            ValidateTable(QuestMasterTable.All, database, result);
+            ValidateTable(QuestMasterTable.All, database, "QuestId", QuestMasterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)ItemMasterTable).ValidateUnique(result);
-            ValidateTable(ItemMasterTable.All, database, result);
+            ValidateTable(ItemMasterTable.All, database, "ItemId", ItemMasterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)QuestMasterEmptyValidateTable).ValidateUnique(result);
-            ValidateTable(QuestMasterEmptyValidateTable.All, database, result);
+            ValidateTable(QuestMasterEmptyValidateTable.All, database, "QuestId", QuestMasterEmptyValidateTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)ItemMasterEmptyValidateTable).ValidateUnique(result);
-            ValidateTable(ItemMasterEmptyValidateTable.All, database, result);
+            ValidateTable(ItemMasterEmptyValidateTable.All, database, "ItemId", ItemMasterEmptyValidateTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)SequentialCheckMasterTable).ValidateUnique(result);
-            ValidateTable(SequentialCheckMasterTable.All, database, result);
+            ValidateTable(SequentialCheckMasterTable.All, database, "Id", SequentialCheckMasterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)SingleMasterTable).ValidateUnique(result);
-            ValidateTable(SingleMasterTable.All, database, result);
+            ValidateTable(SingleMasterTable.All, database, "Id", SingleMasterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)FailTable).ValidateUnique(result);
-            ValidateTable(FailTable.All, database, result);
+            ValidateTable(FailTable.All, database, "Id", FailTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)SampleTable).ValidateUnique(result);
-            ValidateTable(SampleTable.All, database, result);
+            ValidateTable(SampleTable.All, database, "Id", SampleTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)SkillMasterTable).ValidateUnique(result);
-            ValidateTable(SkillMasterTable.All, database, result);
+            ValidateTable(SkillMasterTable.All, database, "(SkillId, SkillLevel)", SkillMasterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)TestMasterTable).ValidateUnique(result);
-            ValidateTable(TestMasterTable.All, database, result);
+            ValidateTable(TestMasterTable.All, database, "TestID", TestMasterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)UserLevelTable).ValidateUnique(result);
-            ValidateTable(UserLevelTable.All, database, result);
+            ValidateTable(UserLevelTable.All, database, "Level", UserLevelTable.PrimaryKeySelector, result);
 
             return result;
         }

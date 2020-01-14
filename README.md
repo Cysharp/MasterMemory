@@ -63,9 +63,9 @@ Edit the `.csproj`, add [MasterMemory.MSBuild.Tasks](https://www.nuget.org/packa
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="MasterMemory" Version="2.0.2" />
+    <PackageReference Include="MasterMemory" Version="2.0.3" />
     <!-- Install MSBuild Task(with PrivateAssets="All", it means to use dependency only in build time). -->
-    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.2" PrivateAssets="All" />
+    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.3" PrivateAssets="All" />
 </ItemGroup>
 
 <!-- Call code generator before-build. -->
@@ -500,7 +500,7 @@ void Main()
         // Output string format.
         Console.WriteLine(validateResult.FormatFailedResults());
 
-        // Get the raw List<(Type, string)>.
+        // Get the raw FaildItem[]. (.Type, .Message, .Data)
         // validateResult.FailedResults
     }
 }
@@ -524,12 +524,14 @@ interface IValidator<T>
 
 class ReferenceSet<TElement, TReference>
 {
+    IReadOnlyList<TReference> TableData { get; }
     void Exists<TProperty>(Expression<Func<TElement, TProperty>> elementSelector, Expression<Func<TReference, TProperty>> referenceElementSelector);
     void Exists<TProperty>(Expression<Func<TElement, TProperty>> elementSelector, Expression<Func<TReference, TProperty>> referenceElementSelector, EqualityComparer<TProperty> equalityComparer);
 }
 
 class ValidatableSet<TElement>
 {
+    IReadOnlyList<TElement> TableData { get; }
     void Unique<TProperty>(Expression<Func<TElement, TProperty>> selector);
     void Unique<TProperty>(Expression<Func<TElement, TProperty>> selector, IEqualityComparer<TProperty> equalityComparer);
     void Unique<TProperty>(Func<TElement, TProperty> selector, string message);

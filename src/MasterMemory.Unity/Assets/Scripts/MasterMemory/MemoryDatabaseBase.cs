@@ -61,14 +61,14 @@ namespace MasterMemory
             return header.Select(x => new TableInfo(x.Key, x.Value.Item2, storeTableData ? databaseBinary : null, x.Value.Item1)).ToArray();
         }
 
-        protected void ValidateTable<TElement>(IReadOnlyList<TElement> table, ValidationDatabase database, ValidateResult result)
+        protected void ValidateTable<TElement>(IReadOnlyList<TElement> table, ValidationDatabase database, string pkName, Delegate pkSelector, ValidateResult result)
         {
             var onceCalled = new System.Runtime.CompilerServices.StrongBox<bool>(false);
             foreach (var item in table)
             {
                 if (item is IValidatable<TElement> validatable)
                 {
-                    var validator = new Validator<TElement>(database, item, result, onceCalled);
+                    var validator = new Validator<TElement>(database, item, result, onceCalled, pkName, pkSelector);
                     validatable.Validate(validator);
                 }
                 else

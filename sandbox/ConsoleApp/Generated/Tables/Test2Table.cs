@@ -17,6 +17,7 @@ namespace ConsoleApp.Tables
 {
    public sealed partial class Test2Table : TableBase<Test2>, ITableUniqueValidate
    {
+        public Func<Test2, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<Test2, int> primaryIndexSelector;
 
 

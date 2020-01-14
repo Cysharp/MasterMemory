@@ -55,7 +55,7 @@ namespace TestPerfLiteDB
                 TestDocTable,
             });
 
-            ValidateTable(TestDocTable.All, database, result);
+            // ValidateTable(TestDocTable.All, database, result);
 
             return result;
         }

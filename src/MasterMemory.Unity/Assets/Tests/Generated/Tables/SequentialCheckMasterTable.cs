@@ -11,6 +11,7 @@ namespace MasterMemory.Tests.Tables
 {
    public sealed partial class SequentialCheckMasterTable : TableBase<SequentialCheckMaster>, ITableUniqueValidate
    {
+        public Func<SequentialCheckMaster, int> PrimaryKeySelector => primaryIndexSelector;
         readonly Func<SequentialCheckMaster, int> primaryIndexSelector;
 
 
