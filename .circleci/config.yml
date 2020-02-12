@@ -40,6 +40,7 @@ jobs:
       name: unity
       version: << parameters.unity_version >>
     steps:
+      - run: apt update && apt install git -y
       - checkout
       - unity_activate:
           unity_version: << parameters.unity_version >>
