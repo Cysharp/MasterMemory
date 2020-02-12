@@ -48,7 +48,11 @@ namespace <#= Namespace #>.Tables
                 if (found < 0) { lo = mid + 1; }
                 else { hi = mid - 1; }
             }
+<# if(ThrowKeyIfNotFound) { #>
             return ThrowKeyNotFound(key);
+<# } else { #>
+            return default;
+<# } #>
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -72,7 +76,7 @@ namespace <#= Namespace #>.Tables
 <# if (!item.IsNonUnique) { #>
         public <#= item.BuildReturnTypeName(GenerationContext.ClassName) #> FindBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key)
         {
-            return <#= item.BuildFindPrefix() #>Core<#= !item.IsNonUnique && item.IsIntType ? "Int" : "" #>(<#= item.TableName #>, <#= item.SelectorName #>, <#= item.BuildComparer() #>, key);
+            return <#= item.BuildFindPrefix() #>Core<#= !item.IsNonUnique && item.IsIntType ? "Int" : "" #>(<#= item.TableName #>, <#= item.SelectorName #>, <#= item.BuildComparer() #>, key, <#= ThrowKeyIfNotFound.ToString().ToLower() #>);
         }
         
         public bool TryFindBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key, out <#= item.BuildReturnTypeName(GenerationContext.ClassName) #> result)

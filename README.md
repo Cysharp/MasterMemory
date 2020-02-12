@@ -171,6 +171,7 @@ Options:
   -n, -usingNamespace <String>              Namespace of generated files. (Required)
   -p, -prefixClassName <String>             Prefix of class names. (Default: )
   -c, -addImmutableConstructor <Boolean>    Add immutable constructor to MemoryTable class. (Default: False)
+  -t, -returnNullIfKeyNotFound <Boolean>    Return null if key not found on unique find method. (Default: False)
 ```
 
 ```bash
@@ -575,8 +576,9 @@ MSBuild Task(`MasterMemory.MSBuild.Tasks`) is recommended way to use in .NET Cor
     UsingNamespace="string:required"
     InputDirectory="string:required"
     OutputDirectory="string:required"
-    PrefixClassName="string:optional"
-    AddImmutableConstructor="bool:optional"
+    PrefixClassName="string:optional, default= "
+    AddImmutableConstructor="bool:optional, default=false"
+    ReturnNullIfKeyNotFound="bool:optional, default=false"
 />
 ```
 
@@ -591,6 +593,7 @@ Options:
   -n, -usingNamespace <String>              Namespace of generated files. (Required)
   -p, -prefixClassName <String>             Prefix of class names. (Default: )
   -c, -addImmutableConstructor <Boolean>    Add immutable constructor to MemoryTable class. (Default: False)
+  -t, -returnNullIfKeyNotFound <Boolean>    Return null if key not found on unique find method. (Default: False)
 ```
 
 `.NET Core Global/Local Tools` can install from NuGet, it is same as Standalone Cli Tool.

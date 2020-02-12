@@ -73,7 +73,7 @@ namespace MasterMemory.Tests.Tables
 
         public UserLevel FindByExp(int key)
         {
-            return FindUniqueCoreInt(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default, key);
+            return FindUniqueCoreInt(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default, key, true);
         }
         
         public bool TryFindByExp(int key, out UserLevel result)

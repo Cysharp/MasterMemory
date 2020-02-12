@@ -23,7 +23,7 @@ namespace MasterMemory.Tests.Tables
 
         public SkillMaster FindBySkillIdAndSkillLevel((int SkillId, int SkillLevel) key)
         {
-            return FindUniqueCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default, key);
+            return FindUniqueCore(data, primaryIndexSelector, System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default, key, true);
         }
         
         public bool TryFindBySkillIdAndSkillLevel((int SkillId, int SkillLevel) key, out SkillMaster result)

@@ -56,5 +56,7 @@ namespace MasterMemory.GeneratorCore
         public string Using { get; set; }
         public string PrefixClassName { get; set; }
         public GenerationContext GenerationContext { get; set; }
+
+        public bool ThrowKeyIfNotFound { get; set; }
     }
 }

@@ -17,12 +17,13 @@ namespace MasterMemory.MSBuild.Tasks
         public string PrefixClassName { get; set; }
 
         public bool AddImmutableConstructor { get; set; }
+        public bool ReturnNullIfKeyNotFound { get; set; } = true;
 
         public override bool Execute()
         {
             try
             {
-                new CodeGenerator().GenerateFile(UsingNamespace, InputDirectory, OutputDirectory, PrefixClassName, AddImmutableConstructor, x => this.Log.LogMessage(x));
+                new CodeGenerator().GenerateFile(UsingNamespace, InputDirectory, OutputDirectory, PrefixClassName, AddImmutableConstructor, !ReturnNullIfKeyNotFound, x => this.Log.LogMessage(x));
             }
             catch (Exception ex)
             {

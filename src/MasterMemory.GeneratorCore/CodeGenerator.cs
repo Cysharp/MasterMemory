@@ -16,7 +16,7 @@ namespace MasterMemory.GeneratorCore
     {
         static readonly Encoding NoBomUtf8 = new UTF8Encoding(false);
 
-        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, string prefixClassName, bool addImmutableConstructor, Action<string> logger)
+        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, string prefixClassName, bool addImmutableConstructor, bool throwIfKeyNotFound, Action<string> logger)
         {
             prefixClassName ??= "";
             var list = new List<GenerationContext>();
@@ -73,7 +73,8 @@ namespace MasterMemory.GeneratorCore
                     {
                         Namespace = usingNamespace,
                         GenerationContext = context,
-                        Using = string.Join(Environment.NewLine, context.UsingStrings)
+                        Using = string.Join(Environment.NewLine, context.UsingStrings),
+                        ThrowKeyIfNotFound = throwIfKeyNotFound
                     };
 
                     logger(WriteToFile(tableDir, context.ClassName + "Table", template.TransformText()));

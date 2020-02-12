@@ -58,17 +58,39 @@ namespace MasterMemory
 
         // Unique
 
-        static protected TElement FindUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key)
+        static protected TElement FindUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool throwIfNotFound = true)
         {
             var index = BinarySearch.FindFirst(indexArray, key, keySelector, comparer);
-            return (index != -1) ? indexArray[index] : ThrowKeyNotFound(key);
+            if (index != -1)
+            {
+                return indexArray[index];
+            }
+            else
+            {
+                if (throwIfNotFound)
+                {
+                    ThrowKeyNotFound(key);
+                }
+                return default;
+            }
         }
 
         // Optimize for IntKey
-        static protected TElement FindUniqueCoreInt(TElement[] indexArray, Func<TElement, int> keySelector, IComparer<int> _, int key)
+        static protected TElement FindUniqueCoreInt(TElement[] indexArray, Func<TElement, int> keySelector, IComparer<int> _, int key, bool throwIfNotFound = true)
         {
             var index = BinarySearch.FindFirstIntKey(indexArray, key, keySelector);
-            return (index != -1) ? indexArray[index] : ThrowKeyNotFound(key);
+            if (index != -1)
+            {
+                return indexArray[index];
+            }
+            else
+            {
+                if (throwIfNotFound)
+                {
+                    ThrowKeyNotFound(key);
+                }
+                return default;
+            }
         }
 
         static protected bool TryFindUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, out TElement result)

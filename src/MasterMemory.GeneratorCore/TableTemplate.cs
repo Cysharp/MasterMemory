@@ -109,17 +109,18 @@ namespace MasterMemory.GeneratorCore
                     "\n            while (lo <= hi)\r\n            {\r\n                var mid = (int)(((" +
                     "uint)hi + (uint)lo) >> 1);\r\n                var selected = data[mid].");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.Properties[0].Name));
-            this.Write(@";
-                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
-                if (found == 0) { return data[mid]; }
-                if (found < 0) { lo = mid + 1; }
-                else { hi = mid - 1; }
-            }
-            return ThrowKeyNotFound(key);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public bool TryFindBy");
+            this.Write(";\r\n                var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;\r" +
+                    "\n                if (found == 0) { return data[mid]; }\r\n                if (foun" +
+                    "d < 0) { lo = mid + 1; }\r\n                else { hi = mid - 1; }\r\n            }\r" +
+                    "\n");
+ if(ThrowKeyIfNotFound) { 
+            this.Write("            return ThrowKeyNotFound(key);\r\n");
+ } else { 
+            this.Write("            return default;\r\n");
+ } 
+            this.Write("        }\r\n\r\n        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.C" +
+                    "ompilerServices.MethodImplOptions.AggressiveInlining)]\r\n        public bool TryF" +
+                    "indBy");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
@@ -157,7 +158,9 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.SelectorName));
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
-            this.Write(", key);\r\n        }\r\n        \r\n        public bool TryFindBy");
+            this.Write(", key, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ThrowKeyIfNotFound.ToString().ToLower()));
+            this.Write(");\r\n        }\r\n        \r\n        public bool TryFindBy");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
