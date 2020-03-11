@@ -85,6 +85,7 @@
      <Compile Include="Assets\Tests\Generated\Tables\FailTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\ItemMasterEmptyValidateTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\ItemMasterTable.cs" />
+     <Compile Include="Assets\Tests\Generated\Tables\PersonModelTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\QuestMasterEmptyValidateTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\QuestMasterTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\SampleTable.cs" />
@@ -93,11 +94,13 @@
      <Compile Include="Assets\Tests\Generated\Tables\SkillMasterTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\TestMasterTable.cs" />
      <Compile Include="Assets\Tests\Generated\Tables\UserLevelTable.cs" />
+     <Compile Include="Assets\Tests\IssueTest.cs" />
      <Compile Include="Assets\Tests\MemoryKeyTest.cs" />
      <Compile Include="Assets\Tests\MemoryTest.cs" />
      <Compile Include="Assets\Tests\MessagePackResolver.cs" />
      <Compile Include="Assets\Tests\MetaTest.cs" />
      <Compile Include="Assets\Tests\RangeViewTest.cs" />
+     <Compile Include="Assets\Tests\TestStructures\PersonModel.cs" />
      <Compile Include="Assets\Tests\TestStructures\QuestMaster.cs" />
      <Compile Include="Assets\Tests\TestStructures\Sample.cs" />
      <Compile Include="Assets\Tests\TestStructures\SkillMaster.cs" />
