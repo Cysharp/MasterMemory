@@ -46,7 +46,10 @@ namespace MasterMemory.Tests.Tables
             this.secondaryIndex0 = CloneAndSortBy(this.secondaryIndex0Selector, System.Collections.Generic.Comparer<(string FirstName, string LastName)>.Default);
             this.secondaryIndex4Selector = x => x.FirstName;
             this.secondaryIndex4 = CloneAndSortBy(this.secondaryIndex4Selector, System.StringComparer.Ordinal);
+            OnAfterConstruct();
         }
+
+        partial void OnAfterConstruct();
 
         public RangeView<Sample> SortByIdAndAgeAndFirstNameAndLastName => new RangeView<Sample>(secondaryIndex1, 0, secondaryIndex1.Length - 1, true);
         public RangeView<Sample> SortByIdAndAge => new RangeView<Sample>(secondaryIndex2, 0, secondaryIndex2.Length - 1, true);

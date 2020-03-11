@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text;
+using System.Globalization;
 
 // IValidatableを実装すると検証対象になる
 [MemoryTable("quest_master"), MessagePackObject(true)]
@@ -54,15 +55,28 @@ public class Item
     public int ItemId { get; set; }
 }
 
+namespace ConsoleApp.Tables
+{
+    public sealed partial class MonsterTable
+    {
+        /* readonly */ int maxHp;
+
+        partial void OnAfterConstruct()
+        {
+            maxHp = All.Select(x => x.MaxHp).Max();
+        }
+    }
+}
+
 namespace ConsoleApp
 {
     [MemoryTable("monster"), MessagePackObject(true)]
     public class Monster
     {
         [PrimaryKey]
-        public int MonsterId { get; }
-        public string Name { get; }
-        public int MaxHp { get; }
+        public int MonsterId { get; private set; }
+        public string Name { get; private set; }
+        public int MaxHp { get; private set; }
 
         public Monster(int MonsterId, string Name, int MaxHp)
         {
@@ -110,7 +124,7 @@ namespace ConsoleApp
 
 
 
-    
+
 
     class ByteBufferWriter : IBufferWriter<byte>
     {
@@ -178,83 +192,213 @@ namespace ConsoleApp
         public int Id { get; set; }
     }
 
+    
+
     class Program
     {
         static void Main(string[] args)
         {
-            var bin = new DatabaseBuilder().Append(new Monster[]
+            var csv = @"monster_id,name,max_hp
+    1,foo,100
+    2,bar,200";
+            var fileName = "monster";
+
+            var builder = new DatabaseBuilder();
+
+            var meta = MemoryDatabase.GetMetaDatabase();
+            var table = meta.GetTableInfo(fileName);
+
+            var tableData = new List<object>();
+
+            using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(csv)))
+            using (var sr = new StreamReader(ms, Encoding.UTF8))
+            using (var reader = new TinyCsvReader(sr))
             {
-                new Monster ( MonsterId : 1, Name : "Foo", MaxHp : 100 )
-            }).Append(new Person[]
-            {
-                new Person { PersonId = 0, Age = 13, Gender = Gender.Male,   Name = "Dana Terry" },
-                new Person { PersonId = 1, Age = 17, Gender = Gender.Male,   Name = "Kirk Obrien" },
-                new Person { PersonId = 2, Age = 31, Gender = Gender.Male,   Name = "Wm Banks" },
-                new Person { PersonId = 3, Age = 44, Gender = Gender.Male,   Name = "Karl Benson" },
-                new Person { PersonId = 4, Age = 23, Gender = Gender.Male,   Name = "Jared Holland" },
-                new Person { PersonId = 5, Age = 27, Gender = Gender.Female, Name = "Jeanne Phelps" },
-                new Person { PersonId = 6, Age = 25, Gender = Gender.Female, Name = "Willie Rose" },
-                new Person { PersonId = 7, Age = 11, Gender = Gender.Female, Name = "Shari Gutierrez" },
-                new Person { PersonId = 8, Age = 63, Gender = Gender.Female, Name = "Lori Wilson" },
-                new Person { PersonId = 9, Age = 34, Gender = Gender.Female, Name = "Lena Ramsey" },
-            })
-            .Append(new Quest[]
-            {
-                new Quest { Id= 1, Name = "foo", Cost = 10, RewardId = 100 },
-                new Quest { Id= 2, Name = "bar", Cost = 20, RewardId = 101 },
-                new Quest { Id= 3, Name = "baz", Cost = 30, RewardId = 0 },
-                new Quest { Id= 3, Name = "too", Cost = 40, RewardId = 0 },
-            })
-            .Append(new Item[]
-            {
-                new Item { ItemId = 100 },
-                new Item { ItemId = 101 },
-                new Item { ItemId = 199 },
-            })
-            .Build();
-
-
-
-
-            var db = new MemoryDatabase(bin);
-
-
-            // テーブル情報、プロパティ情報、インデックス情報が取れるので自由に加工する
-            var metaDb = MemoryDatabase.GetMetaDatabase();
-            foreach (var table in metaDb.GetTableInfos())
-            {
-                // CSVのヘッダ生成
-                var sb = new StringBuilder();
-                foreach (var prop in table.Properties)
+                while ((reader.ReadValuesWithHeader() is Dictionary<string, string> values))
                 {
-                    if (sb.Length != 0) sb.Append(",");
+                    // create data without call constructor
+                    var data = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(table.DataType);
 
-                    // そのまま, LowerCamelCase, SnakeCaseに変換した名前が取得可能
-                    sb.Append(prop.NameSnakeCase);
+                    foreach (var prop in table.Properties)
+                    {
+                        if (values.TryGetValue(prop.NameSnakeCase, out var rawValue))
+                        {
+                            var value = ParseValue(prop.PropertyInfo.PropertyType, rawValue);
+                            if (prop.PropertyInfo.SetMethod == null)
+                            {
+                                throw new Exception("Target property does not exists set method. If you use {get;}, please change to { get; private set; }, Type:" + prop.PropertyInfo.DeclaringType + " Prop:" + prop.PropertyInfo.Name);
+                            }
+                            prop.PropertyInfo.SetValue(data, value);
+                        }
+                        else
+                        {
+                            throw new KeyNotFoundException($"Not found \"{prop.NameSnakeCase}\" in \"{fileName}.csv\" header.");
+                        }
+                    }
+
+                    tableData.Add(data);
                 }
-                Console.WriteLine(sb.ToString());
-                File.WriteAllText(table.TableName + ".csv", sb.ToString(), new UTF8Encoding(false));
             }
 
+            // add dynamic collection.
+            builder.AppendDynamic(table.DataType, tableData);
 
+            var bin = builder.Build();
+            var database = new MemoryDatabase(bin);
+        }
 
-            // 検証結果取得。データベースの構築自体は検証とは無関係に構築ができるので、
-            // （開発時用などに）不整合のまま出してもいいし、(リリース時では)弾くなどご自由に。
-            var validateResult = db.Validate();
-            if (validateResult.IsValidationFailed)
+        static object ParseValue(Type type, string rawValue)
+        {
+            if (type == typeof(string)) return rawValue;
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                // 検証失敗データを文字列形式でフォーマットして出力
-                Console.WriteLine(validateResult.FormatFailedResults());
-
-                // List<(Type, string)> で検証データを取得して、自分でカスタムで出力することも可能
-                // MDやHTMLに整形してSlackやレポーターに投げるなど自由に
-                // validateResult.FailedResults
+                if (string.IsNullOrWhiteSpace(rawValue)) return null;
+                return ParseValue(type.GenericTypeArguments[0], rawValue);
             }
 
-            // new MetaMemoryDatabase()
+            if (type.IsEnum)
+            {
+                var value = Enum.Parse(type, rawValue);
+                return value;
+            }
 
+            switch (Type.GetTypeCode(type))
+            {
+                case TypeCode.Boolean:
+                    // True/False or 0,1
+                    if (int.TryParse(rawValue, out var intBool))
+                    {
+                        return Convert.ToBoolean(intBool);
+                    }
+                    return Boolean.Parse(rawValue);
+                case TypeCode.Char:
+                    return Char.Parse(rawValue);
+                case TypeCode.SByte:
+                    return SByte.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.Byte:
+                    return Byte.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.Int16:
+                    return Int16.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.UInt16:
+                    return UInt16.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.Int32:
+                    return Int32.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.UInt32:
+                    return UInt32.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.Int64:
+                    return Int64.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.UInt64:
+                    return UInt64.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.Single:
+                    return Single.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.Double:
+                    return Double.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.Decimal:
+                    return Decimal.Parse(rawValue, CultureInfo.InvariantCulture);
+                case TypeCode.DateTime:
+                    return DateTime.Parse(rawValue, CultureInfo.InvariantCulture);
+                default:
+                    if (type == typeof(DateTimeOffset))
+                    {
+                        return DateTimeOffset.Parse(rawValue, CultureInfo.InvariantCulture);
+                    }
+                    else if (type == typeof(TimeSpan))
+                    {
+                        return TimeSpan.Parse(rawValue, CultureInfo.InvariantCulture);
+                    }
+                    else if (type == typeof(Guid))
+                    {
+                        return Guid.Parse(rawValue);
+                    }
+
+                    // or other your custom parsing.
+                    throw new NotSupportedException();
+            }
+        }
+
+        // Non string escape, tiny reader with header.
+        public class TinyCsvReader : IDisposable
+        {
+            static char[] trim = new[] { ' ', '\t' };
+
+            readonly StreamReader reader;
+            public IReadOnlyList<string> Header { get; private set; }
+
+            public TinyCsvReader(StreamReader reader)
+            {
+                this.reader = reader;
+                {
+                    var line = reader.ReadLine();
+                    if (line == null) throw new InvalidOperationException("Header is null.");
+
+                    var index = 0;
+                    var header = new List<string>();
+                    while (index < line.Length)
+                    {
+                        var s = GetValue(line, ref index);
+                        if (s.Length == 0) break;
+                        header.Add(s);
+                    }
+                    this.Header = header;
+                }
+            }
+
+            string GetValue(string line, ref int i)
+            {
+                var temp = new char[line.Length - i];
+                var j = 0;
+                for (; i < line.Length; i++)
+                {
+                    if (line[i] == ',')
+                    {
+                        i += 1;
+                        break;
+                    }
+                    temp[j++] = line[i];
+                }
+
+                return new string(temp, 0, j).Trim(trim);
+            }
+
+            public string[] ReadValues()
+            {
+                var line = reader.ReadLine();
+                if (line == null) return null;
+                if (string.IsNullOrWhiteSpace(line)) return null;
+
+                var values = new string[Header.Count];
+                var lineIndex = 0;
+                for (int i = 0; i < values.Length; i++)
+                {
+                    var s = GetValue(line, ref lineIndex);
+                    values[i] = s;
+                }
+                return values;
+            }
+
+            public Dictionary<string, string> ReadValuesWithHeader()
+            {
+                var values = ReadValues();
+                if (values == null) return null;
+
+                var dict = new Dictionary<string, string>();
+                for (int i = 0; i < values.Length; i++)
+                {
+                    dict.Add(Header[i], values[i]);
+                }
+
+                return dict;
+            }
+
+            public void Dispose()
+            {
+                reader.Dispose();
+            }
         }
     }
+
+
 }
 
 

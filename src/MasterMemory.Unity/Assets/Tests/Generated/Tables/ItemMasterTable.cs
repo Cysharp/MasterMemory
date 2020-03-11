@@ -19,7 +19,10 @@ namespace MasterMemory.Tests.Tables
             : base(sortedData)
         {
             this.primaryIndexSelector = x => x.ItemId;
+            OnAfterConstruct();
         }
+
+        partial void OnAfterConstruct();
 
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

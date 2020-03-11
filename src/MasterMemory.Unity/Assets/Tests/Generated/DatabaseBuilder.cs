@@ -16,6 +16,12 @@ namespace MasterMemory.Tests
         public DatabaseBuilder() : this(null) { }
         public DatabaseBuilder(MessagePack.IFormatterResolver resolver) : base(resolver) { }
 
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<PersonModel> dataSource)
+        {
+            AppendCore(dataSource, x => x.RandomId, System.StringComparer.Ordinal);
+            return this;
+        }
+
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<QuestMaster> dataSource)
         {
             AppendCore(dataSource, x => x.QuestId, System.Collections.Generic.Comparer<int>.Default);
