@@ -583,7 +583,7 @@ If creates console-app, our [ConsoleAppFramework](https://github.com/Cysharp/Con
 
 Here is sample of reading and creating dynamic from csv. `builder.AppendDynamic` and `System.Runtime.Serialization.FormatterServices.GetUninitializedObject` will help it.
 
-```
+```csharp
 class Program
 {
     static void Main(string[] args)
