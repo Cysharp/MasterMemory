@@ -103,7 +103,7 @@ namespace MasterMemory.Tests.Tables
 
         public Sample FindByIdAndAgeAndFirstNameAndLastName((int Id, int Age, string FirstName, string LastName) key)
         {
-            return FindUniqueCore(secondaryIndex1, secondaryIndex1Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName, string LastName)>.Default, key);
+            return FindUniqueCore(secondaryIndex1, secondaryIndex1Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName, string LastName)>.Default, key, true);
         }
         
         public bool TryFindByIdAndAgeAndFirstNameAndLastName((int Id, int Age, string FirstName, string LastName) key, out Sample result)
@@ -123,7 +123,7 @@ namespace MasterMemory.Tests.Tables
 
         public Sample FindByIdAndAge((int Id, int Age) key)
         {
-            return FindUniqueCore(secondaryIndex2, secondaryIndex2Selector, System.Collections.Generic.Comparer<(int Id, int Age)>.Default, key);
+            return FindUniqueCore(secondaryIndex2, secondaryIndex2Selector, System.Collections.Generic.Comparer<(int Id, int Age)>.Default, key, true);
         }
         
         public bool TryFindByIdAndAge((int Id, int Age) key, out Sample result)
@@ -143,7 +143,7 @@ namespace MasterMemory.Tests.Tables
 
         public Sample FindByIdAndAgeAndFirstName((int Id, int Age, string FirstName) key)
         {
-            return FindUniqueCore(secondaryIndex3, secondaryIndex3Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName)>.Default, key);
+            return FindUniqueCore(secondaryIndex3, secondaryIndex3Selector, System.Collections.Generic.Comparer<(int Id, int Age, string FirstName)>.Default, key, true);
         }
         
         public bool TryFindByIdAndAgeAndFirstName((int Id, int Age, string FirstName) key, out Sample result)
@@ -193,7 +193,7 @@ namespace MasterMemory.Tests.Tables
 
         public Sample FindByFirstNameAndLastName((string FirstName, string LastName) key)
         {
-            return FindUniqueCore(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<(string FirstName, string LastName)>.Default, key);
+            return FindUniqueCore(secondaryIndex0, secondaryIndex0Selector, System.Collections.Generic.Comparer<(string FirstName, string LastName)>.Default, key, true);
         }
         
         public bool TryFindByFirstNameAndLastName((string FirstName, string LastName) key, out Sample result)

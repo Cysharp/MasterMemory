@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MasterMemory
 {
-    public readonly struct RangeView<T> : IEnumerable<T>, IReadOnlyList<T>
+    public readonly struct RangeView<T> : IEnumerable<T>, IReadOnlyList<T>, IList<T>
     {
         public static RangeView<T> Empty => default(RangeView<T>);
 
@@ -22,6 +22,8 @@ namespace MasterMemory
 
         internal int FirstIndex => ascendant ? left : right;
         internal int LastIndex => ascendant ? right : left;
+
+        bool ICollection<T>.IsReadOnly => true;
 
         public T this[int index]
         {
@@ -63,6 +65,86 @@ namespace MasterMemory
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public bool Any()
+        {
+            return Count != 0;
+        }
+
+        public int IndexOf(T item)
+        {
+            var i = 0;
+            foreach (var v in this)
+            {
+                if (EqualityComparer<T>.Default.Equals(v, item))
+                {
+                    return i;
+                }
+                i++;
+            }
+            return -1;
+        }
+
+        public bool Contains(T item)
+        {
+            var count = Count;
+            for (int i = 0; i < count; i++)
+            {
+                var v = this[i];
+                if (EqualityComparer<T>.Default.Equals(v, item))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            var count = Count;
+            Array.Copy(orderedData, left, array, arrayIndex, count);
+            if (!ascendant)
+            {
+                Array.Reverse(array, arrayIndex, count);
+            }
+        }
+
+        T IList<T>.this[int index]
+        {
+            get
+            {
+                return this[index];
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        void IList<T>.Insert(int index, T item)
+        {
+            throw new NotSupportedException();
+        }
+
+        void IList<T>.RemoveAt(int index)
+        {
+            throw new NotSupportedException();
+        }
+
+        void ICollection<T>.Add(T item)
+        {
+            throw new NotSupportedException();
+        }
+
+        void ICollection<T>.Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        bool ICollection<T>.Remove(T item)
+        {
+            throw new NotSupportedException();
         }
     }
 }

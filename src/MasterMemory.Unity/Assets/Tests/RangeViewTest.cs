@@ -31,6 +31,22 @@ namespace MasterMemory.Tests
                 {
                     item.Should().Be(begin++);
                 }
+
+                var xs = new int[10];
+                range.CopyTo(xs, 3);
+                xs[3].Should().Be(4);
+                xs[4].Should().Be(5);
+                xs[5].Should().Be(6);
+                xs[6].Should().Be(7);
+                xs[7].Should().Be(8);
+                xs[8].Should().Be(0);
+
+                range.IndexOf(5).Should().Be(1);
+                range.IndexOf(9).Should().Be(-1);
+
+
+                range.Contains(5).Should().BeTrue();
+                range.Contains(9).Should().BeFalse();
             }
             {
                 // 7 -> 2
