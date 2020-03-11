@@ -22,7 +22,10 @@ namespace MasterMemory.Tests.Tables
             this.primaryIndexSelector = x => x.Level;
             this.secondaryIndex0Selector = x => x.Exp;
             this.secondaryIndex0 = CloneAndSortBy(this.secondaryIndex0Selector, System.Collections.Generic.Comparer<int>.Default);
+            OnAfterConstruct();
         }
+
+        partial void OnAfterConstruct();
 
         public RangeView<UserLevel> SortByExp => new RangeView<UserLevel>(secondaryIndex0, 0, secondaryIndex0.Length - 1, true);
 

@@ -46,19 +46,20 @@ namespace MasterMemory.Tests
 
         static MasterMemoryResolverGetFormatterHelper()
         {
-            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(11)
+            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(12)
             {
-                {typeof(QuestMaster[]), 0 },
-                {typeof(ItemMaster[]), 1 },
-                {typeof(QuestMasterEmptyValidate[]), 2 },
-                {typeof(ItemMasterEmptyValidate[]), 3 },
-                {typeof(SequentialCheckMaster[]), 4 },
-                {typeof(SingleMaster[]), 5 },
-                {typeof(Fail[]), 6 },
-                {typeof(Sample[]), 7 },
-                {typeof(SkillMaster[]), 8 },
-                {typeof(TestMaster[]), 9 },
-                {typeof(UserLevel[]), 10 },
+                {typeof(PersonModel[]), 0 },
+                {typeof(QuestMaster[]), 1 },
+                {typeof(ItemMaster[]), 2 },
+                {typeof(QuestMasterEmptyValidate[]), 3 },
+                {typeof(ItemMasterEmptyValidate[]), 4 },
+                {typeof(SequentialCheckMaster[]), 5 },
+                {typeof(SingleMaster[]), 6 },
+                {typeof(Fail[]), 7 },
+                {typeof(Sample[]), 8 },
+                {typeof(SkillMaster[]), 9 },
+                {typeof(TestMaster[]), 10 },
+                {typeof(UserLevel[]), 11 },
             };
         }
 
@@ -69,17 +70,18 @@ namespace MasterMemory.Tests
 
             switch (key)
             {
-                case 0: return new MessagePack.Formatters.ArrayFormatter<QuestMaster>();
-                case 1: return new MessagePack.Formatters.ArrayFormatter<ItemMaster>();
-                case 2: return new MessagePack.Formatters.ArrayFormatter<QuestMasterEmptyValidate>();
-                case 3: return new MessagePack.Formatters.ArrayFormatter<ItemMasterEmptyValidate>();
-                case 4: return new MessagePack.Formatters.ArrayFormatter<SequentialCheckMaster>();
-                case 5: return new MessagePack.Formatters.ArrayFormatter<SingleMaster>();
-                case 6: return new MessagePack.Formatters.ArrayFormatter<Fail>();
-                case 7: return new MessagePack.Formatters.ArrayFormatter<Sample>();
-                case 8: return new MessagePack.Formatters.ArrayFormatter<SkillMaster>();
-                case 9: return new MessagePack.Formatters.ArrayFormatter<TestMaster>();
-                case 10: return new MessagePack.Formatters.ArrayFormatter<UserLevel>();
+                case 0: return new MessagePack.Formatters.ArrayFormatter<PersonModel>();
+                case 1: return new MessagePack.Formatters.ArrayFormatter<QuestMaster>();
+                case 2: return new MessagePack.Formatters.ArrayFormatter<ItemMaster>();
+                case 3: return new MessagePack.Formatters.ArrayFormatter<QuestMasterEmptyValidate>();
+                case 4: return new MessagePack.Formatters.ArrayFormatter<ItemMasterEmptyValidate>();
+                case 5: return new MessagePack.Formatters.ArrayFormatter<SequentialCheckMaster>();
+                case 6: return new MessagePack.Formatters.ArrayFormatter<SingleMaster>();
+                case 7: return new MessagePack.Formatters.ArrayFormatter<Fail>();
+                case 8: return new MessagePack.Formatters.ArrayFormatter<Sample>();
+                case 9: return new MessagePack.Formatters.ArrayFormatter<SkillMaster>();
+                case 10: return new MessagePack.Formatters.ArrayFormatter<TestMaster>();
+                case 11: return new MessagePack.Formatters.ArrayFormatter<UserLevel>();
                 default: return null;
             }
         }

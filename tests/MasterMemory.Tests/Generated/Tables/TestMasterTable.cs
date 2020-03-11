@@ -19,7 +19,10 @@ namespace MasterMemory.Tests.Tables
             : base(sortedData)
         {
             this.primaryIndexSelector = x => x.TestID;
+            OnAfterConstruct();
         }
+
+        partial void OnAfterConstruct();
 
 
         public RangeView<TestMaster> FindByTestID(int key)

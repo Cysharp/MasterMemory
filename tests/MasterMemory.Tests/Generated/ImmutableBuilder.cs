@@ -25,11 +25,77 @@ namespace MasterMemory.Tests
             return memory;
         }
 
+        public void ReplaceAll(System.Collections.Generic.IList<PersonModel> data)
+        {
+            var newData = CloneAndSortBy(data, x => x.RandomId, System.StringComparer.Ordinal);
+            var table = new PersonModelTable(newData);
+            memory = new MemoryDatabase(
+                table,
+                memory.QuestMasterTable,
+                memory.ItemMasterTable,
+                memory.QuestMasterEmptyValidateTable,
+                memory.ItemMasterEmptyValidateTable,
+                memory.SequentialCheckMasterTable,
+                memory.SingleMasterTable,
+                memory.FailTable,
+                memory.SampleTable,
+                memory.SkillMasterTable,
+                memory.TestMasterTable,
+                memory.UserLevelTable
+            
+            );
+        }
+
+        public void RemovePersonModel(string[] keys)
+        {
+            var data = RemoveCore(memory.PersonModelTable.GetRawDataUnsafe(), keys, x => x.RandomId, System.StringComparer.Ordinal);
+            var newData = CloneAndSortBy(data, x => x.RandomId, System.StringComparer.Ordinal);
+            var table = new PersonModelTable(newData);
+            memory = new MemoryDatabase(
+                table,
+                memory.QuestMasterTable,
+                memory.ItemMasterTable,
+                memory.QuestMasterEmptyValidateTable,
+                memory.ItemMasterEmptyValidateTable,
+                memory.SequentialCheckMasterTable,
+                memory.SingleMasterTable,
+                memory.FailTable,
+                memory.SampleTable,
+                memory.SkillMasterTable,
+                memory.TestMasterTable,
+                memory.UserLevelTable
+            
+            );
+        }
+
+        public void Diff(PersonModel[] addOrReplaceData)
+        {
+            var data = DiffCore(memory.PersonModelTable.GetRawDataUnsafe(), addOrReplaceData, x => x.RandomId, System.StringComparer.Ordinal);
+            var newData = CloneAndSortBy(data, x => x.RandomId, System.StringComparer.Ordinal);
+            var table = new PersonModelTable(newData);
+            memory = new MemoryDatabase(
+                table,
+                memory.QuestMasterTable,
+                memory.ItemMasterTable,
+                memory.QuestMasterEmptyValidateTable,
+                memory.ItemMasterEmptyValidateTable,
+                memory.SequentialCheckMasterTable,
+                memory.SingleMasterTable,
+                memory.FailTable,
+                memory.SampleTable,
+                memory.SkillMasterTable,
+                memory.TestMasterTable,
+                memory.UserLevelTable
+            
+            );
+        }
+
         public void ReplaceAll(System.Collections.Generic.IList<QuestMaster> data)
         {
             var newData = CloneAndSortBy(data, x => x.QuestId, System.Collections.Generic.Comparer<int>.Default);
             var table = new QuestMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 table,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -51,6 +117,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.QuestId, System.Collections.Generic.Comparer<int>.Default);
             var table = new QuestMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 table,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -72,6 +139,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.QuestId, System.Collections.Generic.Comparer<int>.Default);
             var table = new QuestMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 table,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -92,6 +160,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 table,
                 memory.QuestMasterEmptyValidateTable,
@@ -113,6 +182,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 table,
                 memory.QuestMasterEmptyValidateTable,
@@ -134,6 +204,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 table,
                 memory.QuestMasterEmptyValidateTable,
@@ -154,6 +225,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.QuestId, System.Collections.Generic.Comparer<int>.Default);
             var table = new QuestMasterEmptyValidateTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 table,
@@ -175,6 +247,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.QuestId, System.Collections.Generic.Comparer<int>.Default);
             var table = new QuestMasterEmptyValidateTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 table,
@@ -196,6 +269,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.QuestId, System.Collections.Generic.Comparer<int>.Default);
             var table = new QuestMasterEmptyValidateTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 table,
@@ -216,6 +290,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemMasterEmptyValidateTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -237,6 +312,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemMasterEmptyValidateTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -258,6 +334,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemMasterEmptyValidateTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -278,6 +355,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SequentialCheckMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -299,6 +377,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SequentialCheckMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -320,6 +399,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SequentialCheckMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -340,6 +420,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SingleMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -361,6 +442,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SingleMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -382,6 +464,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SingleMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -402,6 +485,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new FailTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -423,6 +507,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new FailTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -444,6 +529,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new FailTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -464,6 +550,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SampleTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -485,6 +572,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SampleTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -506,6 +594,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new SampleTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -526,6 +615,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => (x.SkillId, x.SkillLevel), System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default);
             var table = new SkillMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -547,6 +637,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => (x.SkillId, x.SkillLevel), System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default);
             var table = new SkillMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -568,6 +659,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => (x.SkillId, x.SkillLevel), System.Collections.Generic.Comparer<(int SkillId, int SkillLevel)>.Default);
             var table = new SkillMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -588,6 +680,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.TestID, System.Collections.Generic.Comparer<int>.Default);
             var table = new TestMasterTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -609,6 +702,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Level, System.Collections.Generic.Comparer<int>.Default);
             var table = new UserLevelTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -630,6 +724,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Level, System.Collections.Generic.Comparer<int>.Default);
             var table = new UserLevelTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,
@@ -651,6 +746,7 @@ namespace MasterMemory.Tests
             var newData = CloneAndSortBy(data, x => x.Level, System.Collections.Generic.Comparer<int>.Default);
             var table = new UserLevelTable(newData);
             memory = new MemoryDatabase(
+                memory.PersonModelTable,
                 memory.QuestMasterTable,
                 memory.ItemMasterTable,
                 memory.QuestMasterEmptyValidateTable,

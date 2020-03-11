@@ -18,7 +18,10 @@ namespace MasterMemory.Tests.Tables
             : base(sortedData)
         {
             this.primaryIndexSelector = x => (x.SkillId, x.SkillLevel);
+            OnAfterConstruct();
         }
+
+        partial void OnAfterConstruct();
 
 
         public SkillMaster FindBySkillIdAndSkillLevel((int SkillId, int SkillLevel) key)

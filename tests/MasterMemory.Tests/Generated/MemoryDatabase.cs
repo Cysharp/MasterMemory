@@ -13,6 +13,7 @@ namespace MasterMemory.Tests
 {
    public sealed class MemoryDatabase : MemoryDatabaseBase
    {
+        public PersonModelTable PersonModelTable { get; private set; }
         public QuestMasterTable QuestMasterTable { get; private set; }
         public ItemMasterTable ItemMasterTable { get; private set; }
         public QuestMasterEmptyValidateTable QuestMasterEmptyValidateTable { get; private set; }
@@ -26,6 +27,7 @@ namespace MasterMemory.Tests
         public UserLevelTable UserLevelTable { get; private set; }
 
         public MemoryDatabase(
+            PersonModelTable PersonModelTable,
             QuestMasterTable QuestMasterTable,
             ItemMasterTable ItemMasterTable,
             QuestMasterEmptyValidateTable QuestMasterEmptyValidateTable,
@@ -39,6 +41,7 @@ namespace MasterMemory.Tests
             UserLevelTable UserLevelTable
         )
         {
+            this.PersonModelTable = PersonModelTable;
             this.QuestMasterTable = QuestMasterTable;
             this.ItemMasterTable = ItemMasterTable;
             this.QuestMasterEmptyValidateTable = QuestMasterEmptyValidateTable;
@@ -59,6 +62,7 @@ namespace MasterMemory.Tests
 
         protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
         {
+            this.PersonModelTable = ExtractTableData<PersonModel, PersonModelTable>(header, databaseBinary, options, xs => new PersonModelTable(xs));
             this.QuestMasterTable = ExtractTableData<QuestMaster, QuestMasterTable>(header, databaseBinary, options, xs => new QuestMasterTable(xs));
             this.ItemMasterTable = ExtractTableData<ItemMaster, ItemMasterTable>(header, databaseBinary, options, xs => new ItemMasterTable(xs));
             this.QuestMasterEmptyValidateTable = ExtractTableData<QuestMasterEmptyValidate, QuestMasterEmptyValidateTable>(header, databaseBinary, options, xs => new QuestMasterEmptyValidateTable(xs));
@@ -80,6 +84,7 @@ namespace MasterMemory.Tests
         public DatabaseBuilder ToDatabaseBuilder()
         {
             var builder = new DatabaseBuilder();
+            builder.Append(this.PersonModelTable.GetRawDataUnsafe());
             builder.Append(this.QuestMasterTable.GetRawDataUnsafe());
             builder.Append(this.ItemMasterTable.GetRawDataUnsafe());
             builder.Append(this.QuestMasterEmptyValidateTable.GetRawDataUnsafe());
@@ -99,6 +104,7 @@ namespace MasterMemory.Tests
             var result = new ValidateResult();
             var database = new ValidationDatabase(new object[]
             {
+                PersonModelTable,
                 QuestMasterTable,
                 ItemMasterTable,
                 QuestMasterEmptyValidateTable,
@@ -112,6 +118,8 @@ namespace MasterMemory.Tests
                 UserLevelTable,
             });
 
+            ((ITableUniqueValidate)PersonModelTable).ValidateUnique(result);
+            ValidateTable(PersonModelTable.All, database, "RandomId", PersonModelTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)QuestMasterTable).ValidateUnique(result);
             ValidateTable(QuestMasterTable.All, database, "QuestId", QuestMasterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)ItemMasterTable).ValidateUnique(result);
@@ -144,6 +152,8 @@ namespace MasterMemory.Tests
         {
             switch (tableName)
             {
+                case "people":
+                    return db.PersonModelTable;
                 case "quest_master":
                     return db.QuestMasterTable;
                 case "item_master":
@@ -177,6 +187,7 @@ namespace MasterMemory.Tests
             if (metaTable != null) return metaTable;
 
             var dict = new Dictionary<string, MasterMemory.Meta.MetaTable>();
+            dict.Add("people", MasterMemory.Tests.Tables.PersonModelTable.CreateMetaTable());
             dict.Add("quest_master", MasterMemory.Tests.Tables.QuestMasterTable.CreateMetaTable());
             dict.Add("item_master", MasterMemory.Tests.Tables.ItemMasterTable.CreateMetaTable());
             dict.Add("quest_master_empty", MasterMemory.Tests.Tables.QuestMasterEmptyValidateTable.CreateMetaTable());
