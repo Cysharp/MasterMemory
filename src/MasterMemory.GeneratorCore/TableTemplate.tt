@@ -26,7 +26,10 @@ namespace <#= Namespace #>.Tables
             this.<#= item.SelectorName #> = x => <#= item.BuildKeyAccessor("x") #>;
             this.<#= item.TableName #> = CloneAndSortBy(this.secondaryIndex<#= item.IndexNo #>Selector, <#= item.BuildComparer() #>);
 <# } #>
+            OnAfterConstruct();
         }
+
+        partial void OnAfterConstruct();
 
 <# for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var item = GenerationContext.SecondaryKeys[i]; #>
         public RangeView<<#= GenerationContext.ClassName #>> SortBy<#= item.BuildMethodName() #> => new RangeView<<#= GenerationContext.ClassName #>>(<#= item.TableName #>, 0, <#= item.TableName #>.Length - 1, true);

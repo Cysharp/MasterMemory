@@ -81,7 +81,8 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildComparer()));
             this.Write(");\r\n");
  } 
-            this.Write("        }\r\n\r\n");
+            this.Write("            OnAfterConstruct();\r\n        }\r\n\r\n        partial void OnAfterConstru" +
+                    "ct();\r\n\r\n");
  for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var item = GenerationContext.SecondaryKeys[i]; 
             this.Write("        public RangeView<");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContext.ClassName));
