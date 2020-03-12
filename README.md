@@ -549,11 +549,14 @@ Table class is defined partial OnAfterConstruct void method, you can use it to s
 ```csharp
 public sealed partial class MonsterTable
 {
-    /* readonly */ int maxHp;
+    int maxHp;
+    readonly int minHp;
 
     partial void OnAfterConstruct()
     {
         maxHp = All.Select(x => x.MaxHp).Max();
+        // you can use Unsafe.AsRef to set readonly field
+        Unsafe.AsRef(minHp) = All.Select(x => x.MaxHp).Min();
     }
 }
 ```
