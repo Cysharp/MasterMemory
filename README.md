@@ -550,7 +550,9 @@ Table class is defined partial OnAfterConstruct void method, you can use it to s
 public sealed partial class MonsterTable
 {
     int maxHp;
+#pragma warning disable CS0649
     readonly int minHp;
+#pragma warning restore CS0649    
 
     partial void OnAfterConstruct()
     {
