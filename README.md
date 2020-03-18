@@ -63,9 +63,9 @@ Edit the `.csproj`, add [MasterMemory.MSBuild.Tasks](https://www.nuget.org/packa
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="MasterMemory" Version="2.0.4" />
+    <PackageReference Include="MasterMemory" Version="2.1.2" />
     <!-- Install MSBuild Task(with PrivateAssets="All", it means to use dependency only in build time). -->
-    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.0.4" PrivateAssets="All" />
+    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.1.2" PrivateAssets="All" />
 </ItemGroup>
 
 <!-- Call code generator before-build. -->
@@ -188,11 +188,14 @@ public static class Initializer
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void SetupMessagePackResolver()
     {
-        CompositeResolver.RegisterAndSetAsDefault(new[]{
+        StaticCompositeResolver.Instance.Register(new[]{
             MasterMemoryResolver.Instance, // set MasterMemory generated resolver
             GeneratedResolver.Instance,    // set MessagePack generated resolver
             StandardResolver.Instance      // set default MessagePack resolver
         });
+
+        var options = MessagePackSerializerOptions.Standard.WithResolver(StaticCompositeResolver.Instance);
+        MessagePackSerializer.DefaultOptions = options;
     }
 }
 ```
@@ -253,7 +256,7 @@ Element type of datatable must be marked by `[MemoryTable(tableName)]`, datatabl
 Both `PrimaryKey` and `SecondaryKey` can add to multiple properties, it will be generated `***And***And***...`. `keyOrder` is order of column names, default is zero(sequential in which they appear).
 
 ```csharp
-[MemoryTable("sample")]
+[MemoryTable("sample"), MessagePackObject(true)]
 public class Sample
 {
     [PrimaryKey]
@@ -266,7 +269,7 @@ db.Sample.FindByFooAndBar((int Foo, int Bar))
 
 // ----
 
-[MemoryTable("sample")]
+[MemoryTable("sample"), MessagePackObject(true)]
 public class Sample
 {
     [PrimaryKey(keyOrder: 1)]
@@ -281,7 +284,7 @@ db.Sample.FindByBarAndFoo((int Bar, int Foo))
 Default of `FindBy***` return type is single(if not found, returns `null`). It means key is unique by default. If mark `[NonUnique]` in same AttributeList, return type is `RangeView<T>`(if not found, return empty).
 
 ```csharp
-[MemoryTable("sample")]
+[MemoryTable("sample"), MessagePackObject(true)]
 public class Sample
 {
     [PrimaryKey, NonUnique]
@@ -294,7 +297,7 @@ RangeView<Sample> q = db.Sample.FindByFooAndBar((int Foo, int Bar))
 ```
 
 ```csharp
-[MemoryTable("sample")]
+[MemoryTable("sample"), MessagePackObject(true)]
 public class Sample
 {
     [PrimaryKey]
@@ -313,12 +316,29 @@ db.Sample.FindByBar(int Bar)
 `[StringComparisonOption]` allow to configure how compare if key is string. Default is `Ordinal`.
 
 ```csharp
-[MemoryTable("sample")]
+[MemoryTable("sample"), MessagePackObject(true)]
 public class Sample
 {
     [PrimaryKey]
     [StringComparisonOption(StringComparison.InvariantCultureIgnoreCase)]
     public string Foo { get; set; }
+}
+```
+
+If computation property exists, add `[IgnoreMember]` of MessagePack should mark.
+
+```csharp
+[MemoryTable("person"), MessagePackObject(true)]
+public class Person
+{
+    [PrimaryKey]
+    public int Id { get;}
+
+    public string FirstName { get; }
+    public string LastName { get; }
+
+    [IgnoreMember]
+    public string FullName => FirstName + LastName;
 }
 ```
 
@@ -357,6 +377,38 @@ And has some utility properties.
 * `T` Last
 * `RangeView<T>` Reverse
 * `IEnumerator<T>` GetEnumerator()
+
+Extend Table
+---
+Generated table class is defined partial class so create same namespace and class name's partial class on another file, you can add your custom method to generated table.
+
+Table class also defined partial `OnAfterConstruct` method, it called after table has been constructed. You can use it to store custom data to field after all data has been constructed.
+
+```csharp
+// create MonsterTable.Partial.cs
+
+public sealed partial class MonsterTable
+{
+    int maxHp;
+#pragma warning disable CS0649
+    readonly int minHp;
+#pragma warning restore CS0649    
+
+    // called after constructed
+    partial void OnAfterConstruct()
+    {
+        maxHp = All.Select(x => x.MaxHp).Max();
+        // you can use Unsafe.AsRef to set readonly field
+        Unsafe.AsRef(minHp) = All.Select(x => x.MaxHp).Min();
+    }
+    
+    // add custom method other than standard Find method
+    public IEnumerable<Monster> GetRangedMonster(int arg1)
+    {
+        return All.Where....();
+    }
+}
+```
 
 ImmutableBuilder
 ---
@@ -539,27 +591,6 @@ class ValidatableSet<TElement>
     void Unique<TProperty>(Func<TElement, TProperty> selector, IEqualityComparer<TProperty> equalityComparer, string message);
     void Sequential(Expression<Func<TElement, SByte|Int16|Int32|...>> selector, bool distinct = false);
     ValidatableSet<TElement> Where(Func<TElement, bool> predicate);
-}
-```
-
-OnAfterConstruct
----
-Table class is defined partial OnAfterConstruct void method, you can use it to store custom data to field after all data has been constructed.
-
-```csharp
-public sealed partial class MonsterTable
-{
-    int maxHp;
-#pragma warning disable CS0649
-    readonly int minHp;
-#pragma warning restore CS0649    
-
-    partial void OnAfterConstruct()
-    {
-        maxHp = All.Select(x => x.MaxHp).Max();
-        // you can use Unsafe.AsRef to set readonly field
-        Unsafe.AsRef(minHp) = All.Select(x => x.MaxHp).Min();
-    }
 }
 ```
 
@@ -791,6 +822,43 @@ class Program
             reader.Dispose();
         }
     }
+}
+```
+
+Inheritance
+---
+Currently MasterMemory does not support inheritance. Recommend way to create common method, use interface and extension method. But if you want to create common method with common cached field(made by `OnAfterConstruct`), for workaround, create abstract class and all data properties to abstract.
+
+```csharp
+public abstract class FooAndBarBase
+{
+    // all data properties to virtual
+    public virtual int Prop1 { get; protected set; }
+    public virtual int Prop2 { get; protected set; }
+
+    [IgnoreMember]
+    public int Prop3 => Prop1 + Prop2;
+
+    public IEnumerable<FooAndBarBase> CommonMethod()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+[MemoryTable("foo_table"), MessagePackObject(true)]
+public class FooTable : FooAndBarBase
+{
+    [PrimaryKey]
+    public override int Prop1 { get; protected set; }
+    public override int Prop2 { get; protected set; }
+}
+
+[MemoryTable("bar_table"), MessagePackObject(true)]
+public class BarTable : FooAndBarBase
+{
+    [PrimaryKey]
+    public override int Prop1 { get; protected set; }
+    public override int Prop2 { get; protected set; }
 }
 ```
 
