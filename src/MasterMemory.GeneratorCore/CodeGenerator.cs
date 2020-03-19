@@ -255,7 +255,7 @@ namespace MasterMemory.GeneratorCore
                         }
                     }
                     else if (!property.Modifiers.Any(SyntaxKind.PublicKeyword)
-                        || attrName == "IgnoreMember" || attrName == "MessagePackObject.IgnoreMember"
+                        || attrName == "IgnoreMember" || attrName == "MessagePack.IgnoreMember"
                         || attrName == "IgnoreDataMember" || attrName == "System.Runtime.Serialization.IgnoreDataMember")
                     {
                         isSerializableProperty = false;
