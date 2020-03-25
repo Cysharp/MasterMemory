@@ -154,7 +154,7 @@ namespace MasterMemory.GeneratorCore
                         var secondaryKeys = members.SelectMany(x => x.Item2).GroupBy(x => x.IndexNo).Select(x => AggregateSecondaryKey(x)).ToArray();
                         var properties = members.Where(x => x.Item3 != null).Select(x => new Property
                         {
-                            Type = x.Item3.Type.ToFullString(),
+                            Type = x.Item3.Type.ToFullStringTrim(),
                             Name = x.Item3.Identifier.Text,
                         }).ToArray();
 

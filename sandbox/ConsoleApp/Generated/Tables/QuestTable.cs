@@ -94,6 +94,7 @@ namespace ConsoleApp.Tables
                     new MasterMemory.Meta.MetaProperty(typeof(Quest).GetProperty("Name")),
                     new MasterMemory.Meta.MetaProperty(typeof(Quest).GetProperty("RewardId")),
                     new MasterMemory.Meta.MetaProperty(typeof(Quest).GetProperty("Cost")),
+                    new MasterMemory.Meta.MetaProperty(typeof(Quest).GetProperty("MyProperty")),
                 },
                 new MasterMemory.Meta.MetaIndex[]{
                     new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[] {
@@ -102,11 +103,5 @@ namespace ConsoleApp.Tables
                 });
         }
 
-        static void TypeHint()
-        {
-            _ = new System.Collections.Generic.List<int>();
-            _ = new System.Collections.Generic.List<string>();
-            
-        }
     }
 }

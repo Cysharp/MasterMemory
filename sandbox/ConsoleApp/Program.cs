@@ -21,6 +21,7 @@ public class Quest : IValidatable<Quest>
     public string Name { get; set; }
     public int RewardId { get; set; }
     public int Cost { get; set; }
+    public MyEnum MyProperty { get; set; }
 
     void IValidatable<Quest>.Validate(IValidator<Quest> validator)
     {
@@ -46,6 +47,11 @@ public class Quest : IValidatable<Quest>
             quests.Where(x => x.RewardId != 0).Unique(x => x.RewardId);
         }
     }
+
+    public enum MyEnum
+    {
+        A, B, C
+    }
 }
 
 [MemoryTable("item"), MessagePackObject(true)]
@@ -59,7 +65,8 @@ namespace ConsoleApp.Tables
 {
     public sealed partial class MonsterTable
     {
-        /* readonly */ int maxHp;
+        /* readonly */
+        int maxHp;
 
         partial void OnAfterConstruct()
         {
@@ -192,7 +199,7 @@ namespace ConsoleApp
         public int Id { get; set; }
     }
 
-    
+
 
     class Program
     {

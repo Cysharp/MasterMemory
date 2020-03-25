@@ -286,13 +286,7 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(key.BuildComparer()));
             this.Write("),\r\n");
  } 
-            this.Write("                });\r\n        }\r\n\r\n        static void TypeHint()\r\n        {\r\n");
- foreach(var prop in GenerationContext.Properties.Select(x => x.Type.Trim()).Distinct()) { 
-            this.Write("            _ = new System.Collections.Generic.List<");
-            this.Write(this.ToStringHelper.ToStringWithCulture(prop));
-            this.Write(">();\r\n");
- } 
-            this.Write("            \r\n        }\r\n    }\r\n}");
+            this.Write("                });\r\n        }\r\n\r\n    }\r\n}");
             return this.GenerationEnvironment.ToString();
         }
     }
