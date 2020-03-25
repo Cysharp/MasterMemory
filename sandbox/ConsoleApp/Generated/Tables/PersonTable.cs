@@ -171,5 +171,13 @@ namespace ConsoleApp.Tables
                     }, false, false, System.Collections.Generic.Comparer<Gender>.Default),
                 });
         }
+
+        static void TypeHint()
+        {
+            _ = new System.Collections.Generic.List<int>();
+            _ = new System.Collections.Generic.List<Gender>();
+            _ = new System.Collections.Generic.List<string>();
+            
+        }
     }
 }

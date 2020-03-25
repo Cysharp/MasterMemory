@@ -98,5 +98,11 @@ namespace ConsoleApp.Tables
                     }, true, true, System.Collections.Generic.Comparer<int>.Default),
                 });
         }
+
+        static void TypeHint()
+        {
+            _ = new System.Collections.Generic.List<int>();
+            
+        }
     }
 }

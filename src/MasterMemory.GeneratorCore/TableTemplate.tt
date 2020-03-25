@@ -138,5 +138,12 @@ namespace <#= Namespace #>.Tables
 <# } #>
                 });
         }
+
+        static void TypeHint()
+        {
+<# foreach(var prop in GenerationContext.Properties.Select(x => x.Type.Trim()).Distinct()) { #>
+            _ = new System.Collections.Generic.List<<#= prop #>>();
+<# } #>            
+        }
     }
 }
