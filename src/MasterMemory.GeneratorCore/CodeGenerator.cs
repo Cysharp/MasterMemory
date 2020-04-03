@@ -100,10 +100,17 @@ namespace MasterMemory.GeneratorCore
             }
         }
 
+        static string NormalizeNewLines(string content)
+        {
+            // The T4 generated code may be text with mixed line ending types. (CR + CRLF)
+            // We need to normalize the line ending type in each Operating Systems. (e.g. Windows=CRLF, Linux/macOS=LF)
+            return content.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
+        }
+
         static string WriteToFile(string directory, string fileName, string content)
         {
             var path = Path.Combine(directory, fileName + ".cs");
-            File.WriteAllText(path, content, NoBomUtf8);
+            File.WriteAllText(path, NormalizeNewLines(content), NoBomUtf8);
             return $"Generate {fileName} to: {path}";
         }
 
