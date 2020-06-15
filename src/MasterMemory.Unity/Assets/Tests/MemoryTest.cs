@@ -96,7 +96,8 @@ namespace MasterMemory.Tests
                 // first
                 for (int i = 0; i < 9; i++)
                 {
-                    table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(9);
+                    table.FindClosestByAge(i, selectLower: true).Count.Should().Be(0);
+//                  table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(9);
                 }
 
                 var lastAge = 9;
@@ -111,9 +112,12 @@ namespace MasterMemory.Tests
                 }
 
                 // last
-                for (int i = 99; i < 120; i++)
+                table.FindClosestByAge(99, selectLower: false).First.Age.Should().Be(99);
+
+                for (int i = 100; i < 120; i++)
                 {
-                    table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(99);
+                    table.FindClosestByAge(i, selectLower: false).Count.Should().Be(0);
+//                  table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(99);
                 }
             }
             {
@@ -134,9 +138,11 @@ namespace MasterMemory.Tests
                 }
 
                 // last
-                for (int i = 99; i < 120; i++)
+                table.FindClosestByAge(99, selectLower: false).First.Age.Should().Be(99);
+
+                for (int i = 100; i < 120; i++)
                 {
-                    table.FindClosestByAge(i, selectLower: false).First.Age.Should().Be(99);
+                    table.FindClosestByAge(i, selectLower: false).Count.Should().Be(0);
                 }
             }
         }
@@ -153,7 +159,8 @@ namespace MasterMemory.Tests
             //new Sample { Id = 4, Age = 89, FirstName = "aaa", LastName = "tako" },
             //new Sample { Id = 9, Age = 99, FirstName = "aaa", LastName = "ika" },
 
-            table.FindClosestByFirstNameAndAge(("aaa", 10), true).First.Age.Should().Be(19);
+            table.FindClosestByFirstNameAndAge(("aaa", 10), true).Count.Should().Be(0);
+            table.FindClosestByFirstNameAndAge(("aaa", 10), false).First.Age.Should().Be(19);
             table.FindClosestByFirstNameAndAge(("aaa", 92), true).First.Age.Should().Be(89);
             table.FindClosestByFirstNameAndAge(("aaa", 120), true).First.Age.Should().Be(99);
             table.FindClosestByFirstNameAndAge(("aaa", 10), false).First.Age.Should().Be(19);

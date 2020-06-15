@@ -6,7 +6,7 @@ namespace MasterMemory
 {
     public readonly struct RangeView<T> : IEnumerable<T>, IReadOnlyList<T>, IList<T>
     {
-        public static RangeView<T> Empty => default(RangeView<T>);
+        public static RangeView<T> Empty => new RangeView<T>( null, -1, -1, false ); 
 
         readonly T[] orderedData;
         readonly int left;
@@ -46,7 +46,7 @@ namespace MasterMemory
 
         public RangeView(T[] orderedData, int left, int right, bool ascendant)
         {
-            this.hasValue = (orderedData.Length != 0) && (left <= right); // same index is length = 1
+            this.hasValue = (orderedData != null ) && (orderedData.Length != 0) && (left <= right); // same index is length = 1            this.orderedData = orderedData;
             this.orderedData = orderedData;
             this.left = left;
             this.right = right;
