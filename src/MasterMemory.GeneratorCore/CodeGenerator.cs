@@ -115,7 +115,7 @@ namespace MasterMemory.GeneratorCore
             // If the generated content is unchanged, skip the write.
             if (!forceOverwrite && File.Exists(path))
             {
-                if (new FileInfo(path).Length == contentBytes.Length && contentBytes.SequenceEqual(File.ReadAllBytes(path)))
+                if (new FileInfo(path).Length == contentBytes.Length && contentBytes.AsSpan().SequenceEqual(File.ReadAllBytes(path)))
                 {
                     return $"Generate {fileName} to: {path} (Skipped)";
                 }
