@@ -16,7 +16,7 @@ namespace MasterMemory.GeneratorCore
     {
         static readonly Encoding NoBomUtf8 = new UTF8Encoding(false);
 
-        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, string prefixClassName, bool addImmutableConstructor, bool throwIfKeyNotFound, Action<string> logger)
+        public void GenerateFile(string usingNamespace, string inputDirectory, string outputDirectory, string prefixClassName, bool addImmutableConstructor, bool throwIfKeyNotFound, bool forceOverwrite, Action<string> logger)
         {
             prefixClassName ??= "";
             var list = new List<GenerationContext>();
@@ -55,10 +55,10 @@ namespace MasterMemory.GeneratorCore
                 builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
                 builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
 
-                logger(WriteToFile(outputDirectory, builderTemplate.ClassName, builderTemplate.TransformText()));
-                logger(WriteToFile(outputDirectory, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
-                logger(WriteToFile(outputDirectory, databaseTemplate.ClassName, databaseTemplate.TransformText()));
-                logger(WriteToFile(outputDirectory, resolverTemplate.ClassName, resolverTemplate.TransformText()));
+                logger(WriteToFile(outputDirectory, builderTemplate.ClassName, builderTemplate.TransformText(), forceOverwrite));
+                logger(WriteToFile(outputDirectory, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText(), forceOverwrite));
+                logger(WriteToFile(outputDirectory, databaseTemplate.ClassName, databaseTemplate.TransformText(), forceOverwrite));
+                logger(WriteToFile(outputDirectory, resolverTemplate.ClassName, resolverTemplate.TransformText(), forceOverwrite));
             }
             {
                 var tableDir = Path.Combine(outputDirectory, "Tables");
@@ -77,7 +77,7 @@ namespace MasterMemory.GeneratorCore
                         ThrowKeyIfNotFound = throwIfKeyNotFound
                     };
 
-                    logger(WriteToFile(tableDir, context.ClassName + "Table", template.TransformText()));
+                    logger(WriteToFile(tableDir, context.ClassName + "Table", template.TransformText(), forceOverwrite));
                 }
             }
             // Modify
@@ -107,10 +107,21 @@ namespace MasterMemory.GeneratorCore
             return content.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
         }
 
-        static string WriteToFile(string directory, string fileName, string content)
+        static string WriteToFile(string directory, string fileName, string content, bool forceOverwrite)
         {
             var path = Path.Combine(directory, fileName + ".cs");
-            File.WriteAllText(path, NormalizeNewLines(content), NoBomUtf8);
+            var contentBytes = Encoding.UTF8.GetBytes(NormalizeNewLines(content));
+            
+            // If the generated content is unchanged, skip the write.
+            if (!forceOverwrite && File.Exists(path))
+            {
+                if (new FileInfo(path).Length == contentBytes.Length && contentBytes.AsSpan().SequenceEqual(File.ReadAllBytes(path)))
+                {
+                    return $"Generate {fileName} to: {path} (Skipped)";
+                }
+            }
+
+            File.WriteAllBytes(path, contentBytes);
             return $"Generate {fileName} to: {path}";
         }
 
