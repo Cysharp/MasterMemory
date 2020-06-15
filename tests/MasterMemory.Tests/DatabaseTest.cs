@@ -65,6 +65,21 @@ namespace MasterMemory.Tests
             db.SampleTable.SortByAge.Select(x => x.Id).OrderBy(x => x).ToArray().Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
         }
 
+         [Fact]
+        public void Ranges()
+        {
+            var builder = new DatabaseBuilder();
+            builder.Append(CreateData());
+
+            var bin = builder.Build();
+            var db = new MemoryDatabase(bin);
+
+            db.SampleTable.FindRangeByAge(2,2).Select(x=>x.Id).ToArray().Should().BeEquivalentTo( new int[] {} );     
+            db.SampleTable.FindRangeByAge(30,50).Select(x=>x.Id).ToArray().Should().BeEquivalentTo( new int[] { 7, 8 } );     
+            db.SampleTable.FindRangeByAge(100,100).Select(x=>x.Id).ToArray().Should().BeEquivalentTo( new int[] {} );     
+        }
+
+
         [Fact]
         public void EmptyAll()
         {

@@ -2,6 +2,7 @@
 using MasterMemory.Validation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MasterMemory
 {
@@ -133,6 +134,10 @@ namespace MasterMemory
         {
             var lo = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, min, keySelector, comparer, false);
             var hi = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, max, keySelector, comparer, true);
+
+            if ( lo == -1 ) lo = 0;
+            if ( hi == indexArray.Length ) hi -= 1;
+
             return new RangeView<TElement>(indexArray, lo, hi, ascendant);
         }
 
@@ -152,15 +157,37 @@ namespace MasterMemory
         static protected RangeView<TElement> FindManyClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
         {
             var closest = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, key, keySelector, comparer, selectLower);
-            if (closest == -1) return RangeView<TElement>.Empty;
+
+            if ((closest == -1) || ( closest >= indexArray.Length ))
+                return RangeView<TElement>.Empty;
 
             return FindManyCore(indexArray, keySelector, comparer, keySelector(indexArray[closest]));
         }
 
         static protected RangeView<TElement> FindManyRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
         {
-            var lo = FindManyClosestCore(indexArray, keySelector, comparer, min, false).FirstIndex;
-            var hi = FindManyClosestCore(indexArray, keySelector, comparer, max, true).LastIndex;
+            //... Empty set when min > max
+            //... Alternatively, could treat this as between and swap min and max.
+
+            if ( Comparer<TKey>.Default.Compare( min, max ) > 0 )
+               return RangeView<TElement>.Empty;
+
+            //... want lo to be the lowest  index of the values >= than min.
+            //... lo should be in the range [0,arraylength]
+
+            var lo = BinarySearch.LowerBoundClosest(indexArray, 0, indexArray.Length, min, keySelector, comparer );
+
+            //... want hi to be the highest index of the values <= than max
+            //... hi should be in the range [-1,arraylength-1]
+
+            var hi = BinarySearch.UpperBoundClosest(indexArray, 0, indexArray.Length, max, keySelector, comparer );
+
+            Debug.Assert( lo >= 0 );
+            Debug.Assert( hi < indexArray.Length );
+
+            if ( hi < lo )
+               return RangeView<TElement>.Empty;
+
             return new RangeView<TElement>(indexArray, lo, hi, ascendant);
         }
     }
