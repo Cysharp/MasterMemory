@@ -11,6 +11,21 @@ Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 ## Table of Contents
+
+- [Concept](#concept)
+- [Getting Started(.NET Core)](#getting-startednet-core)
+- [Getting Started(Unity)](#getting-startedunity)
+- [DataTable configuration](#datatable-configuration)
+- [MemoryDatabase/RangeView](#memorydatabaserangeview)
+- [Extend Table](#extend-table)
+- [ImmutableBuilder](#immutablebuilder)
+- [Immutable Data](#immutable-data)
+- [Validator](#validator)
+- [Metadata](#metadata)
+- [Inheritance](#inheritance)
+- [Code Generator](#code-generator)
+- [License](#license)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 Concept
