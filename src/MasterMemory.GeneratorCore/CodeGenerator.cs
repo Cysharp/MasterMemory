@@ -32,6 +32,8 @@ namespace MasterMemory.GeneratorCore
                 list.AddRange(CreateGenerationContext(item));
             }
 
+            list.Sort((a, b) => string.Compare(a.ClassName, b.ClassName, StringComparison.Ordinal));
+
             if (list.Count == 0)
             {
                 throw new InvalidOperationException("Not found MemoryTable files, inputDir:" + inputDirectory);
