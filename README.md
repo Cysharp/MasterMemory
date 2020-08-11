@@ -1,6 +1,7 @@
+[![GitHub Actions](https://github.com/Cysharp/MasterMemory/workflows/Build-Debug/badge.svg)](https://github.com/Cysharp/MasterMemory/actions) [![Releases](https://img.shields.io/github/release/Cysharp/MasterMemory.svg)](https://github.com/Cysharp/MasterMemory/releases)
+
 MasterMemory
 ===
-[![CircleCI](https://circleci.com/gh/Cysharp/MasterMemory.svg?style=svg)](https://circleci.com/gh/Cysharp/MasterMemory)
 
 Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity. 
 
