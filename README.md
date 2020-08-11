@@ -1,12 +1,33 @@
+[![GitHub Actions](https://github.com/Cysharp/MasterMemory/workflows/Build-Debug/badge.svg)](https://github.com/Cysharp/MasterMemory/actions) [![Releases](https://img.shields.io/github/release/Cysharp/MasterMemory.svg)](https://github.com/Cysharp/MasterMemory/releases)
+
 MasterMemory
 ===
-[![CircleCI](https://circleci.com/gh/Cysharp/MasterMemory.svg?style=svg)](https://circleci.com/gh/Cysharp/MasterMemory)
 
 Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity. 
 
 ![image](https://user-images.githubusercontent.com/46207/61031896-61890800-a3fb-11e9-86b7-84c821d347a4.png)
 
 **4700** times faster than SQLite and achieves zero allocation per query. Also the DB size is small. When SQLite is 3560kb then MasterMemory is only 222kb.
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Table of Contents
+
+- [Concept](#concept)
+- [Getting Started(.NET Core)](#getting-startednet-core)
+- [Getting Started(Unity)](#getting-startedunity)
+- [DataTable configuration](#datatable-configuration)
+- [MemoryDatabase/RangeView](#memorydatabaserangeview)
+- [Extend Table](#extend-table)
+- [ImmutableBuilder](#immutablebuilder)
+- [Immutable Data](#immutable-data)
+- [Validator](#validator)
+- [Metadata](#metadata)
+- [Inheritance](#inheritance)
+- [Code Generator](#code-generator)
+- [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 Concept
 ---

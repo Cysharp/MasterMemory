@@ -9,9 +9,12 @@ public static class PackageExporter
     [MenuItem("Tools/Export Unitypackage")]
     public static void Export()
     {
+        var version = Environment.GetEnvironmentVariable("UNITY_PACKAGE_VERSION");
+
         // configure
         var root = "Scripts/MasterMemory";
-        var exportPath = "./MasterMemory.Unity.unitypackage";
+        var fileName = string.IsNullOrEmpty(version) ? "MasterMemory.Unity.unitypackage" : $"MasterMemory.Unity.{version}.unitypackage";
+        var exportPath = "./" + fileName;
 
         var path = Path.Combine(Application.dataPath, root);
         var assets = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
