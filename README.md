@@ -8,6 +8,11 @@ Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity.
 
 **4700** times faster than SQLite and achieves zero allocation per query. Also the DB size is small. When SQLite is 3560kb then MasterMemory is only 222kb.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Table of Contents
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 Concept
 ---
 
