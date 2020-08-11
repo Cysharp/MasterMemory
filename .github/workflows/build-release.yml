@@ -35,7 +35,6 @@ jobs:
       - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/win-x64 -r win-x64 -p:CIBuild=true
       - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/linux-x64 -r linux-x64 -p:CIBuild=true
       - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/osx-x64 -r osx-x64 -p:CIBuild=true
-      - run: apt update && apt install zip -y
       - run: zip -r MasterMemory.Generator.${{ env.GIT_TAG }}.zip ./MasterMemory.Generator
       - uses: actions/upload-artifact@v2
         with:
