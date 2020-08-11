@@ -9,7 +9,7 @@ executors:
   unity:
     # https://hub.docker.com/r/gableroux/unity3d/tags
     parameters:
-      version: {type: string}
+      version: { type: string }
     docker:
       - image: gableroux/unity3d:<< parameters.version >>
   go:
@@ -18,8 +18,8 @@ executors:
 commands:
   unity_activate:
     parameters:
-      unity_version: {type: string}
-      unity_license: {type: string}
+      unity_version: { type: string }
+      unity_license: { type: string }
     steps:
       # get activation file, if fail to activate unity, use this key and activate from https://license.unity3d.com/manual
       - run: apt update && apt install libunwind8 -y
@@ -34,8 +34,8 @@ jobs:
   # create package for Unity
   build-unity:
     parameters:
-      unity_version: {type: string}
-      unity_license: {type: string}
+      unity_version: { type: string }
+      unity_license: { type: string }
     executor:
       name: unity
       version: << parameters.unity_version >>
