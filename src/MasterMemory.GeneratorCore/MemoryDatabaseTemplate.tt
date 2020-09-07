@@ -52,6 +52,15 @@ namespace <#= Namespace #>
             return builder;
         }
 
+        public <#= PrefixClassName #>DatabaseBuilder ToDatabaseBuilder(MessagePack.IFormatterResolver resolver)
+        {
+            var builder = new <#= PrefixClassName #>DatabaseBuilder(resolver);
+<# foreach(var item in GenerationContexts) { #>
+            builder.Append(this.<#= item.ClassName #>Table.GetRawDataUnsafe());
+<# } #>
+            return builder;
+        }
+
         public ValidateResult Validate()
         {
             var result = new ValidateResult();
