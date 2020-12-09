@@ -46,7 +46,7 @@ namespace MasterMemory.GeneratorCore
                     Directory.CreateDirectory(outputDirectory);
                 }
 
-                var usingStrings = string.Join(Environment.NewLine, list.SelectMany(x => x.UsingStrings).Distinct().OrderBy(x => x));
+                var usingStrings = string.Join(Environment.NewLine, list.SelectMany(x => x.UsingStrings).Distinct().OrderBy(x => x, StringComparer.Ordinal));
 
                 var builderTemplate = new DatabaseBuilderTemplate();
                 var databaseTemplate = new MemoryDatabaseTemplate();
@@ -146,7 +146,7 @@ namespace MasterMemory.GeneratorCore
                 .Concat(ns)
                 .Select(x => x.Trim(';') + ";")
                 .Distinct()
-                .OrderBy(x => x)
+                .OrderBy(x => x, StringComparer.Ordinal)
                 .ToArray();
 
             foreach (var classDecl in classDeclarations)
