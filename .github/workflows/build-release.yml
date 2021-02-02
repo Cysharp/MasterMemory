@@ -1,25 +1,79 @@
 name: Build-Release
 
 on:
-  push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "tag: git tag you want create. (sample 1.0.0)"
+        required: true
+      dry_run:
+        description: "dry_run: true will never create relase/nuget."
+        required: true
+        default: "false"
+
+env:
+  DRY_RUN_BRANCH_PREFIX: "test_release"
+  DOTNET_SDK_VERISON_3: 3.1.x
 
 jobs:
-  build-dotnet:
+  update-packagejson:
     runs-on: ubuntu-latest
     env:
+      GIT_TAG: ${{ github.event.inputs.tag }}
+      TARGET_FILE: ./src/MasterMemory.Unity/Assets/Scripts/MasterMemory/package.json
+      DRY_RUN: ${{ github.event.inputs.dry_run }}
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: before
+        run: cat ${{ env.TARGET_FILE}}
+      - name: update package.json to version ${{ env.GIT_TAG }}
+        run: sed -i -e "s/\(\"version\":\) \"\(.*\)\",/\1 \"${{ env.GIT_TAG }}\",/" ${{ env.TARGET_FILE }}
+      - name: after
+        run: cat ${{ env.TARGET_FILE}}
+      - name: Commit files
+        id: commit
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "feat: Update package.json to ${{ env.GIT_TAG }}" -a
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: check sha
+        run: echo "SHA ${SHA}"
+        env:
+          SHA: ${{ steps.commit.outputs.sha }}
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: false
+        if: env.DRY_RUN == 'false'
+      - name: Push changes (dry_run)
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.DRY_RUN_BRANCH_PREFIX }}-${{ env.GIT_TAG }}
+          tags: false
+        if: env.DRY_RUN == 'true'
+
+  build-dotnet:
+    needs: [update-packagejson]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GIT_TAG: ${{ github.event.inputs.tag }}
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.update-packagejson.outputs.sha }}
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.201
-      # set release tag(*.*.*) to env.GIT_TAG
-      - run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
+          dotnet-version: "${{ env.DOTNET_SDK_VERSION_3 }}"
       # pack nuget
       - run: dotnet build -c Release -p:Version=${{ env.GIT_TAG }}
       - run: dotnet test -c Release --no-build -p:Version=${{ env.GIT_TAG }}
@@ -48,20 +102,27 @@ jobs:
         include:
           - unity: 2019.3.9f1
             license: UNITY_2019_3
+    env:
+      GIT_TAG: ${{ github.event.inputs.tag }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       # with linux-il2cpp. image from https://hub.docker.com/r/gableroux/unity3d/tags
       image: gableroux/unity3d:${{ matrix.unity }}-linux-il2cpp
     steps:
-      - run: apt update && apt install git -y
+      # Ubuntu 18.04 git is too old, use ppa latest git.
+      - run: |
+          apt-get update && apt-get install --no-install-recommends -y software-properties-common && add-apt-repository -y ppa:git-core/ppa
+          apt-get update && apt-get install --no-install-recommends -y git
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.update-packagejson.outputs.sha }}
+      # activate Unity from manual license file(ulf)
       - run: echo -n "$UNITY_LICENSE" >> .Unity.ulf
         env:
           UNITY_LICENSE: ${{ secrets[matrix.license] }}
-      - run: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -manualLicenseFile .Unity.ulf || exit 0
-
-      # set release tag(*.*.*) to env.GIT_TAG
-      - run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Activate Unity, always returns a success. But if a subsequent run fails, the activation may have failed(if succeeded, shows `Next license update check is after` and not shows other message(like GUID != GUID). If fails not). In that case, upload the artifact's .alf file to https://license.unity3d.com/manual to get the .ulf file and set it to secrets.
+        run: /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -manualLicenseFile .Unity.ulf || exit 0
 
       # Execute scripts: Export Package
       - name: Export unitypackage
@@ -77,9 +138,11 @@ jobs:
           path: ./src/MasterMemory.Unity/MasterMemory.Unity.${{ env.GIT_TAG }}.unitypackage
 
   create-release:
+    if: github.event.inputs.dry_run == 'false'
     needs: [build-dotnet, build-unity]
     runs-on: ubuntu-latest
     env:
+      GIT_TAG: ${{ github.event.inputs.tag }}
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
@@ -87,10 +150,7 @@ jobs:
       # setup dotnet for nuget push
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.201
-      # set release tag(*.*.*) to env.GIT_TAG
-      - run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
+          dotnet-version: "${{ env.DOTNET_SDK_VERSION_3 }}"
       # Create Releases
       - uses: actions/create-release@v1
         id: create_release
@@ -99,13 +159,10 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Ver.${{ github.ref }}
-
       # Download (All) Artifacts to current directory
       - uses: actions/download-artifact@v2
-
       # Upload to NuGet
       - run: dotnet nuget push "./nuget/*.nupkg" -s https://www.nuget.org/api/v2/package -k ${{ secrets.NUGET_KEY }}
-
       # Upload to Releases(generator)
       - uses: actions/upload-release-asset@v1
         env:
@@ -115,7 +172,6 @@ jobs:
           asset_path: ./MasterMemory.Generator.${{ env.GIT_TAG }}.zip/MasterMemory.Generator.${{ env.GIT_TAG }}.zip
           asset_name: MasterMemory.Generator.${{ env.GIT_TAG }}.zip
           asset_content_type: application/octet-stream
-
       # Upload to Releases(unitypackage)
       - uses: actions/upload-release-asset@v1
         env:
@@ -125,3 +181,16 @@ jobs:
           asset_path: ./MasterMemory.Unity.${{ env.GIT_TAG }}.unitypackage/MasterMemory.Unity.${{ env.GIT_TAG }}.unitypackage
           asset_name: MasterMemory.Unity.${{ env.GIT_TAG }}.unitypackage
           asset_content_type: application/octet-stream
+
+  cleanup:
+    if: github.event.inputs.dry_run == 'true'
+    needs: [build-dotnet, build-unity]
+    runs-on: ubuntu-latest
+    env:
+      GIT_TAG: ${{ github.event.inputs.tag }}
+    steps:
+      - name: Delete branch
+        uses: dawidd6/action-delete-branch@v3
+        with:
+          github_token: ${{ github.token }}
+          branches: ${{ env.DRY_RUN_BRANCH_PREFIX }}-${{ env.GIT_TAG }}
