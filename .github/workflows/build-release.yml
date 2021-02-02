@@ -96,6 +96,7 @@ jobs:
           path: ./MasterMemory.Generator.${{ env.GIT_TAG }}.zip
 
   build-unity:
+    needs: [update-packagejson]
     strategy:
       matrix:
         unity: ["2019.3.9f1"]
