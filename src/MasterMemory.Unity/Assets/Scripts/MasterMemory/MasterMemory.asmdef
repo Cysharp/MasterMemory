@@ -12,7 +12,6 @@
     "precompiledReferences": [
         "System.Memory.dll",
         "System.Buffers.dll",
-        "System.Threading.Tasks.Extensions.dll",
         "System.Runtime.CompilerServices.Unsafe.dll"
     ],
     "autoReferenced": true,
