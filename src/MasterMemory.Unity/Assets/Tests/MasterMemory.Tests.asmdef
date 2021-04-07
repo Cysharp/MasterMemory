@@ -1,0 +1,16 @@
+﻿{
+    "name": "MasterMemory.Tests",
+    "references": [
+        "MasterMemory",
+		"MessagePack",
+		"MessagePack.Annotations"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
