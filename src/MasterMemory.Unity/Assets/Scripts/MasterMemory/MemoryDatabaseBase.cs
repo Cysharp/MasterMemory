@@ -71,11 +71,6 @@ namespace MasterMemory
                     var validator = new Validator<TElement>(database, item, result, onceCalled, pkName, pkSelector);
                     validatable.Validate(validator);
                 }
-                else
-                {
-                    // all elements is not validatable, return immediately.
-                    return;
-                }
             }
         }
     }
