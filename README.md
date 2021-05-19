@@ -885,7 +885,7 @@ public class BarTable : FooAndBarBase
 
 Code Generator
 ---
-MasterMemory has three kinds of code-generator. `MSBuild Task`, `Standalone Cli Tool`, `.NET Core Global/Local Tools`.
+MasterMemory has two kinds of code-generator. `MSBuild Task`, `.NET Core Global/Local Tools`.
 
 MSBuild Task(`MasterMemory.MSBuild.Tasks`) is recommended way to use in .NET Core csproj.
 
@@ -900,7 +900,9 @@ MSBuild Task(`MasterMemory.MSBuild.Tasks`) is recommended way to use in .NET Cor
 />
 ```
 
-Standalone Cli Tool(`MasterMemory.Generator`) is built by .NET Core 3, self-contained single executable binary. It can be used for Unity and other separated use-case.
+`.NET Core Global/Local Tools` can install from NuGet(`MasterMemory.Generator`), you need to install .NET runtime. Here is the sample command of install global tool.
+
+`dotnet tool install --global MasterMemory.Generator`
 
 ```
 Usage: MasterMemory.Generator [options...]
@@ -913,10 +915,6 @@ Options:
   -c, -addImmutableConstructor <Boolean>    Add immutable constructor to MemoryTable class. (Default: False)
   -t, -returnNullIfKeyNotFound <Boolean>    Return null if key not found on unique find method. (Default: False)
 ```
-
-`.NET Core Global/Local Tools` can install from NuGet, it is same as Standalone Cli Tool.
-
-`dotnet tool install --global MasterMemory.Generator`
 
 After install, you can call by `dotnet mmgen` command. This is useful to use in CI. Here is the sample of CircleCI config.
 

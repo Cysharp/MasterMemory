@@ -15,7 +15,7 @@ env:
   GIT_TAG: ${{ github.event.inputs.tag }}
   DRY_RUN: ${{ github.event.inputs.dry_run }}
   DRY_RUN_BRANCH_PREFIX: "test_release"
-  DOTNET_SDK_VERISON_3: 3.1.x
+  DOTNET_SDK_VERSION: 5.0.100
 
 jobs:
   update-packagejson:
@@ -86,7 +86,7 @@ jobs:
           ref: ${{ needs.update-packagejson.outputs.sha }}
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "${{ env.DOTNET_SDK_VERSION_3 }}"
+          dotnet-version: "${{ env.DOTNET_SDK_VERSION }}"
       # pack nuget
       - run: dotnet build -c Release -p:Version=${{ env.GIT_TAG }}
       - run: dotnet test -c Release --no-build -p:Version=${{ env.GIT_TAG }}
@@ -98,15 +98,6 @@ jobs:
         with:
           name: nuget
           path: ./publish
-      # publish generator
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/win-x64 -r win-x64 -p:CIBuild=true
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/linux-x64 -r linux-x64 -p:CIBuild=true
-      - run: dotnet publish ./src/MasterMemory.Generator/ -c Release -o ./MasterMemory.Generator/osx-x64 -r osx-x64 -p:CIBuild=true
-      - run: zip -r MasterMemory.Generator.${{ env.GIT_TAG }}.zip ./MasterMemory.Generator
-      - uses: actions/upload-artifact@v2
-        with:
-          name: MasterMemory.Generator.${{ env.GIT_TAG }}.zip
-          path: ./MasterMemory.Generator.${{ env.GIT_TAG }}.zip
 
   build-unity:
     needs: [update-packagejson]
@@ -165,7 +156,7 @@ jobs:
       # setup dotnet for nuget push
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "${{ env.DOTNET_SDK_VERSION_3 }}"
+          dotnet-version: "${{ env.DOTNET_SDK_VERSION }}"
       # Create Release
       - uses: actions/create-release@v1
         id: create_release
@@ -181,15 +172,6 @@ jobs:
       - uses: actions/download-artifact@v2
       # Upload to NuGet
       - run: dotnet nuget push "./nuget/*.nupkg" --skip-duplicate -s https://www.nuget.org/api/v2/package -k ${{ secrets.NUGET_KEY }}
-      # Upload to Releases(generator)
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./MasterMemory.Generator.${{ env.GIT_TAG }}.zip/MasterMemory.Generator.${{ env.GIT_TAG }}.zip
-          asset_name: MasterMemory.Generator.${{ env.GIT_TAG }}.zip
-          asset_content_type: application/octet-stream
       # Upload to Releases(unitypackage)
       - uses: actions/upload-release-asset@v1
         env:

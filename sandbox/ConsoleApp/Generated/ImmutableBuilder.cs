@@ -33,47 +33,50 @@ namespace ConsoleApp
             return memory;
         }
 
-        public void ReplaceAll(System.Collections.Generic.IList<Quest> data)
+        public void ReplaceAll(System.Collections.Generic.IList<EnumKeyTable> data)
         {
-            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
-            var table = new QuestTable(newData);
+            var newData = CloneAndSortBy(data, x => x.Gender, System.Collections.Generic.Comparer<Gender>.Default);
+            var table = new EnumKeyTableTable(newData);
             memory = new MemoryDatabase(
                 table,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
             );
         }
 
-        public void RemoveQuest(int[] keys)
+        public void RemoveEnumKeyTable(Gender[] keys)
         {
-            var data = RemoveCore(memory.QuestTable.GetRawDataUnsafe(), keys, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
-            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
-            var table = new QuestTable(newData);
+            var data = RemoveCore(memory.EnumKeyTableTable.GetRawDataUnsafe(), keys, x => x.Gender, System.Collections.Generic.Comparer<Gender>.Default);
+            var newData = CloneAndSortBy(data, x => x.Gender, System.Collections.Generic.Comparer<Gender>.Default);
+            var table = new EnumKeyTableTable(newData);
             memory = new MemoryDatabase(
                 table,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
             );
         }
 
-        public void Diff(Quest[] addOrReplaceData)
+        public void Diff(EnumKeyTable[] addOrReplaceData)
         {
-            var data = DiffCore(memory.QuestTable.GetRawDataUnsafe(), addOrReplaceData, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
-            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
-            var table = new QuestTable(newData);
+            var data = DiffCore(memory.EnumKeyTableTable.GetRawDataUnsafe(), addOrReplaceData, x => x.Gender, System.Collections.Generic.Comparer<Gender>.Default);
+            var newData = CloneAndSortBy(data, x => x.Gender, System.Collections.Generic.Comparer<Gender>.Default);
+            var table = new EnumKeyTableTable(newData);
             memory = new MemoryDatabase(
                 table,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -85,10 +88,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 table,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -101,10 +105,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 table,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -117,10 +122,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.ItemId, System.Collections.Generic.Comparer<int>.Default);
             var table = new ItemTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 table,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -132,10 +138,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.MonsterId, System.Collections.Generic.Comparer<int>.Default);
             var table = new MonsterTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 table,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -148,10 +155,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.MonsterId, System.Collections.Generic.Comparer<int>.Default);
             var table = new MonsterTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 table,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -164,10 +172,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.MonsterId, System.Collections.Generic.Comparer<int>.Default);
             var table = new MonsterTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 table,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -179,10 +188,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.PersonId, System.Collections.Generic.Comparer<int>.Default);
             var table = new PersonTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 table,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -195,10 +205,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.PersonId, System.Collections.Generic.Comparer<int>.Default);
             var table = new PersonTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 table,
+                memory.QuestTable,
                 memory.Test1Table,
                 memory.Test2Table
             
@@ -211,9 +222,60 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.PersonId, System.Collections.Generic.Comparer<int>.Default);
             var table = new PersonTable(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
+                table,
+                memory.QuestTable,
+                memory.Test1Table,
+                memory.Test2Table
+            
+            );
+        }
+
+        public void ReplaceAll(System.Collections.Generic.IList<Quest> data)
+        {
+            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var table = new QuestTable(newData);
+            memory = new MemoryDatabase(
+                memory.EnumKeyTableTable,
+                memory.ItemTable,
+                memory.MonsterTable,
+                memory.PersonTable,
+                table,
+                memory.Test1Table,
+                memory.Test2Table
+            
+            );
+        }
+
+        public void RemoveQuest(int[] keys)
+        {
+            var data = RemoveCore(memory.QuestTable.GetRawDataUnsafe(), keys, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var table = new QuestTable(newData);
+            memory = new MemoryDatabase(
+                memory.EnumKeyTableTable,
+                memory.ItemTable,
+                memory.MonsterTable,
+                memory.PersonTable,
+                table,
+                memory.Test1Table,
+                memory.Test2Table
+            
+            );
+        }
+
+        public void Diff(Quest[] addOrReplaceData)
+        {
+            var data = DiffCore(memory.QuestTable.GetRawDataUnsafe(), addOrReplaceData, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            var table = new QuestTable(newData);
+            memory = new MemoryDatabase(
+                memory.EnumKeyTableTable,
+                memory.ItemTable,
+                memory.MonsterTable,
+                memory.PersonTable,
                 table,
                 memory.Test1Table,
                 memory.Test2Table
@@ -226,10 +288,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new Test1Table(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 table,
                 memory.Test2Table
             
@@ -242,10 +305,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new Test1Table(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 table,
                 memory.Test2Table
             
@@ -258,10 +322,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new Test1Table(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 table,
                 memory.Test2Table
             
@@ -273,10 +338,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new Test2Table(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 table
             
@@ -289,10 +355,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new Test2Table(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 table
             
@@ -305,10 +372,11 @@ namespace ConsoleApp
             var newData = CloneAndSortBy(data, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             var table = new Test2Table(newData);
             memory = new MemoryDatabase(
-                memory.QuestTable,
+                memory.EnumKeyTableTable,
                 memory.ItemTable,
                 memory.MonsterTable,
                 memory.PersonTable,
+                memory.QuestTable,
                 memory.Test1Table,
                 table
             

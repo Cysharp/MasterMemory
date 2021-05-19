@@ -2,19 +2,10 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <TargetFramework>net5.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>dotnet-mmgen</ToolCommandName>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(CIBuild)' == 'true'">
-        <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <PublishSingleFile>true</PublishSingleFile>
-        <PublishTrimmed>true</PublishTrimmed>
-        <IncludeSymbolsInSingleFile>true</IncludeSymbolsInSingleFile>
     </PropertyGroup>
 
     <!-- NuGet informations -->
@@ -31,7 +22,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ConsoleAppFramework" Version="2.0.0" />
+        <PackageReference Include="ConsoleAppFramework" Version="3.3.0" />
     </ItemGroup>
 
     <ItemGroup>

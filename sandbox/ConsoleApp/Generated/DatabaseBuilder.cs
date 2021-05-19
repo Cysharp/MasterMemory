@@ -24,9 +24,9 @@ namespace ConsoleApp
         public DatabaseBuilder() : this(null) { }
         public DatabaseBuilder(MessagePack.IFormatterResolver resolver) : base(resolver) { }
 
-        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Quest> dataSource)
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<EnumKeyTable> dataSource)
         {
-            AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
+            AppendCore(dataSource, x => x.Gender, System.Collections.Generic.Comparer<Gender>.Default);
             return this;
         }
 
@@ -45,6 +45,12 @@ namespace ConsoleApp
         public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Person> dataSource)
         {
             AppendCore(dataSource, x => x.PersonId, System.Collections.Generic.Comparer<int>.Default);
+            return this;
+        }
+
+        public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<Quest> dataSource)
+        {
+            AppendCore(dataSource, x => x.Id, System.Collections.Generic.Comparer<int>.Default);
             return this;
         }
 

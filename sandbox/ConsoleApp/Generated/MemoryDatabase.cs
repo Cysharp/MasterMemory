@@ -21,26 +21,29 @@ namespace ConsoleApp
 {
    public sealed class MemoryDatabase : MemoryDatabaseBase
    {
-        public QuestTable QuestTable { get; private set; }
+        public EnumKeyTableTable EnumKeyTableTable { get; private set; }
         public ItemTable ItemTable { get; private set; }
         public MonsterTable MonsterTable { get; private set; }
         public PersonTable PersonTable { get; private set; }
+        public QuestTable QuestTable { get; private set; }
         public Test1Table Test1Table { get; private set; }
         public Test2Table Test2Table { get; private set; }
 
         public MemoryDatabase(
-            QuestTable QuestTable,
+            EnumKeyTableTable EnumKeyTableTable,
             ItemTable ItemTable,
             MonsterTable MonsterTable,
             PersonTable PersonTable,
+            QuestTable QuestTable,
             Test1Table Test1Table,
             Test2Table Test2Table
         )
         {
-            this.QuestTable = QuestTable;
+            this.EnumKeyTableTable = EnumKeyTableTable;
             this.ItemTable = ItemTable;
             this.MonsterTable = MonsterTable;
             this.PersonTable = PersonTable;
+            this.QuestTable = QuestTable;
             this.Test1Table = Test1Table;
             this.Test2Table = Test2Table;
         }
@@ -52,10 +55,11 @@ namespace ConsoleApp
 
         protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
         {
-            this.QuestTable = ExtractTableData<Quest, QuestTable>(header, databaseBinary, options, xs => new QuestTable(xs));
+            this.EnumKeyTableTable = ExtractTableData<EnumKeyTable, EnumKeyTableTable>(header, databaseBinary, options, xs => new EnumKeyTableTable(xs));
             this.ItemTable = ExtractTableData<Item, ItemTable>(header, databaseBinary, options, xs => new ItemTable(xs));
             this.MonsterTable = ExtractTableData<Monster, MonsterTable>(header, databaseBinary, options, xs => new MonsterTable(xs));
             this.PersonTable = ExtractTableData<Person, PersonTable>(header, databaseBinary, options, xs => new PersonTable(xs));
+            this.QuestTable = ExtractTableData<Quest, QuestTable>(header, databaseBinary, options, xs => new QuestTable(xs));
             this.Test1Table = ExtractTableData<Test1, Test1Table>(header, databaseBinary, options, xs => new Test1Table(xs));
             this.Test2Table = ExtractTableData<Test2, Test2Table>(header, databaseBinary, options, xs => new Test2Table(xs));
         }
@@ -68,10 +72,24 @@ namespace ConsoleApp
         public DatabaseBuilder ToDatabaseBuilder()
         {
             var builder = new DatabaseBuilder();
-            builder.Append(this.QuestTable.GetRawDataUnsafe());
+            builder.Append(this.EnumKeyTableTable.GetRawDataUnsafe());
             builder.Append(this.ItemTable.GetRawDataUnsafe());
             builder.Append(this.MonsterTable.GetRawDataUnsafe());
             builder.Append(this.PersonTable.GetRawDataUnsafe());
+            builder.Append(this.QuestTable.GetRawDataUnsafe());
+            builder.Append(this.Test1Table.GetRawDataUnsafe());
+            builder.Append(this.Test2Table.GetRawDataUnsafe());
+            return builder;
+        }
+
+        public DatabaseBuilder ToDatabaseBuilder(MessagePack.IFormatterResolver resolver)
+        {
+            var builder = new DatabaseBuilder(resolver);
+            builder.Append(this.EnumKeyTableTable.GetRawDataUnsafe());
+            builder.Append(this.ItemTable.GetRawDataUnsafe());
+            builder.Append(this.MonsterTable.GetRawDataUnsafe());
+            builder.Append(this.PersonTable.GetRawDataUnsafe());
+            builder.Append(this.QuestTable.GetRawDataUnsafe());
             builder.Append(this.Test1Table.GetRawDataUnsafe());
             builder.Append(this.Test2Table.GetRawDataUnsafe());
             return builder;
@@ -82,22 +100,25 @@ namespace ConsoleApp
             var result = new ValidateResult();
             var database = new ValidationDatabase(new object[]
             {
-                QuestTable,
+                EnumKeyTableTable,
                 ItemTable,
                 MonsterTable,
                 PersonTable,
+                QuestTable,
                 Test1Table,
                 Test2Table,
             });
 
-            ((ITableUniqueValidate)QuestTable).ValidateUnique(result);
-            ValidateTable(QuestTable.All, database, "Id", QuestTable.PrimaryKeySelector, result);
+            ((ITableUniqueValidate)EnumKeyTableTable).ValidateUnique(result);
+            ValidateTable(EnumKeyTableTable.All, database, "Gender", EnumKeyTableTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)ItemTable).ValidateUnique(result);
             ValidateTable(ItemTable.All, database, "ItemId", ItemTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)MonsterTable).ValidateUnique(result);
             ValidateTable(MonsterTable.All, database, "MonsterId", MonsterTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)PersonTable).ValidateUnique(result);
             ValidateTable(PersonTable.All, database, "PersonId", PersonTable.PrimaryKeySelector, result);
+            ((ITableUniqueValidate)QuestTable).ValidateUnique(result);
+            ValidateTable(QuestTable.All, database, "Id", QuestTable.PrimaryKeySelector, result);
             ((ITableUniqueValidate)Test1Table).ValidateUnique(result);
             ValidateTable(Test1Table.All, database, "Id", Test1Table.PrimaryKeySelector, result);
             ((ITableUniqueValidate)Test2Table).ValidateUnique(result);
@@ -112,14 +133,16 @@ namespace ConsoleApp
         {
             switch (tableName)
             {
-                case "quest_master":
-                    return db.QuestTable;
+                case "enumkeytable":
+                    return db.EnumKeyTableTable;
                 case "item":
                     return db.ItemTable;
                 case "monster":
                     return db.MonsterTable;
                 case "person":
                     return db.PersonTable;
+                case "quest_master":
+                    return db.QuestTable;
                 case "Test1":
                     return db.Test1Table;
                 case "Test2":
@@ -135,10 +158,11 @@ namespace ConsoleApp
             if (metaTable != null) return metaTable;
 
             var dict = new Dictionary<string, MasterMemory.Meta.MetaTable>();
-            dict.Add("quest_master", ConsoleApp.Tables.QuestTable.CreateMetaTable());
+            dict.Add("enumkeytable", ConsoleApp.Tables.EnumKeyTableTable.CreateMetaTable());
             dict.Add("item", ConsoleApp.Tables.ItemTable.CreateMetaTable());
             dict.Add("monster", ConsoleApp.Tables.MonsterTable.CreateMetaTable());
             dict.Add("person", ConsoleApp.Tables.PersonTable.CreateMetaTable());
+            dict.Add("quest_master", ConsoleApp.Tables.QuestTable.CreateMetaTable());
             dict.Add("Test1", ConsoleApp.Tables.Test1Table.CreateMetaTable());
             dict.Add("Test2", ConsoleApp.Tables.Test2Table.CreateMetaTable());
 

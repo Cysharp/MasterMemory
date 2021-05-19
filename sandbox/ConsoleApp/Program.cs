@@ -93,6 +93,13 @@ namespace ConsoleApp
         }
     }
 
+    [MemoryTable("enumkeytable"), MessagePackObject(true)]
+    public class EnumKeyTable
+    {
+        [PrimaryKey]
+        public Gender Gender { get; set; }
+    }
+
     public enum Gender
     {
         Male, Female

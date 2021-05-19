@@ -54,14 +54,15 @@ namespace ConsoleApp
 
         static MasterMemoryResolverGetFormatterHelper()
         {
-            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(6)
+            lookup = new global::System.Collections.Generic.Dictionary<Type, int>(7)
             {
-                {typeof(Quest[]), 0 },
+                {typeof(EnumKeyTable[]), 0 },
                 {typeof(Item[]), 1 },
                 {typeof(Monster[]), 2 },
                 {typeof(Person[]), 3 },
-                {typeof(Test1[]), 4 },
-                {typeof(Test2[]), 5 },
+                {typeof(Quest[]), 4 },
+                {typeof(Test1[]), 5 },
+                {typeof(Test2[]), 6 },
             };
         }
 
@@ -72,12 +73,13 @@ namespace ConsoleApp
 
             switch (key)
             {
-                case 0: return new MessagePack.Formatters.ArrayFormatter<Quest>();
+                case 0: return new MessagePack.Formatters.ArrayFormatter<EnumKeyTable>();
                 case 1: return new MessagePack.Formatters.ArrayFormatter<Item>();
                 case 2: return new MessagePack.Formatters.ArrayFormatter<Monster>();
                 case 3: return new MessagePack.Formatters.ArrayFormatter<Person>();
-                case 4: return new MessagePack.Formatters.ArrayFormatter<Test1>();
-                case 5: return new MessagePack.Formatters.ArrayFormatter<Test2>();
+                case 4: return new MessagePack.Formatters.ArrayFormatter<Quest>();
+                case 5: return new MessagePack.Formatters.ArrayFormatter<Test1>();
+                case 6: return new MessagePack.Formatters.ArrayFormatter<Test2>();
                 default: return null;
             }
         }
