@@ -112,10 +112,10 @@ namespace MasterMemory.GeneratorCore
  } 
             this.Write(@"            };
             
-            System.Threading.Tasks.Parallel.ForEach(extracts, new System.Threading.Tasks.ParallelOptions
+            System.Threading.Tasks.Parallel.Invoke(new System.Threading.Tasks.ParallelOptions
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism
-            }, action => action.Invoke());
+            }, extracts);
         }
 
         public ");

@@ -89,10 +89,10 @@ namespace ConsoleApp
                 () => this.Test2Table = ExtractTableData<Test2, Test2Table>(header, databaseBinary, options, xs => new Test2Table(xs)),
             };
             
-            System.Threading.Tasks.Parallel.ForEach(extracts, new System.Threading.Tasks.ParallelOptions
+            System.Threading.Tasks.Parallel.Invoke(new System.Threading.Tasks.ParallelOptions
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism
-            }, action => action.Invoke());
+            }, extracts);
         }
 
         public ImmutableBuilder ToImmutableBuilder()
