@@ -109,6 +109,8 @@ namespace <#= Namespace #>.Tables
 
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
+#if !DISABLE_MASTERMEMORY_VALIDATOR
+
 <# if (!GenerationContext.PrimaryKey.IsNonUnique) { var key = GenerationContext.PrimaryKey; #>
             ValidateUniqueCore(<#= key.TableName #>, <#= key.SelectorName #>, "<#= key.BuildPropertyTupleName() #>", resultSet);       
 <# } #>
@@ -117,7 +119,11 @@ namespace <#= Namespace #>.Tables
             ValidateUniqueCore(<#= key.TableName #>, <#= key.SelectorName #>, "<#= key.BuildPropertyTupleName() #>", resultSet);       
 <#      } #>
 <# } #>
+
+#endif
         }
+
+#if !DISABLE_MASTERMEMORY_METADATABASE
 
         public static MasterMemory.Meta.MetaTable CreateMetaTable()
         {
@@ -139,5 +145,6 @@ namespace <#= Namespace #>.Tables
                 });
         }
 
+#endif
     }
 }

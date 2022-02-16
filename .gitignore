@@ -123,3 +123,14 @@ nuget/tools/*
 # Unity
 Library/
 Temp/
+src/MasterMemory.Unity/Assembly-CSharp-Editor.csproj
+
+src/MasterMemory.Unity/MasterMemory.csproj
+
+src/MasterMemory.Unity/MasterMemory.Tests.csproj
+
+src/MasterMemory.Unity/MasterMemory.Unity.sln
+
+src/MasterMemory.Unity/MessagePack.Annotations.csproj
+
+src/MasterMemory.Unity/MessagePack.csproj

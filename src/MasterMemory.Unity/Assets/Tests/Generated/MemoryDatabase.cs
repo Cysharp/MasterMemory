@@ -55,12 +55,12 @@ namespace MasterMemory.Tests
             this.UserLevelTable = UserLevelTable;
         }
 
-        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
-            : base(databaseBinary, internString, formatterResolver)
+        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null, int maxDegreeOfParallelism = 1)
+            : base(databaseBinary, internString, formatterResolver, maxDegreeOfParallelism)
         {
         }
 
-        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
+        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
         {
             this.PersonModelTable = ExtractTableData<PersonModel, PersonModelTable>(header, databaseBinary, options, xs => new PersonModelTable(xs));
             this.QuestMasterTable = ExtractTableData<QuestMaster, QuestMasterTable>(header, databaseBinary, options, xs => new QuestMasterTable(xs));

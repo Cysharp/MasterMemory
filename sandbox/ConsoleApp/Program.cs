@@ -162,7 +162,7 @@ namespace ConsoleApp
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            AGAIN:
+        AGAIN:
             var nextSize = index + sizeHint;
             if (buffer.Length < nextSize)
             {
@@ -258,7 +258,7 @@ namespace ConsoleApp
             builder.AppendDynamic(table.DataType, tableData);
 
             var bin = builder.Build();
-            var database = new MemoryDatabase(bin);
+            var database = new MemoryDatabase(bin, maxDegreeOfParallelism: Environment.ProcessorCount);
         }
 
         static object ParseValue(Type type, string rawValue)

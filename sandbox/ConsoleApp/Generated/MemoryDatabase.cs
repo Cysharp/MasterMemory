@@ -48,12 +48,24 @@ namespace ConsoleApp
             this.Test2Table = Test2Table;
         }
 
-        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
-            : base(databaseBinary, internString, formatterResolver)
+        public MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null, int maxDegreeOfParallelism = 1)
+            : base(databaseBinary, internString, formatterResolver, maxDegreeOfParallelism)
         {
         }
 
-        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
+        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
+        {
+            if(maxDegreeOfParallelism == 1)
+            {
+                InitSequential(header, databaseBinary, options, maxDegreeOfParallelism);
+            }
+            else
+            {
+                InitParallel(header, databaseBinary, options, maxDegreeOfParallelism);
+            }
+        }
+
+        void InitSequential(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
         {
             this.EnumKeyTableTable = ExtractTableData<EnumKeyTable, EnumKeyTableTable>(header, databaseBinary, options, xs => new EnumKeyTableTable(xs));
             this.ItemTable = ExtractTableData<Item, ItemTable>(header, databaseBinary, options, xs => new ItemTable(xs));
@@ -62,6 +74,25 @@ namespace ConsoleApp
             this.QuestTable = ExtractTableData<Quest, QuestTable>(header, databaseBinary, options, xs => new QuestTable(xs));
             this.Test1Table = ExtractTableData<Test1, Test1Table>(header, databaseBinary, options, xs => new Test1Table(xs));
             this.Test2Table = ExtractTableData<Test2, Test2Table>(header, databaseBinary, options, xs => new Test2Table(xs));
+        }
+
+        void InitParallel(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
+        {
+            var extracts = new Action[]
+            {
+                () => this.EnumKeyTableTable = ExtractTableData<EnumKeyTable, EnumKeyTableTable>(header, databaseBinary, options, xs => new EnumKeyTableTable(xs)),
+                () => this.ItemTable = ExtractTableData<Item, ItemTable>(header, databaseBinary, options, xs => new ItemTable(xs)),
+                () => this.MonsterTable = ExtractTableData<Monster, MonsterTable>(header, databaseBinary, options, xs => new MonsterTable(xs)),
+                () => this.PersonTable = ExtractTableData<Person, PersonTable>(header, databaseBinary, options, xs => new PersonTable(xs)),
+                () => this.QuestTable = ExtractTableData<Quest, QuestTable>(header, databaseBinary, options, xs => new QuestTable(xs)),
+                () => this.Test1Table = ExtractTableData<Test1, Test1Table>(header, databaseBinary, options, xs => new Test1Table(xs)),
+                () => this.Test2Table = ExtractTableData<Test2, Test2Table>(header, databaseBinary, options, xs => new Test2Table(xs)),
+            };
+            
+            System.Threading.Tasks.Parallel.ForEach(extracts, new System.Threading.Tasks.ParallelOptions
+            {
+                MaxDegreeOfParallelism = maxDegreeOfParallelism
+            }, action => action.Invoke());
         }
 
         public ImmutableBuilder ToImmutableBuilder()
@@ -95,6 +126,8 @@ namespace ConsoleApp
             return builder;
         }
 
+#if !DISABLE_MASTERMEMORY_VALIDATOR
+
         public ValidateResult Validate()
         {
             var result = new ValidateResult();
@@ -127,6 +160,8 @@ namespace ConsoleApp
             return result;
         }
 
+#endif
+
         static MasterMemory.Meta.MetaDatabase metaTable;
 
         public static object GetTable(MemoryDatabase db, string tableName)
@@ -153,6 +188,8 @@ namespace ConsoleApp
             }
         }
 
+#if !DISABLE_MASTERMEMORY_METADATABASE
+
         public static MasterMemory.Meta.MetaDatabase GetMetaDatabase()
         {
             if (metaTable != null) return metaTable;
@@ -169,5 +206,7 @@ namespace ConsoleApp
             metaTable = new MasterMemory.Meta.MetaDatabase(dict);
             return metaTable;
         }
+
+#endif
     }
 }

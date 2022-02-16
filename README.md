@@ -24,6 +24,7 @@ Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity.
 - [Validator](#validator)
 - [Metadata](#metadata)
 - [Inheritance](#inheritance)
+- [Optimization](#optimization)
 - [Code Generator](#code-generator)
 - [License](#license)
 
@@ -369,7 +370,7 @@ In default, `MemoryDatabase` do all string data automatically interning(see: [Wi
 
 Use intern or not is selected in constructor. If you want to disable automatically interning, use `internString:false`.
 
-`MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)`.
+`MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null, int maxDegreeOfParallelism = 1)`.
 
 MemoryDatabase has three(or four) query methods.
 
@@ -882,6 +883,18 @@ public class BarTable : FooAndBarBase
     public override int Prop2 { get; protected set; }
 }
 ```
+
+Optimization
+---
+When invoking `new MemoryDatabase(byte[] databaseBinary...)`, read and construct database from binary. If binary size is large then construct performance will slow down. `MemoryDatabase` has `ctor(..., int maxDegreeOfParallelism = 1)` option in constructor to construct in parallel.
+
+```csharp
+var database = new MemoryDatabase(bin, maxDegreeOfParallelism: Environment.ProcessorCount);
+```
+
+The use of Parallel can greatly improve the construct performance. Recommend to use `Environment.ProcessorCount`.
+
+If you want to reduce code size of generated code, Validator and MetaDatabase info can omit in runtime. Generated code has two symbols `DISABLE_MASTERMEMORY_VALIDATOR` and `DISABLE_MASTERMEMORY_METADATABASE`.  By defining them, can be erased from the build code.
 
 Code Generator
 ---
