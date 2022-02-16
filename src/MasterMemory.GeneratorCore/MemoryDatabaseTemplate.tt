@@ -26,16 +26,43 @@ namespace <#= Namespace #>
 <# } #>
         }
 
-        public <#= ClassName #>(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null)
-            : base(databaseBinary, internString, formatterResolver)
+        public <#= ClassName #>(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null, int maxDegreeOfParallelism = 1)
+            : base(databaseBinary, internString, formatterResolver, maxDegreeOfParallelism)
         {
         }
 
-        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options)
+        protected override void Init(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
+        {
+            if(maxDegreeOfParallelism == 1)
+            {
+                InitSequential(header, databaseBinary, options, maxDegreeOfParallelism);
+            }
+            else
+            {
+                InitParallel(header, databaseBinary, options, maxDegreeOfParallelism);
+            }
+        }
+
+        void InitSequential(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
         {
 <# foreach(var item in GenerationContexts) { #>
             this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(xs));
 <# } #>
+        }
+
+        void InitParallel(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
+        {
+            var extracts = new Action[]
+            {
+<# foreach(var item in GenerationContexts) { #>
+                () => this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(xs)),
+<# } #>
+            };
+            
+            System.Threading.Tasks.Parallel.ForEach(extracts, new System.Threading.Tasks.ParallelOptions
+            {
+                MaxDegreeOfParallelism = maxDegreeOfParallelism
+            }, action => action.Invoke());
         }
 
         public <#= PrefixClassName #>ImmutableBuilder ToImmutableBuilder()
@@ -61,6 +88,8 @@ namespace <#= Namespace #>
             return builder;
         }
 
+#if !DISABLE_MASTERMEMORY_VALIDATOR
+
         public ValidateResult Validate()
         {
             var result = new ValidateResult();
@@ -79,6 +108,8 @@ namespace <#= Namespace #>
             return result;
         }
 
+#endif
+
         static MasterMemory.Meta.MetaDatabase metaTable;
 
         public static object GetTable(<#= ClassName #> db, string tableName)
@@ -94,6 +125,8 @@ namespace <#= Namespace #>
             }
         }
 
+#if !DISABLE_MASTERMEMORY_METADATABASE
+
         public static MasterMemory.Meta.MetaDatabase GetMetaDatabase()
         {
             if (metaTable != null) return metaTable;
@@ -106,5 +139,7 @@ namespace <#= Namespace #>
             metaTable = new MasterMemory.Meta.MetaDatabase(dict);
             return metaTable;
         }
+
+#endif
     }
 }

@@ -82,8 +82,14 @@ namespace ConsoleApp.Tables
 
         void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)
         {
+#if !DISABLE_MASTERMEMORY_VALIDATOR
+
             ValidateUniqueCore(data, primaryIndexSelector, "MonsterId", resultSet);       
+
+#endif
         }
+
+#if !DISABLE_MASTERMEMORY_METADATABASE
 
         public static MasterMemory.Meta.MetaTable CreateMetaTable()
         {
@@ -101,5 +107,6 @@ namespace ConsoleApp.Tables
                 });
         }
 
+#endif
     }
 }
