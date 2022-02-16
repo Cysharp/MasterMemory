@@ -112,9 +112,11 @@ namespace MasterMemory.Tests
 
             validateResult.IsValidationFailed.Should().BeTrue();
             validateResult.FailedResults.Count.Should().Be(3); // Q:1,4 + I:2
-            validateResult.FailedResults[0].Message.Should().Be("Unique failed: QuestId, value = 1");
-            validateResult.FailedResults[1].Message.Should().Be("Unique failed: QuestId, value = 4");
-            validateResult.FailedResults[2].Message.Should().Be("Unique failed: ItemId, value = 2");
+            var faileds = validateResult.FailedResults.OrderBy(x => x.Message).ToArray();
+
+            faileds[0].Message.Should().Be("Unique failed: ItemId, value = 2");
+            faileds[1].Message.Should().Be("Unique failed: QuestId, value = 1");
+            faileds[2].Message.Should().Be("Unique failed: QuestId, value = 4");
         }
 
         // test IValidator

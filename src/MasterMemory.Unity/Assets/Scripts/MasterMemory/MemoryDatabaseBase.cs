@@ -56,12 +56,6 @@ namespace MasterMemory
 
         protected abstract void Init(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, int maxDegreeOfParallelism);
 
-        void Hoge(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, int maxDegreeOfParallelism)
-        {
-            // this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(xs));
-
-        }
-
         public static TableInfo[] GetTableInfo(byte[] databaseBinary, bool storeTableData = true)
         {
             var formatter = new DictionaryFormatter<string, (int, int)>();
