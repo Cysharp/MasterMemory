@@ -24,6 +24,7 @@ Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity.
 - [Validator](#validator)
 - [Metadata](#metadata)
 - [Inheritance](#inheritance)
+- [Optimization](#optimization)
 - [Code Generator](#code-generator)
 - [License](#license)
 
