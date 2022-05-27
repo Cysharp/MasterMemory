@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>dotnet-mmgen</ToolCommandName>
