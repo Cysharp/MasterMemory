@@ -65,7 +65,7 @@ jobs:
         working-directory: src/MasterMemory.Unity
 
       # Store artifacts.
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
-          name: MasterMemory.Unity.unitypackage
-          path: ./src/MasterMemory.Unity/MasterMemory.Unity.unitypackage
+          name: MasterMemory.unitypackage-${{ matrix.unity }}.zip
+          path: ./src/MasterMemory.Unity/*.unitypackage
