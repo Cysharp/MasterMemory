@@ -20,6 +20,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>database, embedded, inmemory, unity</PackageTags>
         <RootNamespace>MasterMemory</RootNamespace>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
 </Project>

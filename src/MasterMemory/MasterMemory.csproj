@@ -21,6 +21,7 @@
         <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>database, embedded, inmemory, unity</PackageTags>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
