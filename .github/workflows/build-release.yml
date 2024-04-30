@@ -38,7 +38,7 @@ jobs:
       - run: dotnet build -c Release -p:Version=${{ inputs.tag }}
       - run: dotnet test -c Release --no-build -p:Version=${{ inputs.tag }}
       - run: dotnet pack -c Release --no-build -p:Version=${{ inputs.tag }} -o ./publish
-      - uses: actions/upload-artifact@v2
+      - uses: Cysharp/Actions/.github/actions/upload-artifact@main
         with:
           name: nuget
           path: ./publish
@@ -86,7 +86,7 @@ jobs:
           directory: src/MasterMemory.Unity
 
       # Store artifacts.
-      - uses: actions/upload-artifact@v2
+      - uses: Cysharp/Actions/.github/actions/upload-artifact@main
         with:
           name: MasterMemory.Unity.${{ inputs.tag }}.unitypackage
           path: ./src/MasterMemory.Unity/MasterMemory.Unity.${{ inputs.tag }}.unitypackage
