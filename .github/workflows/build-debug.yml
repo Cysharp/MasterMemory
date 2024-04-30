@@ -66,3 +66,4 @@ jobs:
         with:
           name: MasterMemory.${{ matrix.unity }}.unitypackage.zip
           path: ./src/MasterMemory.Unity/*.unitypackage
+          retention-days: 1

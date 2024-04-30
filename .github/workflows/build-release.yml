@@ -42,6 +42,7 @@ jobs:
         with:
           name: nuget
           path: ./publish
+          retention-days: 1
 
   build-unity:
     needs: [update-packagejson]
@@ -90,6 +91,7 @@ jobs:
         with:
           name: MasterMemory.Unity.${{ inputs.tag }}.unitypackage
           path: ./src/MasterMemory.Unity/MasterMemory.Unity.${{ inputs.tag }}.unitypackage
+          retention-days: 1
 
   # release
   create-release:
