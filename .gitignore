@@ -58,7 +58,7 @@ _ReSharper*
 *.ncrunch*
 .*crunch*.local.xml
 
-# Installshield output folder 
+# Installshield output folder
 [Ee]xpress
 
 # DocProject is a documentation generator add-in
@@ -119,18 +119,12 @@ nuget/tools/*
 *.nupkg
 
 .vs
+.vsconfig
 
 # Unity
 Library/
 Temp/
-src/MasterMemory.Unity/Assembly-CSharp-Editor.csproj
-
-src/MasterMemory.Unity/MasterMemory.csproj
-
-src/MasterMemory.Unity/MasterMemory.Tests.csproj
-
-src/MasterMemory.Unity/MasterMemory.Unity.sln
-
-src/MasterMemory.Unity/MessagePack.Annotations.csproj
-
-src/MasterMemory.Unity/MessagePack.csproj
+src/MasterMemory.Unity/[Uu]ser[Ss]ettings/
+src/MasterMemory.Unity/*.sln
+src/MasterMemory.Unity/*.csproj
+!src/MasterMemory.Unity/Packages/
