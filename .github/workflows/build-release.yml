@@ -63,6 +63,7 @@ jobs:
           UNITY_PASSWORD: "op://GitHubActionsPublic/UNITY_LICENSE/credential"
           UNITY_SERIAL: "op://GitHubActionsPublic/UNITY_LICENSE/serial"
 
+      - run: echo ${{ needs.update-packagejson.outputs.sha }}
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.update-packagejson.outputs.sha }}
