@@ -7,6 +7,7 @@
 		<Nullable>enable</Nullable>
 		<IsRoslynComponent>true</IsRoslynComponent>
 		<AnalyzerLanguage>cs</AnalyzerLanguage>
+		<RootNamespace>MasterMemory</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,5 +17,65 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+
+		<!-- TODO: remove it. -->
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.4.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.4.0" />
+		<PackageReference Include="System.CodeDom" Version="4.5.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="GeneratorCore\DatabaseBuilderTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>DatabaseBuilderTemplate.cs</LastGenOutput>
+		</None>
+		<None Update="GeneratorCore\ImmutableBuilderTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>ImmutableBuilderTemplate.cs</LastGenOutput>
+		</None>
+		<None Update="GeneratorCore\MemoryDatabaseTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>MemoryDatabaseTemplate.cs</LastGenOutput>
+		</None>
+		<None Update="GeneratorCore\MessagePackResolverTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>MessagePackResolverTemplate.cs</LastGenOutput>
+		</None>
+		<None Update="GeneratorCore\TableTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>TableTemplate.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="GeneratorCore\DatabaseBuilderTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>DatabaseBuilderTemplate.tt</DependentUpon>
+		</Compile>
+		<Compile Update="GeneratorCore\ImmutableBuilderTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ImmutableBuilderTemplate.tt</DependentUpon>
+		</Compile>
+		<Compile Update="GeneratorCore\MemoryDatabaseTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>MemoryDatabaseTemplate.tt</DependentUpon>
+		</Compile>
+		<Compile Update="GeneratorCore\MessagePackResolverTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>MessagePackResolverTemplate.tt</DependentUpon>
+		</Compile>
+		<Compile Update="GeneratorCore\TableTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TableTemplate.tt</DependentUpon>
+		</Compile>
 	</ItemGroup>
 </Project>

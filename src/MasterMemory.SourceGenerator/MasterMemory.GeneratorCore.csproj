@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.4.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.4.0" />
+        <PackageReference Include="System.CodeDom" Version="4.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="DatabaseBuilderTemplate.cs">
+            <DependentUpon>DatabaseBuilderTemplate.tt</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+        </Compile>
+        <Compile Update="ImmutableBuilderTemplate.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>ImmutableBuilderTemplate.tt</DependentUpon>
+        </Compile>
+        <Compile Update="MemoryDatabaseTemplate.cs">
+            <DependentUpon>MemoryDatabaseTemplate.tt</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+        </Compile>
+        <Compile Update="TableTemplate.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>TableTemplate.tt</DependentUpon>
+        </Compile>
+        <Compile Update="MessagePackResolverTemplate.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>MessagePackResolverTemplate.tt</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="DatabaseBuilderTemplate.tt">
+            <LastGenOutput>DatabaseBuilderTemplate.cs</LastGenOutput>
+            <Generator>TextTemplatingFilePreprocessor</Generator>
+        </None>
+        <None Update="ImmutableBuilderTemplate.tt">
+            <LastGenOutput>ImmutableBuilderTemplate.cs</LastGenOutput>
+            <Generator>TextTemplatingFilePreprocessor</Generator>
+        </None>
+        <None Update="MemoryDatabaseTemplate.tt">
+            <LastGenOutput>MemoryDatabaseTemplate.cs</LastGenOutput>
+            <Generator>TextTemplatingFilePreprocessor</Generator>
+        </None>
+        <None Update="TableTemplate.tt">
+            <LastGenOutput>TableTemplate.cs</LastGenOutput>
+            <Generator>TextTemplatingFilePreprocessor</Generator>
+        </None>
+        <None Update="MessagePackResolverTemplate.tt">
+            <LastGenOutput>MessagePackResolverTemplate.cs</LastGenOutput>
+            <Generator>TextTemplatingFilePreprocessor</Generator>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    </ItemGroup>
+
+</Project>
