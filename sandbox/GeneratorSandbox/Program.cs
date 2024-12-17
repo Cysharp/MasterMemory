@@ -49,7 +49,7 @@ public class Person
 }
 
 [MemoryTable("monster"), MessagePackObject(true)]
-public class Monster
+public partial class Monster
 {
     [PrimaryKey]
     public int MonsterId { get; private set; }

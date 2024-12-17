@@ -41,7 +41,7 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         // TODO:...
         // Input and Output is no needed.
         // prefix should be configurable?(to assemblyattribute)
-        // immutableconstructor
+        // remove immutableconstructor feature
         // returnnull
 
         // new CodeGenerator().GenerateFile(UsingNamespace, InputDirectory, OutputDirectory, PrefixClassName, AddImmutableConstructor, !ReturnNullIfKeyNotFound, ForceOverwrite, x => Console.WriteLine(x));
@@ -63,7 +63,7 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
             {
                 // TODO: RecordDeclaration
                 var classDecl = x.TargetNode as ClassDeclarationSyntax;
-                return CodeGenerator.CreateGenerationContext2(classDecl!);
+                return CodeGenerator.CreateGenerationContext(classDecl!);
             })
             .ToList();
 
@@ -85,7 +85,25 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         Log(WriteToFile(context, databaseTemplate.ClassName, databaseTemplate.TransformText()));
         Log(WriteToFile(context, resolverTemplate.ClassName, resolverTemplate.TransformText()));
 
-        // TODO:Modify of SourceGenerator.GenerateFile
+        // TODO: output table
+        //var tableDir = Path.Combine(outputDirectory, "Tables");
+        //if (!Directory.Exists(tableDir))
+        //{
+        //    Directory.CreateDirectory(tableDir);
+        //}
+
+        //foreach (var context in list)
+        //{
+        //    var template = new TableTemplate()
+        //    {
+        //        Namespace = usingNamespace,
+        //        GenerationContext = context,
+        //        Using = string.Join(Environment.NewLine, context.UsingStrings),
+        //        ThrowKeyIfNotFound = throwIfKeyNotFound
+        //    };
+
+        //    logger(WriteToFile(tableDir, context.ClassName + "Table", template.TransformText(), forceOverwrite));
+        //}
     }
 
     static void Log(string msg)
