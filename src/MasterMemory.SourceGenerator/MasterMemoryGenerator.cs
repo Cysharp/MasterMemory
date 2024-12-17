@@ -12,15 +12,6 @@ namespace MasterMemory.SourceGenerator;
 [Generator(LanguageNames.CSharp)]
 public partial class MasterMemoryGenerator : IIncrementalGenerator
 {
-    // TODO: property
-    public string? UsingNamespace { get; set; }
-    public string? InputDirectory { get; set; }
-    public string? OutputDirectory { get; set; }
-    public string? PrefixClassName { get; set; }
-    public bool AddImmutableConstructor { get; set; }
-    public bool ReturnNullIfKeyNotFound { get; set; } = true;
-    public bool ForceOverwrite { get; set; }
-
     //[Option("i", "Input file directory(search recursive).")]
     //string inputDirectory,
 
@@ -44,8 +35,6 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         // remove immutableconstructor feature
         // returnnull
 
-        // new CodeGenerator().GenerateFile(UsingNamespace, InputDirectory, OutputDirectory, PrefixClassName, AddImmutableConstructor, !ReturnNullIfKeyNotFound, ForceOverwrite, x => Console.WriteLine(x));
-
         var memoryTables = context.SyntaxProvider.ForAttributeWithMetadataName("MasterMemory.MemoryTableAttribute",
             (node, token) => true,
             (ctx, token) => ctx)
@@ -56,8 +45,9 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
 
     void EmitMemoryTable(SourceProductionContext context, ImmutableArray<GeneratorAttributeSyntaxContext> memoryTables)
     {
-        var usingNamespace = ""; // TODO:from option?
+        var usingNamespace = "FooBarBaz"; // TODO:from option?
         var prefixClassName = ""; // TODO
+        var throwIfKeyNotFound = false;
 
         var list = memoryTables.Select(x =>
             {
@@ -80,48 +70,38 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
         builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
 
-        Log(WriteToFile(context, builderTemplate.ClassName, builderTemplate.TransformText()));
-        Log(WriteToFile(context, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
-        Log(WriteToFile(context, databaseTemplate.ClassName, databaseTemplate.TransformText()));
-        Log(WriteToFile(context, resolverTemplate.ClassName, resolverTemplate.TransformText()));
+        Log(AddSource(context, builderTemplate.ClassName, builderTemplate.TransformText()));
+        Log(AddSource(context, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
+        Log(AddSource(context, databaseTemplate.ClassName, databaseTemplate.TransformText()));
+        Log(AddSource(context, resolverTemplate.ClassName, resolverTemplate.TransformText()));
 
-        // TODO: output table
-        //var tableDir = Path.Combine(outputDirectory, "Tables");
-        //if (!Directory.Exists(tableDir))
-        //{
-        //    Directory.CreateDirectory(tableDir);
-        //}
+        foreach (var generationContext in list)
+        {
+            var template = new TableTemplate()
+            {
+                Namespace = usingNamespace,
+                GenerationContext = generationContext,
+                Using = string.Join(Environment.NewLine, generationContext.UsingStrings),
+                ThrowKeyIfNotFound = throwIfKeyNotFound
+            };
 
-        //foreach (var context in list)
-        //{
-        //    var template = new TableTemplate()
-        //    {
-        //        Namespace = usingNamespace,
-        //        GenerationContext = context,
-        //        Using = string.Join(Environment.NewLine, context.UsingStrings),
-        //        ThrowKeyIfNotFound = throwIfKeyNotFound
-        //    };
-
-        //    logger(WriteToFile(tableDir, context.ClassName + "Table", template.TransformText(), forceOverwrite));
-        //}
+            Log(AddSource(context, generationContext.ClassName + "Table", template.TransformText()));
+        }
     }
 
-    static void Log(string msg)
-    {
-        Trace.WriteLine(msg);
-    }
+    static void Log(string msg) => Trace.WriteLine(msg);
 
-    static string NormalizeNewLines(string content)
-    {
-        // The T4 generated code may be text with mixed line ending types. (CR + CRLF)
-        // We need to normalize the line ending type in each Operating Systems. (e.g. Windows=CRLF, Linux/macOS=LF)
-        return content.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
-    }
-
-    static string WriteToFile(SourceProductionContext context, string fileName, string content)
+    static string AddSource(SourceProductionContext context, string fileName, string content)
     {
         var contentString = NormalizeNewLines(content);
         context.AddSource($"MasterMemory.{fileName}.g.cs", contentString);
         return $"Generate {fileName}.";
+
+        static string NormalizeNewLines(string content)
+        {
+            // The T4 generated code may be text with mixed line ending types. (CR + CRLF)
+            // We need to normalize the line ending type in each Operating Systems. (e.g. Windows=CRLF, Linux/macOS=LF)
+            return content.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
+        }
     }
 }

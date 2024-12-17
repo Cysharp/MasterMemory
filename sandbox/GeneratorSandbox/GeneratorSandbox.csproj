@@ -9,10 +9,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MessagePack" Version="3.1.0" />
+		<PackageReference Include="MessagePack" Version="3.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
