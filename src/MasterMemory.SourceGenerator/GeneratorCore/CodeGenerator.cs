@@ -115,7 +115,7 @@ namespace MasterMemory.GeneratorCore
         {
             var path = Path.Combine(directory, fileName + ".cs");
             var contentBytes = Encoding.UTF8.GetBytes(NormalizeNewLines(content));
-            
+
             // If the generated content is unchanged, skip the write.
             if (!forceOverwrite && File.Exists(path))
             {
@@ -196,7 +196,70 @@ namespace MasterMemory.GeneratorCore
             }
         }
 
-        (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax) ExtractPropertyAttribute(PropertyDeclarationSyntax property)
+        public static GenerationContext CreateGenerationContext2(ClassDeclarationSyntax classDecl)
+        {
+            var root = classDecl.SyntaxTree.GetRoot();
+
+            var ns = root.DescendantNodes().OfType<NamespaceDeclarationSyntax>()
+                .Select(x => "using " + x.Name.ToFullStringTrim() + ";")
+                .ToArray();
+
+            var usingStrings = root.DescendantNodes()
+                .OfType<UsingDirectiveSyntax>()
+                .Select(x => x.ToFullString().Trim())
+                .Concat(new[] { "using MasterMemory", "using MasterMemory.Validation", "using System", "using System.Collections.Generic" })
+                .Concat(ns)
+                .Select(x => x.Trim(';') + ";")
+                .Distinct()
+                .OrderBy(x => x, StringComparer.Ordinal)
+                .ToArray();
+
+            var context = new GenerationContext();
+
+            foreach (var attr in classDecl.AttributeLists.SelectMany(x => x.Attributes))
+            {
+                var attrName = attr.Name.ToFullString().Trim();
+                if (attrName == "MemoryTable" || attrName == "MasterMemory.Annotations.MemoryTable")
+                {
+                    context.ClassName = classDecl.Identifier.ToFullString().Trim();
+                    context.MemoryTableName = AttributeExpressionToString(attr.ArgumentList.Arguments[0].Expression) ?? context.ClassName;
+
+                    var members = classDecl.Members.OfType<PropertyDeclarationSyntax>()
+                        .Select(x => ExtractPropertyAttribute(x))
+                        .ToArray();
+
+                    var primaryKey = AggregatePrimaryKey(members.Where(x => x.Item1 != null).Select(x => x.Item1));
+                    if (primaryKey.Properties.Length == 0)
+                    {
+                        throw new InvalidOperationException("MemoryTable does not found PrimaryKey property, Type:" + context.ClassName);
+                    }
+
+                    var secondaryKeys = members.SelectMany(x => x.Item2).GroupBy(x => x.IndexNo).Select(x => AggregateSecondaryKey(x)).ToArray();
+                    var properties = members.Where(x => x.Item3 != null).Select(x => new Property
+                    {
+                        Type = x.Item3.Type.ToFullStringTrim(),
+                        Name = x.Item3.Identifier.Text,
+                    }).ToArray();
+
+                    context.PrimaryKey = primaryKey;
+                    context.SecondaryKeys = secondaryKeys;
+                    context.Properties = properties;
+                }
+            }
+
+            if (context.PrimaryKey != null)
+            {
+                context.UsingStrings = usingStrings;
+                context.OriginalClassDeclaration = classDecl;
+                // context.InputFilePath = filePath;
+                return context;
+            }
+
+            return null!; // if null????
+        }
+
+
+        static (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax) ExtractPropertyAttribute(PropertyDeclarationSyntax property)
         {
             // Attribute Parterns:
             // Primarykey(keyOrder = 0)
@@ -309,7 +372,7 @@ namespace MasterMemory.GeneratorCore
             return (resultPrimaryKey, secondaryKeys, isSerializableProperty ? property : null);
         }
 
-        PrimaryKey AggregatePrimaryKey(IEnumerable<PrimaryKey> primaryKeys)
+        static PrimaryKey AggregatePrimaryKey(IEnumerable<PrimaryKey> primaryKeys)
         {
             var primarykey = new PrimaryKey();
             var list = new List<KeyProperty>();
@@ -328,7 +391,7 @@ namespace MasterMemory.GeneratorCore
         }
 
         // grouped by IndexNo.
-        SecondaryKey AggregateSecondaryKey(IGrouping<int, SecondaryKey> secondaryKeys)
+        static SecondaryKey AggregateSecondaryKey(IGrouping<int, SecondaryKey> secondaryKeys)
         {
             var secondaryKey = new SecondaryKey();
             secondaryKey.IndexNo = secondaryKeys.Key;
