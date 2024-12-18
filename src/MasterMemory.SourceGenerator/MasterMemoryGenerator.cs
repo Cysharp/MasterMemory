@@ -1,65 +1,74 @@
 ﻿using MasterMemory.GeneratorCore;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace MasterMemory.SourceGenerator;
 
 [Generator(LanguageNames.CSharp)]
 public partial class MasterMemoryGenerator : IIncrementalGenerator
 {
-    //[Option("i", "Input file directory(search recursive).")]
-    //string inputDirectory,
-
-    //   [Option("o", "Output file directory.")]string outputDirectory,
-
-    //   [Option("n", "Namespace of generated files.")]string usingNamespace,
-
-    //   [Option("p", "Prefix of class names.")]string prefixClassName = "",
-
-    //   [Option("c", "Add immutable constructor to MemoryTable class.")]bool addImmutableConstructor = false,
-
-    //   [Option("t", "Return null if key not found on unique find method.")]bool returnNullIfKeyNotFound = false,
-
-    //   [Option("f", "Overwrite generated files if the content is unchanged.")]bool forceOverwrite = false)
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // TODO:...
-        // Input and Output is no needed.
-        // prefix should be configurable?(to assemblyattribute)
-        // remove immutableconstructor feature
-        // returnnull
+        context.RegisterPostInitializationOutput(MasterMemoryGeneratorOptions.EmitAttribute);
+
+        var namespaceProvider = context.AnalyzerConfigOptionsProvider.Select((x, _) =>
+            {
+                x.GlobalOptions.TryGetValue("build_property.RootNamespace", out var defaultNamespace);
+                return defaultNamespace;
+            })
+            .WithTrackingName("MasterMemory.AnalyzerConfig");
+
+        var generatorOptions = context.CompilationProvider.Select((compilation, _) =>
+            {
+                foreach (var attr in compilation.Assembly.GetAttributes())
+                {
+                    if (attr.AttributeClass?.Name == "MasterMemoryGeneratorOptionsAttribute")
+                    {
+                        return MasterMemoryGeneratorOptions.FromAttribute(attr);
+                    }
+                }
+
+                return default;
+            })
+            .WithTrackingName("MasterMemory.CompilationProvider");
 
         var memoryTables = context.SyntaxProvider.ForAttributeWithMetadataName("MasterMemory.MemoryTableAttribute",
             (node, token) => true,
-            (ctx, token) => ctx)
-            .Collect();
+            (ctx, token) =>
+            {
+                // class or record
+                var classDecl = ctx.TargetNode as TypeDeclarationSyntax;
+                var context = CodeGenerator.CreateGenerationContext(classDecl!);
+                return context;
+            })
+            .WithTrackingName("MasterMemory.SyntaxProvider.0_ForAttributeWithMetadataName")
+            .Collect()
+            .Select((xs, _) =>
+            {
+                var array = xs.ToArray();
+                Array.Sort(array, (a, b) => string.Compare(a.ClassName, b.ClassName, StringComparison.Ordinal));
+                return new EquatableArray<GenerationContext>(array);
+            })
+            .WithTrackingName("MasterMemory.SyntaxProvider.1_CollectAndSelect");
 
-        context.RegisterSourceOutput(memoryTables, EmitMemoryTable);
+        var allCombined = memoryTables
+            .Combine(namespaceProvider)
+            .Combine(generatorOptions)
+            .WithTrackingName("MasterMemory.SyntaxProvider.2_AllCombined");
+
+        context.RegisterSourceOutput(allCombined, EmitMemoryTable);
     }
 
-    void EmitMemoryTable(SourceProductionContext context, ImmutableArray<GeneratorAttributeSyntaxContext> memoryTables)
+    void EmitMemoryTable(SourceProductionContext context, ((EquatableArray<GenerationContext>, string?), MasterMemoryGeneratorOptions) value)
     {
-        var usingNamespace = "FooBarBaz"; // TODO:from option?
-        var prefixClassName = ""; // TODO
-        var throwIfKeyNotFound = false;
+        var ((memoryTables, defaultNamespace), generatorOptions) = value;
 
-        var list = memoryTables.Select(x =>
-            {
-                // TODO: RecordDeclaration
-                var classDecl = x.TargetNode as ClassDeclarationSyntax;
-                return CodeGenerator.CreateGenerationContext(classDecl!);
-            })
-            .ToList();
+        var usingNamespace = generatorOptions.Namespace ?? defaultNamespace ?? "MasterMemory";
+        var prefixClassName = generatorOptions.PrefixClassName ?? "";
+        var throwIfKeyNotFound = !generatorOptions.IsReturnNullIfKeyNotFound; // becareful, reverse!
 
-        list.Sort((a, b) => string.Compare(a.ClassName, b.ClassName, StringComparison.Ordinal));
-
-        var usingStrings = string.Join(Environment.NewLine, list.SelectMany(x => x.UsingStrings).Distinct().OrderBy(x => x, StringComparer.Ordinal));
+        var usingStrings = string.Join(Environment.NewLine, memoryTables.SelectMany(x => x.UsingStrings).Distinct().OrderBy(x => x, StringComparer.Ordinal));
 
         var builderTemplate = new DatabaseBuilderTemplate();
         var databaseTemplate = new MemoryDatabaseTemplate();
@@ -68,14 +77,14 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
         builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
         builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
-        builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = list.ToArray();
+        builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = memoryTables.ToArray();
 
         Log(AddSource(context, builderTemplate.ClassName, builderTemplate.TransformText()));
         Log(AddSource(context, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
         Log(AddSource(context, databaseTemplate.ClassName, databaseTemplate.TransformText()));
         Log(AddSource(context, resolverTemplate.ClassName, resolverTemplate.TransformText()));
 
-        foreach (var generationContext in list)
+        foreach (var generationContext in memoryTables)
         {
             var template = new TableTemplate()
             {

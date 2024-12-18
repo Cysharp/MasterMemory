@@ -8,7 +8,7 @@ namespace MasterMemory.GeneratorCore
 {
     public static class CodeGenerator
     {
-        public static GenerationContext CreateGenerationContext(ClassDeclarationSyntax classDecl)
+        public static GenerationContext CreateGenerationContext(TypeDeclarationSyntax classDecl)
         {
             var root = classDecl.SyntaxTree.GetRoot();
 
@@ -63,11 +63,11 @@ namespace MasterMemory.GeneratorCore
             {
                 context.UsingStrings = usingStrings;
                 context.OriginalClassDeclaration = classDecl;
-                // context.InputFilePath = filePath;
                 return context;
             }
 
-            return null!; // if null????
+            // If primary key not found, validate from another place.
+            throw new InvalidOperationException("PrimaryKey not found.");
         }
 
 

@@ -6,33 +6,32 @@ using System.Linq;
 namespace MasterMemory.GeneratorCore
 {
 
-    public class GenerationContext
+    public record GenerationContext
     {
         public string ClassName { get; set; }
         public string MemoryTableName { get; set; }
-        public string[] UsingStrings { get; set; }
+        public EquatableArray<string> UsingStrings { get; set; }
         public PrimaryKey PrimaryKey { get; set; }
-        public SecondaryKey[] SecondaryKeys { get; set; }
+        public EquatableArray<SecondaryKey> SecondaryKeys { get; set; }
 
-        public string InputFilePath { get; set; }
-        public ClassDeclarationSyntax OriginalClassDeclaration { get; set; }
+        // public string InputFilePath { get; set; }
+        public IgnoreEquality<TypeDeclarationSyntax> OriginalClassDeclaration { get; set; }
 
-        public Property[] Properties { get; set; }
-        public KeyBase[] Keys => new KeyBase[] { PrimaryKey }.Concat(SecondaryKeys).ToArray();
-
+        public EquatableArray<Property> Properties { get; set; }
+        public EquatableArray<KeyBase> Keys => new KeyBase[] { PrimaryKey }.Concat(SecondaryKeys).ToArray();
     }
 
-    public class Property
+    public record Property
     {
         public string Type { get; set; }
         public string Name { get; set; }
     }
 
-    public abstract class KeyBase
+    public abstract record KeyBase
     {
         public bool IsNonUnique { get; set; }
         public string StringComparisonOption { get; set; }
-        public KeyProperty[] Properties { get; set; }
+        public EquatableArray<KeyProperty> Properties { get; set; }
         public abstract string SelectorName { get; }
         public abstract string TableName { get; }
         public abstract bool IsPrimary { get; }
@@ -198,14 +197,14 @@ namespace MasterMemory.GeneratorCore
         }
     }
 
-    public class PrimaryKey : KeyBase
+    public record PrimaryKey : KeyBase
     {
         public override string SelectorName => "primaryIndexSelector";
         public override string TableName => "data";
         public override bool IsPrimary => true;
     }
 
-    public class SecondaryKey : KeyBase
+    public record SecondaryKey : KeyBase
     {
         public int IndexNo { get; set; }
         public override string SelectorName => $"secondaryIndex{IndexNo}Selector";
@@ -213,7 +212,7 @@ namespace MasterMemory.GeneratorCore
         public override bool IsPrimary => false;
     }
 
-    public class KeyProperty
+    public record KeyProperty
     {
         public int KeyOrder { get; set; }
         public string Name { get; set; }

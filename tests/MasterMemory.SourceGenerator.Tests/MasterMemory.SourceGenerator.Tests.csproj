@@ -16,6 +16,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\src\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
+	  <ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Using Include="Xunit" />
 		<Using Include="FluentAssertions" />
 	</ItemGroup>
