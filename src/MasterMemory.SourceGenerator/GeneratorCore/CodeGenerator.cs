@@ -6,10 +6,45 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MasterMemory.GeneratorCore
 {
-    public static class CodeGenerator
+    internal static class CodeGenerator
     {
-        public static GenerationContext CreateGenerationContext(TypeDeclarationSyntax classDecl)
+        // return GenerationContext?
+        public static GenerationContext CreateGenerationContext(TypeDeclarationSyntax classDecl, AttributeData memoryTableAttribute, DiagnosticReporter reporter)
         {
+            var context = new GenerationContext();
+
+            context.ClassName = classDecl.Identifier.ToFullString().Trim();
+            context.MemoryTableName = memoryTableAttribute.ConstructorArguments[0].Value as string ?? context.ClassName;
+
+            var hasError = false;
+            var members = classDecl.Members.OfType<PropertyDeclarationSyntax>()
+                .Select(x =>
+                {
+                    var prop = ExtractPropertyAttribute(x, reporter);
+                    if (prop == null)
+                    {
+                        hasError = true;
+                        return default!;
+                    }
+                    return prop.Value;
+                })
+                .ToArray();
+            if (hasError) return null;
+
+            var primaryKey = AggregatePrimaryKey(members.Where(x => x.Item1 != null).Select(x => x.Item1));
+            if (primaryKey.Properties.Length == 0)
+            {
+                reporter.ReportDiagnostic(DiagnosticDescriptors.RequirePrimaryKey, classDecl.Identifier.GetLocation(), context.ClassName);
+                return null;
+            }
+
+            var secondaryKeys = members.SelectMany(x => x.Item2).GroupBy(x => x.IndexNo).Select(x => AggregateSecondaryKey(x)).ToArray();
+            var properties = members.Where(x => x.Item3 != null).Select(x => new Property
+            {
+                Type = x.Item3.Type.ToFullStringTrim(),
+                Name = x.Item3.Identifier.Text,
+            }).ToArray();
+
             var root = classDecl.SyntaxTree.GetRoot();
 
             var ns = root.DescendantNodes().OfType<NamespaceDeclarationSyntax>()
@@ -26,52 +61,16 @@ namespace MasterMemory.GeneratorCore
                 .OrderBy(x => x, StringComparer.Ordinal)
                 .ToArray();
 
-            var context = new GenerationContext();
-
-            foreach (var attr in classDecl.AttributeLists.SelectMany(x => x.Attributes))
-            {
-                var attrName = attr.Name.ToFullString().Trim();
-                if (attrName == "MemoryTable" || attrName == "MasterMemory.Annotations.MemoryTable")
-                {
-                    context.ClassName = classDecl.Identifier.ToFullString().Trim();
-                    context.MemoryTableName = AttributeExpressionToString(attr.ArgumentList.Arguments[0].Expression) ?? context.ClassName;
-
-                    var members = classDecl.Members.OfType<PropertyDeclarationSyntax>()
-                        .Select(x => ExtractPropertyAttribute(x))
-                        .ToArray();
-
-                    var primaryKey = AggregatePrimaryKey(members.Where(x => x.Item1 != null).Select(x => x.Item1));
-                    if (primaryKey.Properties.Length == 0)
-                    {
-                        throw new InvalidOperationException("MemoryTable does not found PrimaryKey property, Type:" + context.ClassName);
-                    }
-
-                    var secondaryKeys = members.SelectMany(x => x.Item2).GroupBy(x => x.IndexNo).Select(x => AggregateSecondaryKey(x)).ToArray();
-                    var properties = members.Where(x => x.Item3 != null).Select(x => new Property
-                    {
-                        Type = x.Item3.Type.ToFullStringTrim(),
-                        Name = x.Item3.Identifier.Text,
-                    }).ToArray();
-
-                    context.PrimaryKey = primaryKey;
-                    context.SecondaryKeys = secondaryKeys;
-                    context.Properties = properties;
-                }
-            }
-
-            if (context.PrimaryKey != null)
-            {
-                context.UsingStrings = usingStrings;
-                context.OriginalClassDeclaration = classDecl;
-                return context;
-            }
-
-            // If primary key not found, validate from another place.
-            throw new InvalidOperationException("PrimaryKey not found.");
+            context.PrimaryKey = primaryKey;
+            context.SecondaryKeys = secondaryKeys;
+            context.Properties = properties;
+            context.UsingStrings = usingStrings;
+            context.OriginalClassDeclaration = classDecl;
+            return context;
         }
 
 
-        static (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax) ExtractPropertyAttribute(PropertyDeclarationSyntax property)
+        static (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax)? ExtractPropertyAttribute(PropertyDeclarationSyntax property, DiagnosticReporter reporter)
         {
             // Attribute Parterns:
             // Primarykey(keyOrder = 0)
@@ -96,7 +95,9 @@ namespace MasterMemory.GeneratorCore
                     {
                         if (resultPrimaryKey != null)
                         {
-                            throw new InvalidOperationException("Duplicate PrimaryKey:" + property.Type.ToFullString() + "." + property.Identifier.ToFullString());
+                            // PrimaryKey is AllowMultiple:false so this code is dead
+                            reporter.ReportDiagnostic(DiagnosticDescriptors.DuplicatePrimaryKey, property.Identifier.GetLocation(), property.Type.ToFullString(), property.Identifier.ToFullString());
+                            return null;
                         }
 
                         primaryKey = new PrimaryKey();
@@ -117,7 +118,8 @@ namespace MasterMemory.GeneratorCore
                     {
                         if (secondaryKey != null)
                         {
-                            throw new InvalidOperationException("Duplicate SecondaryKey, doesn't allow to add multiple attribute in same attribute list:" + property.Type.ToFullString() + "." + property.Identifier.ToFullString());
+                            reporter.ReportDiagnostic(DiagnosticDescriptors.DuplicateSecondaryKey, property.Identifier.GetLocation(), property.Type.ToFullString(), property.Identifier.ToFullString());
+                            return null;
                         }
 
                         secondaryKey = new SecondaryKey();
@@ -220,28 +222,6 @@ namespace MasterMemory.GeneratorCore
 
             secondaryKey.Properties = list.OrderBy(x => x.KeyOrder).ToArray();
             return secondaryKey;
-        }
-
-        static string AttributeExpressionToString(ExpressionSyntax expression)
-        {
-            if (expression is InvocationExpressionSyntax ie)
-            {
-                var expr = ie.ArgumentList.Arguments.Last().Expression;
-                if (expr is MemberAccessExpressionSyntax mae)
-                {
-                    return mae.Name?.ToString();
-                }
-                else if (expr is IdentifierNameSyntax inx)
-                {
-                    return inx.Identifier.ValueText;
-                }
-                return null;
-            }
-            else if (expression is LiteralExpressionSyntax le)
-            {
-                return le.Token.ValueText;
-            }
-            return null;
         }
     }
 

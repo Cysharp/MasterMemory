@@ -35,20 +35,25 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
 
         var memoryTables = context.SyntaxProvider.ForAttributeWithMetadataName("MasterMemory.MemoryTableAttribute",
             (node, token) => true,
-            (ctx, token) =>
-            {
-                // class or record
-                var classDecl = ctx.TargetNode as TypeDeclarationSyntax;
-                var context = CodeGenerator.CreateGenerationContext(classDecl!);
-                return context;
-            })
+            (ctx, token) => ctx)
             .WithTrackingName("MasterMemory.SyntaxProvider.0_ForAttributeWithMetadataName")
             .Collect()
             .Select((xs, _) =>
             {
-                var array = xs.ToArray();
-                Array.Sort(array, (a, b) => string.Compare(a.ClassName, b.ClassName, StringComparison.Ordinal));
-                return new EquatableArray<GenerationContext>(array);
+                var list = new List<GenerationContext>();
+                var reporter = new DiagnosticReporter();
+                foreach (var ctx in xs)
+                {
+                    var memoryTableAttr = ctx.Attributes[0]; // AllowMultiple=false
+                    var classDecl = ctx.TargetNode as TypeDeclarationSyntax; // class or record
+                    var context = CodeGenerator.CreateGenerationContext(classDecl!, memoryTableAttr, reporter);
+                    if (context != null)
+                    {
+                        list.Add(context);
+                    }
+                }
+                list.Sort((a, b) => string.Compare(a.ClassName, b.ClassName, StringComparison.Ordinal));
+                return (reporter, new EquatableArray<GenerationContext>(list.ToArray()));
             })
             .WithTrackingName("MasterMemory.SyntaxProvider.1_CollectAndSelect");
 
@@ -60,9 +65,10 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(allCombined, EmitMemoryTable);
     }
 
-    void EmitMemoryTable(SourceProductionContext context, ((EquatableArray<GenerationContext>, string?), MasterMemoryGeneratorOptions) value)
+    void EmitMemoryTable(SourceProductionContext context, (((DiagnosticReporter, EquatableArray<GenerationContext>), string?), MasterMemoryGeneratorOptions) value)
     {
-        var ((memoryTables, defaultNamespace), generatorOptions) = value;
+        var (((diagnostic, memoryTables), defaultNamespace), generatorOptions) = value;
+        diagnostic.ReportToContext(context);
 
         var usingNamespace = generatorOptions.Namespace ?? defaultNamespace ?? "MasterMemory";
         var prefixClassName = generatorOptions.PrefixClassName ?? "";

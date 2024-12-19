@@ -12,9 +12,12 @@ Console.WriteLine("Hello, World!");
 
 
 
-
-
-
+[MemoryTable("mytakoyaki")]
+public class MyTakoyaki
+{
+    [PrimaryKey]
+    public int Id { get; set; }
+}
 
 
 public enum Gender

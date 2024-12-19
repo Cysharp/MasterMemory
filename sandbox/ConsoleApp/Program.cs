@@ -10,8 +10,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 
-[assembly: MasterMemoryGeneratorOptions(
-    Namespace = "ConsoleApp")]
+//[assembly: MasterMemoryGeneratorOptions(
+//    Namespace = "ConsoleApp")]
 
 [MemoryTable("quest_master"), MessagePackObject(true)]
 public class Quest : IValidatable<Quest>
