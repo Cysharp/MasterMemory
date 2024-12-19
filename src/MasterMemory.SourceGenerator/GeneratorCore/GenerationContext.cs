@@ -94,6 +94,11 @@ namespace MasterMemory.GeneratorCore
             return IsNonUnique ? "RangeView<" + elementName + ">" : elementName;
         }
 
+        public string BuildReturnTypeNameForClosest(string elementName)
+        {
+            return IsNonUnique ? "RangeView<" + elementName + ">" : elementName + "?";
+        }
+
         public string BuildComparer()
         {
             if (!IsStringType)

@@ -98,7 +98,7 @@ namespace <#= Namespace #>.Tables
 <# } #>
 <# } #>
 
-        public <#= item.BuildReturnTypeName(GenerationContext.ClassName) #>? FindClosestBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key, bool selectLower = true)
+        public <#= item.BuildReturnTypeNameForClosest(GenerationContext.ClassName) #> FindClosestBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key, bool selectLower = true)
         {
             return <#= item.BuildFindPrefix() #>ClosestCore(<#= item.TableName #>, <#= item.SelectorName #>, <#= item.BuildComparer() #>, key, selectLower);
         }

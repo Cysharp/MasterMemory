@@ -199,8 +199,8 @@ namespace MasterMemory.GeneratorCore
  } 
  } 
             this.Write("\r\n        public ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeName(GenerationContext.ClassName)));
-            this.Write("? FindClosestBy");
+            this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildReturnTypeNameForClosest(GenerationContext.ClassName)));
+            this.Write(" FindClosestBy");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildMethodName()));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.BuildTypeName()));
