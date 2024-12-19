@@ -31,21 +31,21 @@ namespace MasterMemory.Validation
         {
             var newNameParameter = Expression.Parameter(typeof(T), "this");
             var newExpression = new ExpressionParameterNameModifier(predicate.Parameters[0], newNameParameter).Visit(predicate);
-            return (newExpression as Expression<Func<T, bool>>).Body.ToString();
+            return (newExpression as Expression<Func<T, bool>>)!.Body.ToString();
         }
 
         public static string ToSpaceBodyString<T, TProperty>(this Expression<Func<T, TProperty>> selector)
         {
             var newNameParameter = Expression.Parameter(typeof(T), " ");
             var newExpression = new ExpressionParameterNameModifier(selector.Parameters[0], newNameParameter).Visit(selector);
-            return (newExpression as Expression<Func<T, TProperty>>).Body.ToString();
+            return (newExpression as Expression<Func<T, TProperty>>)!.Body.ToString();
         }
 
         public static string ToNameBodyString<T, TProperty>(this Expression<Func<T, TProperty>> selector, string newName)
         {
             var newNameParameter = Expression.Parameter(typeof(T), newName);
             var newExpression = new ExpressionParameterNameModifier(selector.Parameters[0], newNameParameter).Visit(selector);
-            return (newExpression as Expression<Func<T, TProperty>>).Body.ToString();
+            return (newExpression as Expression<Func<T, TProperty>>)!.Body.ToString();
         }
     }
 }

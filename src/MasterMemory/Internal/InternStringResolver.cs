@@ -5,7 +5,7 @@ using System;
 namespace MasterMemory.Internal
 {
 #pragma warning disable MsgPack013 // Inaccessible formatter
-    internal class InternStringResolver : IFormatterResolver, IMessagePackFormatter<string>
+    internal class InternStringResolver : IFormatterResolver, IMessagePackFormatter<string?>
     {
         readonly IFormatterResolver innerResolver;
 
@@ -14,7 +14,7 @@ namespace MasterMemory.Internal
             this.innerResolver = innerResolver;
         }
 
-        public IMessagePackFormatter<T> GetFormatter<T>()
+        public IMessagePackFormatter<T>? GetFormatter<T>()
         {
             if (typeof(T) == typeof(string))
             {
@@ -24,7 +24,7 @@ namespace MasterMemory.Internal
             return innerResolver.GetFormatter<T>();
         }
 
-        string IMessagePackFormatter<string>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        string? IMessagePackFormatter<string?>.Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             var str = reader.ReadString();
             if (str == null)
@@ -35,7 +35,7 @@ namespace MasterMemory.Internal
             return string.Intern(str);
         }
 
-        void IMessagePackFormatter<string>.Serialize(ref MessagePackWriter writer, string value, MessagePackSerializerOptions options)
+        void IMessagePackFormatter<string?>.Serialize(ref MessagePackWriter writer, string? value, MessagePackSerializerOptions options)
         {
             throw new NotImplementedException();
         }

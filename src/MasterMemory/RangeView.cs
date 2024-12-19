@@ -6,9 +6,9 @@ namespace MasterMemory
 {
     public readonly struct RangeView<T> : IEnumerable<T>, IReadOnlyList<T>, IList<T>
     {
-        public static RangeView<T> Empty => new RangeView<T>( null, -1, -1, false ); 
+        public static RangeView<T> Empty => new RangeView<T>(null, -1, -1, false);
 
-        readonly T[] orderedData;
+        readonly T[]? orderedData;
         readonly int left;
         readonly int right;
         readonly bool ascendant;
@@ -35,18 +35,18 @@ namespace MasterMemory
 
                 if (ascendant)
                 {
-                    return orderedData[left + index];
+                    return orderedData![left + index];
                 }
                 else
                 {
-                    return orderedData[right - index];
+                    return orderedData![right - index];
                 }
             }
         }
 
-        public RangeView(T[] orderedData, int left, int right, bool ascendant)
+        public RangeView(T[]? orderedData, int left, int right, bool ascendant)
         {
-            this.hasValue = (orderedData != null ) && (orderedData.Length != 0) && (left <= right); // same index is length = 1            this.orderedData = orderedData;
+            this.hasValue = (orderedData != null) && (orderedData.Length != 0) && (left <= right); // same index is length = 1            this.orderedData = orderedData;
             this.orderedData = orderedData;
             this.left = left;
             this.right = right;

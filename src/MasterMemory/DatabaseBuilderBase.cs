@@ -14,9 +14,9 @@ namespace MasterMemory
 
         // TableName, (Offset, Count)
         readonly Dictionary<string, (int offset, int count)> header = new Dictionary<string, (int offset, int count)>();
-        readonly MessagePackSerializerOptions options;
+        readonly MessagePackSerializerOptions? options;
 
-        public DatabaseBuilderBase(MessagePackSerializerOptions options)
+        public DatabaseBuilderBase(MessagePackSerializerOptions? options)
         {
             // options keep null to lazily use default options
             if (options != null)
@@ -25,7 +25,7 @@ namespace MasterMemory
             }
         }
 
-        public DatabaseBuilderBase(IFormatterResolver resolver)
+        public DatabaseBuilderBase(IFormatterResolver? resolver)
         {
             if (resolver != null)
             {
@@ -79,8 +79,8 @@ namespace MasterMemory
             }
             else
             {
-                var array = new ExpandableArray<TElement>(null);
-                var sortSource = new ExpandableArray<TKey>(null);
+                var array = new ExpandableArray<TElement>(null!);
+                var sortSource = new ExpandableArray<TKey>(null!);
                 foreach (var item in datasource)
                 {
                     array.Add(item);

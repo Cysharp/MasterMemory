@@ -3,6 +3,7 @@ using MessagePack;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,8 +11,19 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 
-//[assembly: MasterMemoryGeneratorOptions(
-//    Namespace = "ConsoleApp")]
+[assembly: MasterMemoryGeneratorOptions(
+    Namespace = "ConsoleApp",
+    IsReturnNullIfKeyNotFound = true
+    )]
+
+public class FooItem
+{
+    public bool TryFindByItemId(int key, out Item result)
+    {
+        result = default!;
+        return true;
+    }
+}
 
 [MemoryTable("quest_master"), MessagePackObject(true)]
 public class Quest : IValidatable<Quest>

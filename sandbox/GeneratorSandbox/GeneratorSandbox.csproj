@@ -12,6 +12,12 @@
 		<PackageReference Include="MessagePack" Version="3.1.0" />
 	</ItemGroup>
 
+	<!-- for testing... -->
+	<!--<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(ProjectDir).\Generated</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>-->
+
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />

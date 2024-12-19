@@ -4,7 +4,8 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<RootNamespace>MasterMemory</RootNamespace>
 		<AssemblyName>MasterMemory</AssemblyName>
-
+		<LangVersion>13</LangVersion>
+		<Nullable>enable</Nullable>
 		<OutputType>Library</OutputType>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Company>Cysharp</Company>
