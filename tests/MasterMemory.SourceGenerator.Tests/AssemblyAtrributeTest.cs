@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit.Abstractions;
-
-namespace MasterMemory.SourceGenerator.Tests;
+﻿namespace MasterMemory.SourceGenerator.Tests;
 
 public class AssemblyAtrributeTest(ITestOutputHelper outputHelper) : TestBase(outputHelper)
 {
@@ -21,19 +14,25 @@ public class Item
 }
 """);
 
+        codes.TryGetValue("MasterMemory.DatabaseBuilder.g.cs", out _).Should().BeTrue();
 
+        var mainCode = codes["MasterMemory.ItemTable.g.cs"];
+        WriteLine(mainCode);
 
+        mainCode.Should().Contain("namespace MasterMemory.Tables");
+        mainCode.Should().Contain("return ThrowKeyNotFound(key);");
+        mainCode.Should().Contain("public sealed partial class ItemTable");
     }
 
 
     [Fact]
-    public void PrefixClassNameChange()
+    public void FullOptions()
     {
         var codes = Helper.GenerateCode("""
 [assembly: MasterMemoryGeneratorOptions(
-    Namespace = "",
+    Namespace = "MyNamespace",
     IsReturnNullIfKeyNotFound = true,
-    PrefixClassName = "foo")]
+    PrefixClassName = "FooBarBaz")]
 
 [MemoryTable("item")]
 public class Item
@@ -42,5 +41,14 @@ public class Item
     public int ItemId { get; set; }
 }
 """);
+
+        codes.TryGetValue("MasterMemory.FooBarBazDatabaseBuilder.g.cs", out _).Should().BeTrue();
+
+        var mainCode = codes["MasterMemory.ItemTable.g.cs"];
+        WriteLine(mainCode);
+
+        mainCode.Should().Contain("namespace MyNamespace.Tables");
+        mainCode.Should().NotContain("return ThrowKeyNotFound(key);");
+        mainCode.Should().Contain("public sealed partial class ItemTable");
     }
 }

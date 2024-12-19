@@ -4,7 +4,7 @@ public abstract class TestBase(ITestOutputHelper testoutputHelper)
 {
     protected CodeGeneratorHelper Helper = new CodeGeneratorHelper(testoutputHelper, "MAM");
 
-    protected void Writeline(string message)
+    protected void WriteLine(string message)
     {
         testoutputHelper.WriteLine(message);
     }
