@@ -8,6 +8,9 @@
 		<IsRoslynComponent>true</IsRoslynComponent>
 		<AnalyzerLanguage>cs</AnalyzerLanguage>
 		<RootNamespace>MasterMemory</RootNamespace>
+
+		<!-- NuGet packaging including in MasterMemory -->
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>

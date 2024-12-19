@@ -7,6 +7,19 @@
       "dependencies": {},
       "hash": "4e3dbfaa9c40b5cfdcb71a1d4e8bca0d45ca1055"
     },
+    "com.github-glitchenzo.nugetforunity": {
+      "version": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "7c80e98d3b56ecbcf854a9336458b6b0dedf1b8f"
+    },
+    "com.github.mastermemory.internal": {
+      "version": "file:C:/Users/S04451/Documents/GitHub/MasterMemory/src/MasterMemory/bin/Debug/netstandard2.0",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.ext.nunit": {
       "version": "1.0.6",
       "depth": 1,

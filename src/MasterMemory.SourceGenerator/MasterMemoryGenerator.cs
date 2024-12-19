@@ -69,6 +69,10 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
     {
         var (((diagnostic, memoryTables), defaultNamespace), generatorOptions) = value;
         diagnostic.ReportToContext(context);
+        if (memoryTables.Length == 0)
+        {
+            return;
+        }
 
         var usingNamespace = generatorOptions.Namespace ?? defaultNamespace ?? "MasterMemory";
         var prefixClassName = generatorOptions.PrefixClassName ?? "";

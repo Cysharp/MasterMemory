@@ -4,6 +4,7 @@ using System;
 
 namespace MasterMemory.Internal
 {
+#pragma warning disable MsgPack013 // Inaccessible formatter
     internal class InternStringResolver : IFormatterResolver, IMessagePackFormatter<string>
     {
         readonly IFormatterResolver innerResolver;
