@@ -11,7 +11,7 @@ namespace MasterMemory.Internal
         public static readonly IFormatterResolver Instance = new HeaderFormatterResolver();
         public static readonly MessagePackSerializerOptions StandardOptions = MessagePackSerializerOptions.Standard.WithResolver(Instance);
 
-        public IMessagePackFormatter<T> GetFormatter<T>()
+        public IMessagePackFormatter<T>? GetFormatter<T>()
         {
             if (typeof(T) == typeof(Dictionary<string, (int, int)>))
             {

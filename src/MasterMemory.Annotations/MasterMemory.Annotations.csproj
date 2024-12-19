@@ -1,26 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>13</LangVersion>
+		<OutputType>Library</OutputType>
+		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<Company>Cysharp</Company>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>1701;1702;1705;1591</NoWarn>
 
-        <OutputType>Library</OutputType>
-        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-        <Company>Cysharp</Company>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>1701;1702;1705;1591</NoWarn>
-
-        <!-- NuGet -->
-        <PackageId>MasterMemory.Annotations</PackageId>
-        <PackageVersion>$(Version)</PackageVersion>
-        <Authors>Cysharp</Authors>
-        <Copyright>Cysharp</Copyright>
-        <Description>Attributes of MasterMemory.</Description>
-        <PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
-        <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>database, embedded, inmemory, unity</PackageTags>
-        <RootNamespace>MasterMemory</RootNamespace>
-        <IsPackable>true</IsPackable>
-    </PropertyGroup>
+		<!-- NuGet -->
+		<PackageId>MasterMemory.Annotations</PackageId>
+		<PackageVersion>$(Version)</PackageVersion>
+		<Authors>Cysharp</Authors>
+		<Copyright>Cysharp</Copyright>
+		<Description>Attributes of MasterMemory.</Description>
+		<PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
+		<RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>database, embedded, inmemory, unity</PackageTags>
+		<RootNamespace>MasterMemory</RootNamespace>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
 
 </Project>

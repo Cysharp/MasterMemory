@@ -25,7 +25,7 @@ namespace MasterMemory.Meta
             }
         }
 
-        public MetaTable GetTableInfo(string tableName)
+        public MetaTable? GetTableInfo(string tableName)
         {
             return tableInfos.TryGetValue(tableName, out var table)
                 ? table
@@ -64,9 +64,9 @@ namespace MasterMemory.Meta
         public string NameLowerCamel => ToCamelCase(PropertyInfo.Name);
         public string NameSnakeCase => ToSnakeCase(PropertyInfo.Name);
 
-        public MetaProperty(PropertyInfo propertyInfo)
+        public MetaProperty(PropertyInfo? propertyInfo)
         {
-            PropertyInfo = propertyInfo;
+            PropertyInfo = propertyInfo!;
         }
 
         public override string ToString()

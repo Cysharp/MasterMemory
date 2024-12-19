@@ -51,7 +51,7 @@ namespace MasterMemory.Validation
             {
                 var memberValues = ExpressionDumper<T>.DumpMemberValues(item, predicate);
                 var message = string.Format($"{predicate.ToThisBodyString()}, {memberValues}, {BuildPkMessage()}");
-                resultSet.AddFail(typeof(T), "Validate failed: " + message, item);
+                resultSet.AddFail(typeof(T), "Validate failed: " + message, item!);
             }
         }
 
@@ -59,7 +59,7 @@ namespace MasterMemory.Validation
         {
             if (!predicate(item))
             {
-                resultSet.AddFail(typeof(T), "Validate failed: " + message + ", " + BuildPkMessage(), item);
+                resultSet.AddFail(typeof(T), "Validate failed: " + message + ", " + BuildPkMessage(), item!);
             }
         }
 
@@ -68,7 +68,7 @@ namespace MasterMemory.Validation
             if (!predicate.Compile(true).Invoke())
             {
                 var expr = predicate.Body.ToString();
-                resultSet.AddFail(typeof(T), "ValidateAction failed: " + expr + ", " + BuildPkMessage(), item);
+                resultSet.AddFail(typeof(T), "ValidateAction failed: " + expr + ", " + BuildPkMessage(), item!);
             }
         }
 
@@ -76,13 +76,13 @@ namespace MasterMemory.Validation
         {
             if (!predicate())
             {
-                resultSet.AddFail(typeof(T), "ValidateAction failed: " + message + ", " + BuildPkMessage(), item);
+                resultSet.AddFail(typeof(T), "ValidateAction failed: " + message + ", " + BuildPkMessage(), item!);
             }
         }
 
         public void Fail(string message)
         {
-            resultSet.AddFail(typeof(T), message + ", " + BuildPkMessage(), item);
+            resultSet.AddFail(typeof(T), message + ", " + BuildPkMessage(), item!);
         }
 
         string BuildPkMessage()

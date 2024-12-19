@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "MasterMemory.Generator": {
-      "commandName": "Project",
-      "commandLineArgs": "-i \"C:\\GitHubRepositories\\MasterMemory\\sandbox\\COnsoleApp\" -o \"C:\\GitHubRepositories\\MasterMemory\\sandbox\\ConsoleApp\\Generated\" -n ConsoleApp"
-    }
-  }
-}

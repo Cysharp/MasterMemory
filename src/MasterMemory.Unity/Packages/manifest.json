@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "com.cysharp.runtimeunittesttoolkit": "https://github.com/Cysharp/RuntimeUnitTestToolkit.git?path=RuntimeUnitTestToolkit/Assets/RuntimeUnitTestToolkit#2.6.0",
+    "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
+    "com.github.mastermemory.internal": "file:C:/Users/S04451/Documents/GitHub/MasterMemory/src/MasterMemory/bin/Debug/netstandard2.0",
     "com.unity.ide.rider": "3.0.31",
     "com.unity.ide.visualstudio": "2.0.22",
     "com.unity.ide.vscode": "1.2.5",

@@ -31,7 +31,7 @@ namespace MasterMemory
                 var v = keySelector(item);
                 if (!set.Add(v))
                 {
-                    resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v, item);
+                    resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v, item!);
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace MasterMemory
 
         static protected TElement ThrowKeyNotFound<TKey>(TKey key)
         {
-            throw new KeyNotFoundException("DataType: " + typeof(TElement).FullName + ", Key: " + key.ToString());
+            throw new KeyNotFoundException("DataType: " + typeof(TElement).FullName + ", Key: " + key?.ToString());
         }
 
         // Unique
@@ -72,7 +72,7 @@ namespace MasterMemory
                 {
                     ThrowKeyNotFound(key);
                 }
-                return default;
+                return default!;
             }
         }
 
@@ -90,7 +90,7 @@ namespace MasterMemory
                 {
                     ThrowKeyNotFound(key);
                 }
-                return default;
+                return default!;
             }
         }
 
@@ -104,7 +104,7 @@ namespace MasterMemory
             }
             else
             {
-                result = default;
+                result = default!;
                 return false;
             }
         }
@@ -119,12 +119,12 @@ namespace MasterMemory
             }
             else
             {
-                result = default;
+                result = default!;
                 return false;
             }
         }
 
-        static protected TElement FindUniqueClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
+        static protected TElement? FindUniqueClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
         {
             var index = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, key, keySelector, comparer, selectLower);
             return (index != -1) ? indexArray[index] : default(TElement);
