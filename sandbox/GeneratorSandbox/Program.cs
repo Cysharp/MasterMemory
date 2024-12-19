@@ -2,6 +2,12 @@
 using MasterMemory;
 using MessagePack;
 
+
+[assembly: MasterMemoryGeneratorOptions(
+    Namespace = "",
+    IsReturnNullIfKeyNotFound = true,
+    PrefixClassName = "foo")]
+
 Console.WriteLine("Hello, World!");
 
 

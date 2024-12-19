@@ -7,12 +7,12 @@ using Xunit.Abstractions;
 
 namespace MasterMemory.SourceGenerator.Tests;
 
-public class GenerateTest(ITestOutputHelper outputHelper) : TestBase(outputHelper)
+public class AssemblyAtrributeTest(ITestOutputHelper outputHelper) : TestBase(outputHelper)
 {
     [Fact]
-    public void GenerateClass()
+    public void NoGeneratorOptions()
     {
-        Helper.Ok("""
+        var codes = Helper.GenerateCode("""
 [MemoryTable("item")]
 public class Item
 {
@@ -20,14 +20,23 @@ public class Item
     public int ItemId { get; set; }
 }
 """);
+
+
+
     }
 
+
     [Fact]
-    public void GenerateRecord()
+    public void PrefixClassNameChange()
     {
-        Helper.Ok("""
+        var codes = Helper.GenerateCode("""
+[assembly: MasterMemoryGeneratorOptions(
+    Namespace = "",
+    IsReturnNullIfKeyNotFound = true,
+    PrefixClassName = "foo")]
+
 [MemoryTable("item")]
-public record Item
+public class Item
 {
     [PrimaryKey]
     public int ItemId { get; set; }

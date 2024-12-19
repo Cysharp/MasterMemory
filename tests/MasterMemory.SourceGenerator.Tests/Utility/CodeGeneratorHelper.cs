@@ -1,9 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
 
-public class VerifyHelper(ITestOutputHelper output, string idPrefix)
+public class CodeGeneratorHelper(ITestOutputHelper output, string idPrefix)
 {
     // Diagnostics Verify
 
@@ -19,6 +18,28 @@ public class VerifyHelper(ITestOutputHelper output, string idPrefix)
         OutputGeneratedCode(compilation);
 
         diagnostics.Length.Should().Be(0);
+    }
+
+    public Dictionary<string, string> GenerateCode([StringSyntax("C#-test")] string code, [CallerArgumentExpression("code")] string? codeExpr = null)
+    {
+        var (compilation, diagnostics) = CSharpGeneratorRunner.RunGenerator(code);
+        foreach (var item in diagnostics)
+        {
+            output.WriteLine(item.ToString());
+        }
+        diagnostics.Length.Should().Be(0);
+
+        var dict = new Dictionary<string, string>();
+        foreach (var syntaxTree in compilation.SyntaxTrees)
+        {
+            // only shows ConsoleApp.Run/Builder generated code
+            if (!syntaxTree.FilePath.Contains("g.cs")) continue;
+            var generatedCode = syntaxTree.ToString();
+            var fileName = Path.GetFileName(syntaxTree.FilePath);
+            dict.Add(fileName, generatedCode);
+        }
+
+        return dict;
     }
 
     public void Verify(int id, [StringSyntax("C#-test")] string code, string diagnosticsCodeSpan, [CallerArgumentExpression("code")] string? codeExpr = null)

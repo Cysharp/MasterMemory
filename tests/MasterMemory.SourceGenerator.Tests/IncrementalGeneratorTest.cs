@@ -1,25 +1,23 @@
-﻿using Xunit.Abstractions;
+﻿namespace MasterMemory.SourceGenerator.Tests;
 
-namespace MasterMemory.SourceGenerator.Tests
+public class IncrementalGeneratorTest
 {
-    public class IncrementalGeneratorTest
+    void VerifySourceOutputReasonIsCached((string Key, string Reasons)[] reasons)
     {
-        void VerifySourceOutputReasonIsCached((string Key, string Reasons)[] reasons)
-        {
-            var reason = reasons.FirstOrDefault(x => x.Key == "SourceOutput").Reasons;
-            reason.Should().Be("Cached");
-        }
+        var reason = reasons.FirstOrDefault(x => x.Key == "SourceOutput").Reasons;
+        reason.Should().Be("Cached");
+    }
 
-        void VerifySourceOutputReasonIsNotCached((string Key, string Reasons)[] reasons)
-        {
-            var reason = reasons.FirstOrDefault(x => x.Key == "SourceOutput").Reasons;
-            reason.Should().NotBe("Cached");
-        }
+    void VerifySourceOutputReasonIsNotCached((string Key, string Reasons)[] reasons)
+    {
+        var reason = reasons.FirstOrDefault(x => x.Key == "SourceOutput").Reasons;
+        reason.Should().NotBe("Cached");
+    }
 
-        [Fact]
-        public void CheckReasons()
-        {
-            var step1 = """
+    [Fact]
+    public void CheckReasons()
+    {
+        var step1 = """
 [MemoryTable("item")]
 public class Item
 {
@@ -28,7 +26,7 @@ public class Item
 }
 """;
 
-            var step2 = """
+        var step2 = """
 [MemoryTable("item")]
 public class Item
 {
@@ -38,7 +36,7 @@ public class Item
 }
 """;
 
-            var step3 = """
+        var step3 = """
 [MemoryTable("item")]
 public class Item
 {
@@ -47,10 +45,9 @@ public class Item
 }
 """;
 
-            var reasons = CSharpGeneratorRunner.GetIncrementalGeneratorTrackedStepsReasons("MasterMemory.SyntaxProvider.", step1, step2, step3);
+        var reasons = CSharpGeneratorRunner.GetIncrementalGeneratorTrackedStepsReasons("MasterMemory.SyntaxProvider.", step1, step2, step3);
 
-            VerifySourceOutputReasonIsCached(reasons[1]);
-            VerifySourceOutputReasonIsNotCached(reasons[2]);
-        }
+        VerifySourceOutputReasonIsCached(reasons[1]);
+        VerifySourceOutputReasonIsNotCached(reasons[2]);
     }
 }
