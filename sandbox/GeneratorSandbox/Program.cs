@@ -1,12 +1,11 @@
-﻿// See https://aka.ms/new-console-template for more information
-using MasterMemory;
+﻿using MasterMemory;
 using MessagePack;
 
 
-[assembly: MasterMemoryGeneratorOptions(
-    Namespace = "",
-    IsReturnNullIfKeyNotFound = true,
-    PrefixClassName = "foo")]
+//[assembly: MasterMemoryGeneratorOptions(
+//    Namespace = "Z",
+//    IsReturnNullIfKeyNotFound = true,
+//    PrefixClassName = "")]
 
 Console.WriteLine("Hello, World!");
 
