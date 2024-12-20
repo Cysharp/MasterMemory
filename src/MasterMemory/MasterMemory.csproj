@@ -1,68 +1,69 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>MasterMemory</RootNamespace>
-        <AssemblyName>MasterMemory</AssemblyName>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<RootNamespace>MasterMemory</RootNamespace>
+		<AssemblyName>MasterMemory</AssemblyName>
+		<LangVersion>13</LangVersion>
+		<Nullable>enable</Nullable>
+		<OutputType>Library</OutputType>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<Company>Cysharp</Company>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>1701;1702;1705;1591</NoWarn>
 
-        <OutputType>Library</OutputType>
-        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-        <Company>Cysharp</Company>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>1701;1702;1705;1591</NoWarn>
+		<!-- NuGet -->
+		<PackageId>MasterMemory</PackageId>
+		<PackageVersion>$(Version)</PackageVersion>
+		<Authors>Cysharp</Authors>
+		<Copyright>Cysharp</Copyright>
+		<Description>Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity.</Description>
+		<PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
+		<RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>database, embedded, inmemory, unity</PackageTags>
+		<IsPackable>true</IsPackable>
 
-        <!-- NuGet -->
-        <PackageId>MasterMemory</PackageId>
-        <PackageVersion>$(Version)</PackageVersion>
-        <Authors>Cysharp</Authors>
-        <Copyright>Cysharp</Copyright>
-        <Description>Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity.</Description>
-        <PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
-        <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>database, embedded, inmemory, unity</PackageTags>
-        <IsPackable>true</IsPackable>
-    </PropertyGroup>
+		<!-- SourceGenerator Packaging configs... -->
+		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackBuildOutputs</TargetsForTfmSpecificContentInPackage>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="MessagePack" Version="2.1.90" />
-    </ItemGroup>
+	<!-- for nuget publish -->
+	<Target Name="PackBuildOutputs" DependsOnTargets="SatelliteDllsProjectOutputGroup;DebugSymbolsProjectOutputGroup">
+		<ItemGroup>
+			<TfmSpecificPackageFile Include="$(TargetDir)\MasterMemory.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" />
+			<TfmSpecificPackageFile Include="@(SatelliteDllsProjectOutputGroupOutput->'%(FinalOutputPath)')" PackagePath="analyzers\dotnet\cs\%(SatelliteDllsProjectOutputGroupOutput.Culture)\" />
+		</ItemGroup>
+	</Target>
 
-    <ItemGroup>
-        <ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="MessagePack" Version="3.1.0" />
+	</ItemGroup>
 
-    <ItemGroup>
-        <None Update="Validation\ValidatableSet.Sequential.tt">
-            <Generator>TextTemplatingFileGenerator</Generator>
-            <LastGenOutput>ValidatableSet.Sequential.cs</LastGenOutput>
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Update="Validation\ValidatableSet.Sequential.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>ValidatableSet.Sequential.tt</DependentUpon>
-        </Compile>
-    </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
 
-    <!-- Copy files for Unity -->
-    <PropertyGroup>
-        <DestinationRoot>$(ProjectDir)..\MasterMemory.Unity\Assets\Scripts\MasterMemory\</DestinationRoot>
-        <TestDestination>$(ProjectDir)..\MasterMemory.Unity\Assets\Tests\</TestDestination>
-    </PropertyGroup>
-    <ItemGroup>
-        <TargetFiles1 Include="$(ProjectDir)\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;_InternalVisibleTo.cs" />
-        <TargetFiles2 Include="$(ProjectDir)\..\MasterMemory.Annotations\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
-        <TargetFiles3 Include="$(ProjectDir)\..\..\tests\MasterMemory.Tests\**\*.cs" Exclude="**\bin\**\*.*;**\obj\**\*.*;" />
-    </ItemGroup>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Copy SourceFiles="@(TargetFiles1)" DestinationFiles="$(DestinationRoot)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
-        <Copy SourceFiles="@(TargetFiles2)" DestinationFiles="$(DestinationRoot)\Annotations\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
-        <Copy SourceFiles="@(TargetFiles3)" DestinationFiles="$(TestDestination)\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
-    </Target>
+		<!-- We don't consume the analyzers in this library itself,
+         but we reference the project to add a package dependency so users of this library will automatically get the analyzers. -->
+		<ProjectReference Include="..\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj"
+						  PrivateAssets="none" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Validation\ValidatableSet.Sequential.tt">
+			<Generator>TextTemplatingFileGenerator</Generator>
+			<LastGenOutput>ValidatableSet.Sequential.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Validation\ValidatableSet.Sequential.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ValidatableSet.Sequential.tt</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
 </Project>

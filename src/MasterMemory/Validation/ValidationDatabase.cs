@@ -30,7 +30,7 @@ namespace MasterMemory.Validation
                 throw new InvalidOperationException("Can not create validator in " + typeof(T).FullName);
             }
             var data = table as IReadOnlyList<T>;
-            return data;
+            return data!;
         }
     }
 }

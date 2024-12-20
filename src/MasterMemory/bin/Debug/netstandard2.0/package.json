@@ -1,0 +1,12 @@
+{
+    "name": "com.github.mastermemory.internal",
+    "displayName": "MasterMemory Internal",
+    "author": { "name": "MasterMemory", "url": "https://github.com/Cysharp/MasterMemory" },
+    "version": "1.0.0",
+    "unity": "2022.3",
+    "description": "Internal Package of MasterMemory for development time.",
+    "keywords": [ "Database" ],
+    "license": "MIT",
+    "category": "Scripting",
+    "dependencies": {}
+}

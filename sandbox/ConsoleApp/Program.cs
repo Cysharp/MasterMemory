@@ -1,21 +1,34 @@
 using MasterMemory;
-using System.Linq;
 using MessagePack;
 using System;
-using System.IO;
 using System.Buffers;
-using System.Linq.Expressions;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Reflection;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 
-// IValidatableを実装すると検証対象になる
+
+[assembly: MasterMemoryGeneratorOptions(
+    Namespace = "ConsoleApp" // ,
+    // IsReturnNullIfKeyNotFound = true,
+    // PrefixClassName = "Foo"
+)]
+
+public class FooItem
+{
+    public bool TryFindByItemId(int key, out Item result)
+    {
+        result = default!;
+        return true;
+    }
+}
+
 [MemoryTable("quest_master"), MessagePackObject(true)]
 public class Quest : IValidatable<Quest>
 {
-    // UniqueKeyの場合はValidate時にデフォルトで重複かの検証がされる
     [PrimaryKey]
     public int Id { get; set; }
     public string Name { get; set; }
@@ -25,25 +38,19 @@ public class Quest : IValidatable<Quest>
 
     void IValidatable<Quest>.Validate(IValidator<Quest> validator)
     {
-        // 外部キー的に参照したいコレクションを取り出せる
         var items = validator.GetReferenceSet<Item>();
 
-        // RewardIdが0以上のとき(0は報酬ナシのための特別なフラグとするため入力を許容する)
         if (this.RewardId > 0)
         {
-            // Itemsのマスタに必ず含まれてなければ検証エラー（エラーが出ても続行はしてすべての検証結果を出す)
             items.Exists(x => x.RewardId, x => x.ItemId);
         }
 
-        // コストは10..20でなければ検証エラー
         validator.Validate(x => x.Cost >= 10);
         validator.Validate(x => x.Cost <= 20);
 
-        // 以下で囲った部分は一度しか呼ばれないため、データセット全体の検証をしたい時に使える
         if (validator.CallOnce())
         {
             var quests = validator.GetTableSet();
-            // インデックス生成したもの以外のユニークどうかの検証(0は重複するため除いておく)
             quests.Where(x => x.RewardId != 0).Unique(x => x.RewardId);
         }
     }
@@ -78,7 +85,7 @@ namespace ConsoleApp.Tables
 namespace ConsoleApp
 {
     [MemoryTable("monster"), MessagePackObject(true)]
-    public class Monster
+    public partial class Monster
     {
         [PrimaryKey]
         public int MonsterId { get; private set; }
@@ -203,6 +210,7 @@ namespace ConsoleApp
     public class Test2
     {
         [PrimaryKey]
+        [Key(0)]
         public int Id { get; set; }
     }
 
@@ -231,7 +239,7 @@ namespace ConsoleApp
                 while ((reader.ReadValuesWithHeader() is Dictionary<string, string> values))
                 {
                     // create data without call constructor
-                    var data = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(table.DataType);
+                    var data = RuntimeHelpers.GetUninitializedObject(table.DataType);
 
                     foreach (var prop in table.Properties)
                     {

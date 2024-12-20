@@ -2,30 +2,37 @@
 
 MasterMemory
 ===
-
-Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity. 
+Source Generator based Embedded Typed Readonly In-Memory Document Database for .NET and Unity. 
 
 ![image](https://user-images.githubusercontent.com/46207/61031896-61890800-a3fb-11e9-86b7-84c821d347a4.png)
 
 **4700** times faster than SQLite and achieves zero allocation per query. Also the DB size is small. When SQLite is 3560kb then MasterMemory is only 222kb.
+
+Source Generator automatically generates a typed database structure from schemas (classes), which ensures that all queries are type-safe with full autocompletion support.
+
+![image](https://github.com/user-attachments/assets/e804fa52-f6a5-4972-a510-0b3b17a31230)
+
+![image](https://user-images.githubusercontent.com/46207/61035808-cb58e000-a402-11e9-9209-d51665d1cd56.png)
+
+This ensures both optimal performance and excellent usability.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 ## Table of Contents
 
 - [Concept](#concept)
-- [Getting Started(.NET Core)](#getting-startednet-core)
+- [Getting Started(.NET)](#getting-startednet)
 - [Getting Started(Unity)](#getting-startedunity)
 - [DataTable configuration](#datatable-configuration)
 - [MemoryDatabase/RangeView](#memorydatabaserangeview)
 - [Extend Table](#extend-table)
 - [ImmutableBuilder](#immutablebuilder)
-- [Immutable Data](#immutable-data)
 - [Validator](#validator)
 - [Metadata](#metadata)
 - [Inheritance](#inheritance)
 - [Optimization](#optimization)
-- [Code Generator](#code-generator)
+- [MasterMemoryGeneratorOptions](#mastermemorygeneratoroptions)
+- [v2 -> v3 migration](#v2---v3-migration)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -35,21 +42,19 @@ Concept
 
 * **Memory Efficient**, Only use underlying data memory and do aggressively string interning.
 * **Performance**, Similar as dictionary lookup.
-* **TypeSafe**, 100% Type safe by pre code-generation.
+* **TypeSafe**, 100% Type safe by Source Generator.
 * **Fast load speed**,  MasterMemory save data by [MessagePack for C#, a fastest C# serializer](https://github.com/neuecc/MessagePack-CSharp) so load speed is blazing fast.
 * **Flexible Search**, Supports multiple key, multiple result, range/closest query.
 * **Validator**, You can define custom data validation by C#.
 * **Metadata**, To make custom importer/exporter, get the all database metadata.
 
-These features are suitable for master data management(write-once, read-heavy) on embedded application such as role-playing game. MasterMemory has better performance than any other database solutions. [PalDB](https://github.com/linkedin/PalDB) developed by LinkedIn has a similar concept(embeddable write-once key-value store), but the implementation and performance characteristics are completely different.
+These features are suitable for master data management(write-once, read-heavy) on embedded application, data analysis, game, etc. MasterMemory has better performance than any other database solutions. [PalDB](https://github.com/linkedin/PalDB) developed by LinkedIn has a similar concept(embeddable write-once key-value store), but the implementation and performance characteristics are completely different.
 
-Getting Started(.NET Core)
+Getting Started(.NET)
 ---
-MasterMemory uses C# to C# code-generator. Runtime library API is the same but how to code-generate has different way between .NET Core and Unity. This sample is for .NET Core(for Unity is in below sections).
+Install the library(Runtime, Source Generator(Analyzer) and [Annotations](https://www.nuget.org/packages/MasterMemory.Annotations)) via NuGet.
 
-Install the core library(Runtime and [Annotations](https://www.nuget.org/packages/MasterMemory.Annotations)).
-
-> PM> Install-Package [MasterMemory](https://www.nuget.org/packages/MasterMemory)
+> dotnet add package [MasterMemory](https://www.nuget.org/packages/MasterMemory)
 
 Prepare the example table definition like following.
 
@@ -62,62 +67,50 @@ public enum Gender
 // table definition marked by MemoryTableAttribute.
 // database-table must be serializable by MessagePack-CSsharp
 [MemoryTable("person"), MessagePackObject(true)]
-public class Person
+public record Person
 {
     // index definition by attributes.
     [PrimaryKey]
-    public int PersonId { get; set; }
+    public required int PersonId { get; init; }
 
     // secondary index can add multiple(discriminated by index-number).
     [SecondaryKey(0), NonUnique]
     [SecondaryKey(1, keyOrder: 1), NonUnique]
-    public int Age { get; set; }
+    public required int Age { get; init; }
 
     [SecondaryKey(2), NonUnique]
     [SecondaryKey(1, keyOrder: 0), NonUnique]
-    public Gender Gender { get; set; }
+    public required Gender Gender { get; init; }
 
-    public string Name { get; set; }
+    public required string Name { get; init; }
 }
 ```
 
-Edit the `.csproj`, add [MasterMemory.MSBuild.Tasks](https://www.nuget.org/packages/MasterMemory.MSBuild.Tasks) and add configuration like following.
+Data in MasterMemory is readonly, so it is recommended to use an immutable structure. While both records and classes are supported, records might be preferable as they generate more readable ToString methods.
 
-```xml
-<ItemGroup>
-    <PackageReference Include="MasterMemory" Version="2.1.2" />
-    <!-- Install MSBuild Task(with PrivateAssets="All", it means to use dependency only in build time). -->
-    <PackageReference Include="MasterMemory.MSBuild.Tasks" Version="2.1.2" PrivateAssets="All" />
-</ItemGroup>
+MasterMemory's Source Generator detects types marked with the `MemoryTable` attribute and automatically generates types like the following:
 
-<!-- Call code generator before-build. -->
-<Target Name="MasterMemoryGen" BeforeTargets="BeforeBuild">
-    <!-- Configuration of Code-Generator, `UsingNamespace`, `InputDirectory`, `OutputDirectory` and `AddImmutableConstructor`. -->
-    <MasterMemoryGenerator UsingNamespace="$(ProjectName)" InputDirectory="$(ProjectDir)" OutputDirectory="$(ProjectDir)MasterMemory" />
-</Target>
-```
-
-After the build, generated files(`DatabaseBuilder.cs`, `ImmutableBuilder.cs`, `MasterMemoryResolver.cs`, `MemoryDatabase.cs` and `Tables/***Table.cs`) in OutputDirectory.
-
-![image](https://user-images.githubusercontent.com/46207/61233535-ba460100-a76b-11e9-85d0-c34cb5ce7482.png)
+![image](https://github.com/user-attachments/assets/e804fa52-f6a5-4972-a510-0b3b17a31230)
 
 Finally, you can regsiter and query by these files.
 
 ```csharp
+using ...; // Your project default namespace
+
 // to create database, use DatabaseBuilder and Append method.
 var builder = new DatabaseBuilder();
 builder.Append(new Person[]
 {
-    new Person { PersonId = 0, Age = 13, Gender = Gender.Male,   Name = "Dana Terry" },
-    new Person { PersonId = 1, Age = 17, Gender = Gender.Male,   Name = "Kirk Obrien" },
-    new Person { PersonId = 2, Age = 31, Gender = Gender.Male,   Name = "Wm Banks" },
-    new Person { PersonId = 3, Age = 44, Gender = Gender.Male,   Name = "Karl Benson" },
-    new Person { PersonId = 4, Age = 23, Gender = Gender.Male,   Name = "Jared Holland" },
-    new Person { PersonId = 5, Age = 27, Gender = Gender.Female, Name = "Jeanne Phelps" },
-    new Person { PersonId = 6, Age = 25, Gender = Gender.Female, Name = "Willie Rose" },
-    new Person { PersonId = 7, Age = 11, Gender = Gender.Female, Name = "Shari Gutierrez" },
-    new Person { PersonId = 8, Age = 63, Gender = Gender.Female, Name = "Lori Wilson" },
-    new Person { PersonId = 9, Age = 34, Gender = Gender.Female, Name = "Lena Ramsey" },
+    new (){ PersonId = 0, Age = 13, Gender = Gender.Male,   Name = "Dana Terry" },
+    new (){ PersonId = 1, Age = 17, Gender = Gender.Male,   Name = "Kirk Obrien" },
+    new (){ PersonId = 2, Age = 31, Gender = Gender.Male,   Name = "Wm Banks" },
+    new (){ PersonId = 3, Age = 44, Gender = Gender.Male,   Name = "Karl Benson" },
+    new (){ PersonId = 4, Age = 23, Gender = Gender.Male,   Name = "Jared Holland" },
+    new (){ PersonId = 5, Age = 27, Gender = Gender.Female, Name = "Jeanne Phelps" },
+    new (){ PersonId = 6, Age = 25, Gender = Gender.Female, Name = "Willie Rose" },
+    new (){ PersonId = 7, Age = 11, Gender = Gender.Female, Name = "Shari Gutierrez" },
+    new (){ PersonId = 8, Age = 63, Gender = Gender.Female, Name = "Lori Wilson" },
+    new (){ PersonId = 9, Age = 34, Gender = Gender.Female, Name = "Lena Ramsey" },
 });
 
 // build database binary(you can also use `WriteToStream` for save to file).
@@ -130,7 +123,7 @@ byte[] data = builder.Build();
 var db = new MemoryDatabase(data);
 
 // .PersonTable.FindByPersonId is fully typed by code-generation.
-Person person = db.PersonTable.FindByPersonId(10);
+Person person = db.PersonTable.FindByPersonId(5);
 
 // Multiple key is also typed(***And * **), Return value is multiple if key is marked with `NonUnique`.
 RangeView<Person> result = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
@@ -150,9 +143,26 @@ You can invoke all indexed query by IntelliSense.
 
 Getting Started(Unity)
 ---
-Check the [releases](https://github.com/Cysharp/MasterMemory/releases) page, download `MasterMemory.Unity.unitypackage`(runtime) and `MasterMemory.Generator.zip`(cli code-generator). MasterMemory also depends on MessagePack-CSharp so you have to download `MessagePack.Unity.2.*.*.unitypackage` and `mpc.zip` from [MessagePack-CSharp/releases page](https://github.com/neuecc/MessagePack-CSharp/releases).
+The minimum supported Unity version will be `2022.3.12f1`, as it is necessary to support C# Incremental Source Generator(Compiler Version, 4.3.0).
 
-Prepare the example table definition like following.
+Since this library is provided via NuGet, install [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity), then navigate to Open Window from NuGet -> Manage NuGet Packages, Search "MasterMemory" and Press Install.
+
+First, it is recommended to define assembly attributes in any cs file to enable the use of `init`.
+
+```csharp
+// Optional: Unity can't load default namespace to Source Generator
+// If not specified, 'MasterMemory' will be used by default,
+// but you can use this attribute if you want to specify a different namespace.
+[assembly: MasterMemoryGeneratorOptions(Namespace = "MyProj")]
+
+// Optional: If you want to use init keyword, copy-and-paste this.
+namespace System.Runtime.CompilerServices
+{
+    internal sealed class IsExternalInit { }
+}
+```
+
+Everything else is the same as the standard .NET version. While the `required` keyword can't be used since it's from C# 11, using `init` alone is sufficient to guarantee immutability.
 
 ```csharp
 public enum Gender
@@ -163,46 +173,26 @@ public enum Gender
 // table definition marked by MemoryTableAttribute.
 // database-table must be serializable by MessagePack-CSsharp
 [MemoryTable("person"), MessagePackObject(true)]
-public class Person
+public record Person
 {
     // index definition by attributes.
     [PrimaryKey]
-    public int PersonId { get; set; }
+    public int PersonId { get; init; }
 
     // secondary index can add multiple(discriminated by index-number).
     [SecondaryKey(0), NonUnique]
     [SecondaryKey(1, keyOrder: 1), NonUnique]
-    public int Age { get; set; }
+    public int Age { get; init; }
 
     [SecondaryKey(2), NonUnique]
     [SecondaryKey(1, keyOrder: 0), NonUnique]
-    public Gender Gender { get; set; }
+    public Gender Gender { get; init; }
 
-    public string Name { get; set; }
+    public string Name { get; init; }
 }
 ```
 
-use the MasterMemory code generator by commandline. Commandline tool support platforms are `win-x64`, `osx-x64` and `linux-x64`.
-
-```
-Usage: MasterMemory.Generator [options...]
-
-Options:
-  -i, -inputDirectory <String>              Input file directory(search recursive). (Required)
-  -o, -outputDirectory <String>             Output file directory. (Required)
-  -n, -usingNamespace <String>              Namespace of generated files. (Required)
-  -p, -prefixClassName <String>             Prefix of class names. (Default: )
-  -c, -addImmutableConstructor <Boolean>    Add immutable constructor to MemoryTable class. (Default: False)
-  -t, -returnNullIfKeyNotFound <Boolean>    Return null if key not found on unique find method. (Default: False)
-```
-
-```bash
-MasterMemory.Generator.exe -i "C:\UnitySample" -o "C:\UnitySample\Generated" -n "UnitySample"
-```
-
-Also you need to generated MessagePack-CSharp code generation.
-
-Additional steps, you have to set up to use generated resolver.
+Also, for use with IL2CPP, you need to add the generated `MasterMemoryResolver` to MessagePack's Resolver. If you need other generated Resolvers, such as those from [MagicOnion](https://github.com/Cysharp/MagicOnion), please add and compose them here.
 
 ```csharp
 public static class Initializer
@@ -210,64 +200,20 @@ public static class Initializer
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void SetupMessagePackResolver()
     {
+        // Create CompositeResolver
         StaticCompositeResolver.Instance.Register(new[]{
             MasterMemoryResolver.Instance, // set MasterMemory generated resolver
-            GeneratedResolver.Instance,    // set MessagePack generated resolver
             StandardResolver.Instance      // set default MessagePack resolver
         });
 
+        // Create options with resolver
         var options = MessagePackSerializerOptions.Standard.WithResolver(StaticCompositeResolver.Instance);
+
+        // Optional: as default.
         MessagePackSerializer.DefaultOptions = options;
     }
 }
 ```
-
-The rest is the same as .NET Core version.
-
-```csharp
-// to create database, use DatabaseBuilder and Append method.
-var builder = new DatabaseBuilder();
-builder.Append(new Person[]
-{
-    new Person { PersonId = 0, Age = 13, Gender = Gender.Male,   Name = "Dana Terry" },
-    new Person { PersonId = 1, Age = 17, Gender = Gender.Male,   Name = "Kirk Obrien" },
-    new Person { PersonId = 2, Age = 31, Gender = Gender.Male,   Name = "Wm Banks" },
-    new Person { PersonId = 3, Age = 44, Gender = Gender.Male,   Name = "Karl Benson" },
-    new Person { PersonId = 4, Age = 23, Gender = Gender.Male,   Name = "Jared Holland" },
-    new Person { PersonId = 5, Age = 27, Gender = Gender.Female, Name = "Jeanne Phelps" },
-    new Person { PersonId = 6, Age = 25, Gender = Gender.Female, Name = "Willie Rose" },
-    new Person { PersonId = 7, Age = 11, Gender = Gender.Female, Name = "Shari Gutierrez" },
-    new Person { PersonId = 8, Age = 63, Gender = Gender.Female, Name = "Lori Wilson" },
-    new Person { PersonId = 9, Age = 34, Gender = Gender.Female, Name = "Lena Ramsey" },
-});
-
-// build database binary(you can also use `WriteToStream` for save to file).
-byte[] data = builder.Build();
-
-// -----------------------
-
-// for query phase, create MemoryDatabase.
-// (MemoryDatabase is recommended to store in singleton container(static field/DI)).
-var db = new MemoryDatabase(data);
-
-// .PersonTable.FindByPersonId is fully typed by code-generation.
-Person person = db.PersonTable.FindByPersonId(10);
-
-// Multiple key is also typed(***And * **), Return value is multiple if key is marked with `NonUnique`.
-RangeView<Person> result = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
-
-// Get nearest value(choose lower(default) or higher).
-RangeView<Person> age1 = db.PersonTable.FindClosestByAge(31);
-
-// Get range(min-max inclusive).
-RangeView<Person> age2 = db.PersonTable.FindRangeByAge(20, 29);
-```
-
-All table(marked by `MemoryTableAttribute`) and methods(created by `PrimaryKeyAttribute` or `SecondaryKeyAttribute`) are typed.
-
-![image](https://user-images.githubusercontent.com/46207/61035808-cb58e000-a402-11e9-9209-d51665d1cd56.png)
-
-You can invoke all indexed query by IntelliSense.
 
 DataTable configuration
 ---
@@ -473,48 +419,6 @@ public class GameRoom
 }
 ```
 
-Immutable Data
----
-Element data is shared in the application so ideally should be immutable. But C# only has a constructor to create immutable data, it is too difficult to create many data tables.
-
-Code generator has `AddImmutableConstructor`(`-c, -addImmutableConstructor`) option. If enabled it, code generator modify orignal file and add immutable constructor in target type. If you define property as `{get; private set;}` or `{get;}`, it will be immutable type.
-
-```csharp
-// For the versioning, MessagePackObject is recommended to use string key.
-[MemoryTable("person"), MessagePackObject(true)]
-public class Person
-{
-    [PrimaryKey]
-    public int PersonId { get; }
-    public int Age { get; }
-    public Gender Gender { get; }
-    public string Name { get; }
-}
-
-// use AddImmutableConstructor="true" or -c option
-<MasterMemoryGenerator UsingNamespace="$(ProjectName)" InputDirectory="$(ProjectDir)" OutputDirectory="$(ProjectDir)MasterMemory" AddImmutableConstructor="true" />
-MasterMemory.Generator.exe -i "C:\UnitySample" -o "C:\UnitySample\Generated" -n "UnitySample" -c
-
-// after generated...
-[MemoryTable("person"), MessagePackObject(true)]
-public class Person
-{
-    [PrimaryKey]
-    public int PersonId { get; }
-    public int Age { get; }
-    public Gender Gender { get; }
-    public string Name { get; }
-
-    public Person(int PersonId, int Age, Gender Gender, string Name)
-    {
-        this.PersonId = PersonId;
-        this.Age = Age;
-        this.Gender = Gender;
-        this.Name = Name;
-    }
-}
-```
-
 Validator
 ---
 You can validate data by `MemoryDatabase.Validate` method. In default, it check unique key(data duplicated) and you can define custom validate logics.
@@ -642,58 +546,54 @@ If creates console-app, our [ConsoleAppFramework](https://github.com/Cysharp/Con
 Here is sample of reading and creating dynamic from csv. `builder.AppendDynamic` and `System.Runtime.Serialization.FormatterServices.GetUninitializedObject` will help it.
 
 ```csharp
-class Program
-{
-    static void Main(string[] args)
-    {
-        var csv = @"monster_id,name,max_hp
+var csv = @"monster_id,name,max_hp
 1,foo,100
 2,bar,200";
-        var fileName = "monster";
+var fileName = "monster";
 
-        var builder = new DatabaseBuilder();
+var builder = new DatabaseBuilder();
 
-        var meta = MemoryDatabase.GetMetaDatabase();
-        var table = meta.GetTableInfo(fileName);
+var meta = MemoryDatabase.GetMetaDatabase();
+var table = meta.GetTableInfo(fileName);
 
-        var tableData = new List<object>();
+var tableData = new List<object>();
 
-        using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(csv)))
-        using (var sr = new StreamReader(ms, Encoding.UTF8))
-        using (var reader = new TinyCsvReader(sr))
+using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(csv)))
+using (var sr = new StreamReader(ms, Encoding.UTF8))
+using (var reader = new TinyCsvReader(sr))
+{
+    while ((reader.ReadValuesWithHeader() is Dictionary<string, string> values))
+    {
+        // create data without call constructor
+        // use System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject instead on .NET 8
+        var data = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(table.DataType);
+
+        foreach (var prop in table.Properties)
         {
-            while ((reader.ReadValuesWithHeader() is Dictionary<string, string> values))
+            if (values.TryGetValue(prop.NameSnakeCase, out var rawValue))
             {
-                // create data without call constructor
-                var data = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(table.DataType);
-
-                foreach (var prop in table.Properties)
+                var value = ParseValue(prop.PropertyInfo.PropertyType, rawValue);
+                if (prop.PropertyInfo.SetMethod == null)
                 {
-                    if (values.TryGetValue(prop.NameSnakeCase, out var rawValue))
-                    {
-                        var value = ParseValue(prop.PropertyInfo.PropertyType, rawValue);
-                        if (prop.PropertyInfo.SetMethod == null)
-                        {
-                            throw new Exception("Target property does not exists set method. If you use {get;}, please change to { get; private set; }, Type:" + prop.PropertyInfo.DeclaringType + " Prop:" + prop.PropertyInfo.Name);
-                        }
-                        prop.PropertyInfo.SetValue(data, value);
-                    }
-                    else
-                    {
-                        throw new KeyNotFoundException($"Not found \"{prop.NameSnakeCase}\" in \"{fileName}.csv\" header.");
-                    }
+                    throw new Exception("Target property does not exists set method. If you use {get;}, please change to { get; private set; }, Type:" + prop.PropertyInfo.DeclaringType + " Prop:" + prop.PropertyInfo.Name);
                 }
-
-                tableData.Add(data);
+                prop.PropertyInfo.SetValue(data, value);
+            }
+            else
+            {
+                throw new KeyNotFoundException($"Not found \"{prop.NameSnakeCase}\" in \"{fileName}.csv\" header.");
             }
         }
 
-        // add dynamic collection.
-        builder.AppendDynamic(table.DataType, tableData);
-
-        var bin = builder.Build();
-        var database = new MemoryDatabase(bin);
+        tableData.Add(data);
     }
+}
+
+// add dynamic collection.
+builder.AppendDynamic(table.DataType, tableData);
+
+var bin = builder.Build();
+var database = new MemoryDatabase(bin);
 
     static object ParseValue(Type type, string rawValue)
     {
@@ -896,59 +796,31 @@ The use of Parallel can greatly improve the construct performance. Recommend to 
 
 If you want to reduce code size of generated code, Validator and MetaDatabase info can omit in runtime. Generated code has two symbols `DISABLE_MASTERMEMORY_VALIDATOR` and `DISABLE_MASTERMEMORY_METADATABASE`.  By defining them, can be erased from the build code.
 
-Code Generator
+The database generation/loading speed and size are affected by MessagePack's serialization format. Using `[MessagePackObject]` with `[Key]` attributes instead of `[MessagePackObject(true)]` can improve loading speed and reduce size. However, regarding size, since LZ4 compression is used by default, the difference may not be significant.
+
+MasterMemoryGeneratorOptions
 ---
-MasterMemory has two kinds of code-generator. `MSBuild Task`, `.NET Core Global/Local Tools`.
+The Source Generator settings are configured using the assembly attribute `[MasterMemoryGeneratorOptions]`. By placing it in any file, you can configure the following settings.
 
-MSBuild Task(`MasterMemory.MSBuild.Tasks`) is recommended way to use in .NET Core csproj.
-
-```xml
-<MasterMemoryGenerator
-    UsingNamespace="string:required"
-    InputDirectory="string:required"
-    OutputDirectory="string:required"
-    PrefixClassName="string:optional, default= "
-    AddImmutableConstructor="bool:optional, default=false"
-    ReturnNullIfKeyNotFound="bool:optional, default=false"
-/>
+```csharp
+[assembly: MasterMemoryGeneratorOptions(
+    Namespace = "MyConsoleApp",
+    IsReturnNullIfKeyNotFound = true,
+    PrefixClassName = "Foo"
+)]
 ```
 
-`.NET Core Global/Local Tools` can install from NuGet(`MasterMemory.Generator`), you need to install .NET runtime. Here is the sample command of install global tool.
+* `Namespace`: Changes the namespace of generated files. If not specified, it tries to get the `RootNamespace` set in the csproj file; if that's not available, it defaults to `MasterMemory`
+* `IsReturnNullIfKeyNotFound`: By default, the `Find` method throws a `KeyNotFoundException` when a key is not found. If set to true, the return type becomes `T?` and returns null instead
+* `PrefixClassName`: Adds a prefix to the class names of generated files. For example, `DatabaseBuilder` becomes `FooDatabaseBuilder`. This allows you to distinguish between multiple MasterMemory projects by name.
 
-`dotnet tool install --global MasterMemory.Generator`
+v2 -> v3 migration
+---
+Since there are no changes to the API, binary format, or behavior, you can migrate simply by changing the command-line tool settings to the assembly attribute `[MasterMemoryGeneratorOptions]`.
 
-```
-Usage: MasterMemory.Generator [options...]
-
-Options:
-  -i, -inputDirectory <String>              Input file directory(search recursive). (Required)
-  -o, -outputDirectory <String>             Output file directory. (Required)
-  -n, -usingNamespace <String>              Namespace of generated files. (Required)
-  -p, -prefixClassName <String>             Prefix of class names. (Default: )
-  -c, -addImmutableConstructor <Boolean>    Add immutable constructor to MemoryTable class. (Default: False)
-  -t, -returnNullIfKeyNotFound <Boolean>    Return null if key not found on unique find method. (Default: False)
-```
-
-After install, you can call by `dotnet mmgen` command. This is useful to use in CI. Here is the sample of CircleCI config.
-
-```yml
-version: 2.1
-executors:
-  dotnet:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:2.2
-    environment:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-      NUGET_XMLDOC_MODE: skip
-jobs:
-  gen-mastermemory:
-    executor: dotnet
-    steps:
-      - checkout
-      - run: dotnet tool install --global MasterMemory.Generator
-      - run: dotnet mmgen -i ./ -o ./MasterMemory -n Test
-      /* git push or store artifacts or etc...... */
-```
+* The code generator (MSBuild Task, .NET Core Global/Local Tools) has been removed and replaced with Source Generator
+* Tool options are now available through `MasterMemoryGeneratorOptions`
+* The `-addImmutableConstructor` option has been completely removed; please use C#'s record or init keyword instead
 
 License
 ---

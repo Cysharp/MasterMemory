@@ -17,7 +17,7 @@ namespace MasterMemory
 
         }
 
-        public MemoryDatabaseBase(byte[] databaseBinary, bool internString = true, IFormatterResolver formatterResolver = null, int maxDegreeOfParallelism = 1)
+        public MemoryDatabaseBase(byte[] databaseBinary, bool internString = true, IFormatterResolver? formatterResolver = null, int maxDegreeOfParallelism = 1)
         {
             var reader = new MessagePackReader(databaseBinary);
             var formatter = new DictionaryFormatter<string, (int, int)>();
@@ -33,7 +33,7 @@ namespace MasterMemory
                 maxDegreeOfParallelism = 1;
             }
 
-            Init(header, databaseBinary.AsMemory((int)reader.Consumed), MessagePackSerializer.DefaultOptions.WithResolver(resolver).WithCompression(MessagePackCompression.Lz4Block), maxDegreeOfParallelism);
+            Init(header!, databaseBinary.AsMemory((int)reader.Consumed), MessagePackSerializer.DefaultOptions.WithResolver(resolver).WithCompression(MessagePackCompression.Lz4Block), maxDegreeOfParallelism);
         }
 
         protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, Func<T[], TView> createView)
@@ -86,9 +86,9 @@ namespace MasterMemory
     {
         public string TableName { get; }
         public int Size { get; }
-        byte[] binaryData;
+        byte[]? binaryData;
 
-        public TableInfo(string tableName, int size, byte[] rawBinary, int offset)
+        public TableInfo(string tableName, int size, byte[]? rawBinary, int offset)
         {
             TableName = tableName;
             Size = size;

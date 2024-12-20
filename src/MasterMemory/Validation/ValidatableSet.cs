@@ -37,7 +37,7 @@ namespace MasterMemory.Validation
                 var v = f(item);
                 if (!set.Add(v))
                 {
-                    resultSet.AddFail(typeof(TElement), "Unique failed:" + selector.ToSpaceBodyString() + ", value = " + v + ", " + BuildPkMessage(item), item);
+                    resultSet.AddFail(typeof(TElement), "Unique failed:" + selector.ToSpaceBodyString() + ", value = " + v + ", " + BuildPkMessage(item), item!);
                 }
             }
         }
@@ -55,7 +55,7 @@ namespace MasterMemory.Validation
                 var v = selector(item);
                 if (!set.Add(v))
                 {
-                    resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v + ", " + BuildPkMessage(item), item);
+                    resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v + ", " + BuildPkMessage(item), item!);
                 }
             }
         }

@@ -1,9 +1,0 @@
-﻿<Project TreatAsLocalProperty="_MasterMemoryGeneratorTaskFolder;_MasterMemoryGeneratorTaskAssembly">
-
-    <PropertyGroup>
-        <_MasterMemoryGeneratorTaskFolder>netstandard2.0</_MasterMemoryGeneratorTaskFolder>
-        <_MasterMemoryGeneratorTaskAssembly>$(MSBuildThisFileDirectory)..\tasks\$(_MasterMemoryGeneratorTaskFolder)\MasterMemory.MSBuild.Tasks.dll</_MasterMemoryGeneratorTaskAssembly>
-    </PropertyGroup>
-
-    <UsingTask TaskName="MasterMemory.MSBuild.Tasks.MasterMemoryGenerator" AssemblyFile="$(_MasterMemoryGeneratorTaskAssembly)" />
-</Project>

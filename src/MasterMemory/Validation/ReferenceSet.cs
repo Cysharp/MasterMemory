@@ -46,7 +46,7 @@ namespace MasterMemory.Validation
             // not found, assert.
             var from = elementSelector.ToNameBodyString(typeof(TElement).Name);
             var to = referenceElementSelector.ToNameBodyString(typeof(TReference).Name);
-            resultSet.AddFail(typeof(TElement), "Exists failed: " + from + " -> " + to + ", value = " + compareBase + ", " + BuildPkMessage(), item);
+            resultSet.AddFail(typeof(TElement), "Exists failed: " + from + " -> " + to + ", value = " + compareBase + ", " + BuildPkMessage(), item!);
         }
 
         string BuildPkMessage()
