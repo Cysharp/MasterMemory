@@ -821,7 +821,7 @@ v2 -> v3 migration
 Since there are no changes to the API, binary format, or behavior, you can migrate simply by changing the command-line tool settings to the assembly attribute `[MasterMemoryGeneratorOptions]`.
 
 * The code generator (MSBuild Task, .NET Core Global/Local Tools) has been removed and replaced with Source Generator
-* Tool options are now available through `MasterMemoryGeneratorOptions`
+* Tool options are now available through `MasterMemoryGeneratorOptions` (e.g. `-usingNamespace`)
 * The `-addImmutableConstructor` option has been completely removed; please use C#'s record or init keyword instead
 * The library is now only available through NuGet for Unity. Please use NuGetForUnity
 
