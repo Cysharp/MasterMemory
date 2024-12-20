@@ -52,9 +52,11 @@ These features are suitable for master data management(write-once, read-heavy) o
 
 Getting Started(.NET)
 ---
-Install the library(Runtime, Source Generator(Analyzer) and [Annotations](https://www.nuget.org/packages/MasterMemory.Annotations)) via NuGet.
+Install the [MasterMemory](https://www.nuget.org/packages/MasterMemory) library(Runtime, Source Generator(Analyzer) via NuGet.
 
-> dotnet add package [MasterMemory](https://www.nuget.org/packages/MasterMemory)
+```
+dotnet add package MasterMemory
+```
 
 Prepare the example table definition like following.
 
