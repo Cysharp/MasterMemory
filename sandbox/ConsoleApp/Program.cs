@@ -12,9 +12,10 @@ using System.Text;
 
 
 [assembly: MasterMemoryGeneratorOptions(
-    Namespace = "ConsoleApp",
-    IsReturnNullIfKeyNotFound = true
-    )]
+    Namespace = "ConsoleApp" // ,
+    // IsReturnNullIfKeyNotFound = true,
+    // PrefixClassName = "Foo"
+)]
 
 public class FooItem
 {
