@@ -21,18 +21,18 @@ This ensures both optimal performance and excellent usability.
 ## Table of Contents
 
 - [Concept](#concept)
-- [Getting Started(.NET Core)](#getting-startednet-core)
+- [Getting Started(.NET)](#getting-startednet)
 - [Getting Started(Unity)](#getting-startedunity)
 - [DataTable configuration](#datatable-configuration)
 - [MemoryDatabase/RangeView](#memorydatabaserangeview)
 - [Extend Table](#extend-table)
 - [ImmutableBuilder](#immutablebuilder)
-- [Immutable Data](#immutable-data)
 - [Validator](#validator)
 - [Metadata](#metadata)
 - [Inheritance](#inheritance)
 - [Optimization](#optimization)
-- [Code Generator](#code-generator)
+- [MasterMemoryGeneratorOptions](#mastermemorygeneratoroptions)
+- [v2 -> v3 migration](#v2---v3-migration)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
