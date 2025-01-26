@@ -8,8 +8,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="LiteDB" Version="4.1.4" />
-		<PackageReference Include="System.Data.SQLite" Version="1.0.111" />
+		<PackageReference Include="LiteDB" />
+		<PackageReference Include="System.Data.SQLite" />
 	</ItemGroup>
 
 	<ItemGroup>
