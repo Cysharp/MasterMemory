@@ -60,11 +60,11 @@ namespace MasterMemory.Tests
             var db = new MemoryDatabase(bin);
 
             db.SampleTable.All.Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
-            db.SampleTable.AllReverse.Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }.Reverse());
+            db.SampleTable.AllReverse.Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }.Reverse().ToArray());
             db.SampleTable.SortByAge.Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
         }
 
-         [Fact]
+        [Fact]
         public void Ranges()
         {
             var builder = new DatabaseBuilder();
@@ -73,9 +73,9 @@ namespace MasterMemory.Tests
             var bin = builder.Build();
             var db = new MemoryDatabase(bin);
 
-            db.SampleTable.FindRangeByAge(2,2).Select(x=>x.Id).ToArray().ShouldBeEquivalentTo( new int[] {} );     
-            db.SampleTable.FindRangeByAge(30,50).Select(x=>x.Id).ToArray().ShouldBeEquivalentTo( new int[] { 7, 8 } );     
-            db.SampleTable.FindRangeByAge(100,100).Select(x=>x.Id).ToArray().ShouldBeEquivalentTo( new int[] {} );     
+            db.SampleTable.FindRangeByAge(2, 2).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
+            db.SampleTable.FindRangeByAge(30, 50).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { 7, 8 });
+            db.SampleTable.FindRangeByAge(100, 100).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
         }
 
 

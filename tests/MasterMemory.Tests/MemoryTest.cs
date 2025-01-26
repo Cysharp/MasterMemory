@@ -172,7 +172,7 @@ namespace MasterMemory.Tests
             var data = CreateData();
             var table = CreateTable(data);
 
-            table.FindByFirstName("aaa").OrderBy(x => x.Id).Select(x => x.Id).ShouldBeEquivalentTo(new[] { 2, 4, 5, 9 });
+            table.FindByFirstName("aaa").OrderBy(x => x.Id).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 2, 4, 5, 9 });
         }
 
         [Fact]
@@ -181,8 +181,8 @@ namespace MasterMemory.Tests
             var data = CreateData();
             var table = CreateTable(data);
 
-            table.FindByFirstNameAndAge(("aaa", 89)).Select(x => x.Id).ShouldBeEquivalentTo(new[] { 2, 4 });
-            table.FindByFirstNameAndAge(("aaa", 89)).Reverse.Select(x => x.Id).ShouldBeEquivalentTo(new[] { 4, 2 });
+            table.FindByFirstNameAndAge(("aaa", 89)).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 2, 4 });
+            table.FindByFirstNameAndAge(("aaa", 89)).Reverse.Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 4, 2 });
         }
     }
 }
