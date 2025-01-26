@@ -14,14 +14,14 @@ public class Item
 }
 """);
 
-        codes.TryGetValue("MasterMemory.DatabaseBuilder.g.cs", out _).Should().BeTrue();
+        codes.TryGetValue("MasterMemory.DatabaseBuilder.g.cs", out _).ShouldBeTrue();
 
         var mainCode = codes["MasterMemory.ItemTable.g.cs"];
         WriteLine(mainCode);
 
-        mainCode.Should().Contain("namespace MasterMemory.Tables");
-        mainCode.Should().Contain("return ThrowKeyNotFound(key);");
-        mainCode.Should().Contain("public sealed partial class ItemTable");
+        mainCode.ShouldContain("namespace MasterMemory.Tables");
+        mainCode.ShouldContain("return ThrowKeyNotFound(key);");
+        mainCode.ShouldContain("public sealed partial class ItemTable");
     }
 
 
@@ -42,13 +42,13 @@ public class Item
 }
 """);
 
-        codes.TryGetValue("MasterMemory.FooBarBazDatabaseBuilder.g.cs", out _).Should().BeTrue();
+        codes.TryGetValue("MasterMemory.FooBarBazDatabaseBuilder.g.cs", out _).ShouldBeTrue();
 
         var mainCode = codes["MasterMemory.ItemTable.g.cs"];
         WriteLine(mainCode);
 
-        mainCode.Should().Contain("namespace MyNamespace.Tables");
-        mainCode.Should().NotContain("return ThrowKeyNotFound(key);");
-        mainCode.Should().Contain("public sealed partial class ItemTable");
+        mainCode.ShouldContain("namespace MyNamespace.Tables");
+        mainCode.ShouldNotContain("return ThrowKeyNotFound(key);");
+        mainCode.ShouldContain("public sealed partial class ItemTable");
     }
 }

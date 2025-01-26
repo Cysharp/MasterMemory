@@ -44,7 +44,7 @@ namespace MasterMemory.Tests
             var data = CreateData();
             var table = CreateTable(data);
 
-            table.Count.Should().Be(data.Length);
+            table.Count.ShouldBe(data.Length);
         }
 
         [Fact]
@@ -56,11 +56,11 @@ namespace MasterMemory.Tests
             foreach (var item in data)
             {
                 var f = table.FindById(item.Id);
-                item.Id.Should().Be(f.Id);
+                item.Id.ShouldBe(f.Id);
             }
 
             Assert.Throws<KeyNotFoundException>(() => table.FindById(110));
-            table.TryFindById(110, out _).Should().BeFalse();
+            table.TryFindById(110, out _).ShouldBeFalse();
         }
 
         [Fact]
@@ -72,13 +72,13 @@ namespace MasterMemory.Tests
             foreach (var item in data)
             {
                 var f = table.FindByFirstNameAndLastName((item.FirstName, item.LastName));
-                item.Id.Should().Be(f.Id);
+                item.Id.ShouldBe(f.Id);
             }
 
             Assert.Throws<KeyNotFoundException>(() => table.FindByFirstNameAndLastName(("aaa", "___")));
             Assert.Throws<KeyNotFoundException>(() => table.FindByFirstNameAndLastName(("___", "foo")));
-            table.TryFindByFirstNameAndLastName(("aaa", "___"), out _).Should().BeFalse();
-            table.TryFindByFirstNameAndLastName(("___", "foo"), out _).Should().BeFalse();
+            table.TryFindByFirstNameAndLastName(("aaa", "___"), out _).ShouldBeFalse();
+            table.TryFindByFirstNameAndLastName(("___", "foo"), out _).ShouldBeFalse();
         }
 
         [Fact]
@@ -88,15 +88,15 @@ namespace MasterMemory.Tests
             var table = CreateTable(data);
 
             {
-                table.FindClosestByAge(56, true).First.Age.Should().Be(49);
-                table.FindClosestByAge(56, false).First.Age.Should().Be(59);
+                table.FindClosestByAge(56, true).First.Age.ShouldBe(49);
+                table.FindClosestByAge(56, false).First.Age.ShouldBe(59);
             }
             {
                 // first
                 for (int i = 0; i < 9; i++)
                 {
-                    table.FindClosestByAge(i, selectLower: true).Count.Should().Be(0);
-//                  table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(9);
+                    table.FindClosestByAge(i, selectLower: true).Count.ShouldBe(0);
+//                  table.FindClosestByAge(i, selectLower: true).First.Age.ShouldBe(9);
                 }
 
                 var lastAge = 9;
@@ -104,26 +104,26 @@ namespace MasterMemory.Tests
                 {
                     for (int i = lastAge + 1; i < item.Age; i++)
                     {
-                        table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(lastAge);
+                        table.FindClosestByAge(i, selectLower: true).First.Age.ShouldBe(lastAge);
                     }
 
                     lastAge = item.Age;
                 }
 
                 // last
-                table.FindClosestByAge(99, selectLower: false).First.Age.Should().Be(99);
+                table.FindClosestByAge(99, selectLower: false).First.Age.ShouldBe(99);
 
                 for (int i = 100; i < 120; i++)
                 {
-                    table.FindClosestByAge(i, selectLower: false).Count.Should().Be(0);
-//                  table.FindClosestByAge(i, selectLower: true).First.Age.Should().Be(99);
+                    table.FindClosestByAge(i, selectLower: false).Count.ShouldBe(0);
+//                  table.FindClosestByAge(i, selectLower: true).First.Age.ShouldBe(99);
                 }
             }
             {
                 // first
                 for (int i = 0; i < 9; i++)
                 {
-                    table.FindClosestByAge(i, selectLower: false).First.Age.Should().Be(9);
+                    table.FindClosestByAge(i, selectLower: false).First.Age.ShouldBe(9);
                 }
 
                 var xss = data.OrderBy(x => x.Age).ToArray();
@@ -132,16 +132,16 @@ namespace MasterMemory.Tests
                     var item = xss[j];
                     for (int i = xss[j - 1].Age + 1; i < item.Age; i++)
                     {
-                        table.FindClosestByAge(i, selectLower: false).First.Age.Should().Be(xss[j].Age);
+                        table.FindClosestByAge(i, selectLower: false).First.Age.ShouldBe(xss[j].Age);
                     }
                 }
 
                 // last
-                table.FindClosestByAge(99, selectLower: false).First.Age.Should().Be(99);
+                table.FindClosestByAge(99, selectLower: false).First.Age.ShouldBe(99);
 
                 for (int i = 100; i < 120; i++)
                 {
-                    table.FindClosestByAge(i, selectLower: false).Count.Should().Be(0);
+                    table.FindClosestByAge(i, selectLower: false).Count.ShouldBe(0);
                 }
             }
         }
@@ -158,12 +158,12 @@ namespace MasterMemory.Tests
             //new Sample { Id = 4, Age = 89, FirstName = "aaa", LastName = "tako" },
             //new Sample { Id = 9, Age = 99, FirstName = "aaa", LastName = "ika" },
 
-            table.FindClosestByFirstNameAndAge(("aaa", 10), true).Count.Should().Be(0);
-            table.FindClosestByFirstNameAndAge(("aaa", 10), false).First.Age.Should().Be(19);
-            table.FindClosestByFirstNameAndAge(("aaa", 92), true).First.Age.Should().Be(89);
-            table.FindClosestByFirstNameAndAge(("aaa", 120), true).First.Age.Should().Be(99);
-            table.FindClosestByFirstNameAndAge(("aaa", 10), false).First.Age.Should().Be(19);
-            table.FindClosestByFirstNameAndAge(("aaa", 73), false).First.Age.Should().Be(89);
+            table.FindClosestByFirstNameAndAge(("aaa", 10), true).Count.ShouldBe(0);
+            table.FindClosestByFirstNameAndAge(("aaa", 10), false).First.Age.ShouldBe(19);
+            table.FindClosestByFirstNameAndAge(("aaa", 92), true).First.Age.ShouldBe(89);
+            table.FindClosestByFirstNameAndAge(("aaa", 120), true).First.Age.ShouldBe(99);
+            table.FindClosestByFirstNameAndAge(("aaa", 10), false).First.Age.ShouldBe(19);
+            table.FindClosestByFirstNameAndAge(("aaa", 73), false).First.Age.ShouldBe(89);
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace MasterMemory.Tests
             var data = CreateData();
             var table = CreateTable(data);
 
-            table.FindByFirstName("aaa").OrderBy(x => x.Id).Select(x => x.Id).Should().BeEquivalentTo(new[] { 2, 4, 5, 9 });
+            table.FindByFirstName("aaa").OrderBy(x => x.Id).Select(x => x.Id).ShouldBeEquivalentTo(new[] { 2, 4, 5, 9 });
         }
 
         [Fact]
@@ -181,8 +181,8 @@ namespace MasterMemory.Tests
             var data = CreateData();
             var table = CreateTable(data);
 
-            table.FindByFirstNameAndAge(("aaa", 89)).Select(x => x.Id).Should().BeEquivalentTo(new[] { 2, 4 });
-            table.FindByFirstNameAndAge(("aaa", 89)).Reverse.Select(x => x.Id).Should().BeEquivalentTo(new[] { 4, 2 });
+            table.FindByFirstNameAndAge(("aaa", 89)).Select(x => x.Id).ShouldBeEquivalentTo(new[] { 2, 4 });
+            table.FindByFirstNameAndAge(("aaa", 89)).Reverse.Select(x => x.Id).ShouldBeEquivalentTo(new[] { 4, 2 });
         }
     }
 }
