@@ -1,7 +1,6 @@
 ﻿using Xunit;
 using System.Linq;
 using MasterMemory.Tests.Tables;
-using FluentAssertions;
 using MessagePack;
 using System.Collections.Generic;
 

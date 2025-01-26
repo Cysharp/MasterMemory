@@ -1,5 +1,4 @@
 ﻿using MasterMemory.Tests.TestStructures;
-using FluentAssertions;
 using MessagePack;
 using System;
 using System.Collections.Generic;

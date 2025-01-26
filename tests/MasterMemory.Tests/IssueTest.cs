@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using MasterMemory.Tests.TestStructures;
+﻿using MasterMemory.Tests.TestStructures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
