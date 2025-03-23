@@ -10,7 +10,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
-		<PackageReference Include="FluentAssertions" Version="7.0.0" />
+		<PackageReference Include="Shouldly" Version="4.2.1" />
 		<PackageReference Include="xunit" Version="2.9.2" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
 	</ItemGroup>
@@ -23,7 +23,7 @@
 	<ItemGroup>
 		<Using Include="Xunit" />
 		<Using Include="Xunit.Abstractions" />
-		<Using Include="FluentAssertions" />
+		<Using Include="Shouldly" />
 	</ItemGroup>
 
 </Project>
