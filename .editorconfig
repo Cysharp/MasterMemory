@@ -29,6 +29,9 @@ end_of_line = unset
 [*.{ruleset,config,nuspec,resx,runsettings,DotSettings}]
 end_of_line = unset
 
+[*{_AssemblyInfo.cs,.notsupported.cs}]
+generated_code = true
+
 # C# code style settings
 [*.{cs}]
 dotnet_diagnostic.IDE0044.severity = none # IDE0044: Make field readonly
