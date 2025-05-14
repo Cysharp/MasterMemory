@@ -8,13 +8,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
-		<PackageReference Include="EnyimMemcachedCore" Version="2.2.4" />
-		<PackageReference Include="FASTER" Version="2019.4.24.4" />
-		<PackageReference Include="LiteDB" Version="4.1.4" />
-		<PackageReference Include="RocksDbNative" Version="5.17.2" />
-		<PackageReference Include="RocksDbSharp" Version="5.17.2" />
-		<PackageReference Include="System.Data.SQLite" Version="1.0.111" />
+		<PackageReference Include="BenchmarkDotNet" />
+		<PackageReference Include="EnyimMemcachedCore" />
+		<PackageReference Include="FASTER" />
+		<PackageReference Include="LiteDB" />
+		<PackageReference Include="RocksDbNative" />
+		<PackageReference Include="RocksDbSharp" />
+		<PackageReference Include="System.Data.SQLite" />
 	</ItemGroup>
 
 	<ItemGroup>

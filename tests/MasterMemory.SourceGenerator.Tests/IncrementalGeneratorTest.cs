@@ -5,13 +5,13 @@ public class IncrementalGeneratorTest
     void VerifySourceOutputReasonIsCached((string Key, string Reasons)[] reasons)
     {
         var reason = reasons.FirstOrDefault(x => x.Key == "SourceOutput").Reasons;
-        reason.Should().Be("Cached");
+        reason.ShouldBe("Cached");
     }
 
     void VerifySourceOutputReasonIsNotCached((string Key, string Reasons)[] reasons)
     {
         var reason = reasons.FirstOrDefault(x => x.Key == "SourceOutput").Reasons;
-        reason.Should().NotBe("Cached");
+        reason.ShouldNotBe("Cached");
     }
 
     [Fact]

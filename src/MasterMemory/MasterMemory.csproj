@@ -37,7 +37,7 @@
 	</Target>
 
 	<ItemGroup>
-		<PackageReference Include="MessagePack" Version="3.1.1" />
+		<PackageReference Include="MessagePack" />
 	</ItemGroup>
 
 	<ItemGroup>

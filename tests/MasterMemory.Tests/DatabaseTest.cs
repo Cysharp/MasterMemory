@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using MessagePack;
+﻿using MessagePack;
 using MessagePack.Resolvers;
 using System;
 using System.Collections.Generic;
@@ -45,10 +44,10 @@ namespace MasterMemory.Tests
 
             var bin = builder.Build();
             var db = new MemoryDatabase(bin);
-            db.SampleTable.FindById(8).Age.Should().Be(49);
+            db.SampleTable.FindById(8).Age.ShouldBe(49);
 
             var tableInfo = MemoryDatabase.GetTableInfo(bin);
-            tableInfo[0].TableName.Should().Be("s_a_m_p_l_e");
+            tableInfo[0].TableName.ShouldBe("s_a_m_p_l_e");
         }
 
         [Fact]
@@ -60,12 +59,12 @@ namespace MasterMemory.Tests
             var bin = builder.Build();
             var db = new MemoryDatabase(bin);
 
-            db.SampleTable.All.Select(x => x.Id).ToArray().Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
-            db.SampleTable.AllReverse.Select(x => x.Id).ToArray().Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }.Reverse());
-            db.SampleTable.SortByAge.Select(x => x.Id).OrderBy(x => x).ToArray().Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            db.SampleTable.All.Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            db.SampleTable.AllReverse.Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }.Reverse().ToArray());
+            db.SampleTable.SortByAge.Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBeEquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
         }
 
-         [Fact]
+        [Fact]
         public void Ranges()
         {
             var builder = new DatabaseBuilder();
@@ -74,9 +73,9 @@ namespace MasterMemory.Tests
             var bin = builder.Build();
             var db = new MemoryDatabase(bin);
 
-            db.SampleTable.FindRangeByAge(2,2).Select(x=>x.Id).ToArray().Should().BeEquivalentTo( new int[] {} );     
-            db.SampleTable.FindRangeByAge(30,50).Select(x=>x.Id).ToArray().Should().BeEquivalentTo( new int[] { 7, 8 } );     
-            db.SampleTable.FindRangeByAge(100,100).Select(x=>x.Id).ToArray().Should().BeEquivalentTo( new int[] {} );     
+            db.SampleTable.FindRangeByAge(2, 2).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
+            db.SampleTable.FindRangeByAge(30, 50).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { 7, 8 });
+            db.SampleTable.FindRangeByAge(100, 100).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
         }
 
 
@@ -90,7 +89,7 @@ namespace MasterMemory.Tests
                 var bin = builder.Build();
                 var db = new MemoryDatabase(bin);
 
-                db.SampleTable.All.Any().Should().BeFalse();
+                db.SampleTable.All.Any().ShouldBeFalse();
             }
             {
                 var builder = new DatabaseBuilder();
@@ -99,7 +98,7 @@ namespace MasterMemory.Tests
                 var bin = builder.Build();
                 var db = new MemoryDatabase(bin);
 
-                db.SampleTable.All.Any().Should().BeFalse();
+                db.SampleTable.All.Any().ShouldBeFalse();
             }
         }
 
@@ -119,9 +118,9 @@ namespace MasterMemory.Tests
             var db = new MemoryDatabase(bin);
 
             var sample = db.SampleTable.FindById(999);
-            sample.Age.Should().Be(10);
-            sample.FirstName.Should().BeNull();
-            sample.LastName.Should().Be("abcde");
+            sample.Age.ShouldBe(10);
+            sample.FirstName.ShouldBeNull();
+            sample.LastName.ShouldBe("abcde");
         }
     }
 }
