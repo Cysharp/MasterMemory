@@ -1,5 +1,4 @@
 ﻿#pragma warning disable
-using FluentAssertions;
 using MessagePack;
 using MessagePack.Resolvers;
 using System;
