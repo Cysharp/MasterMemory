@@ -1,3 +1,4 @@
+﻿#pragma warning disable
 using MessagePack;
 
 namespace MasterMemory.Tests

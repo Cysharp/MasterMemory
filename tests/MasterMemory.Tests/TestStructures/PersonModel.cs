@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿#pragma warning disable
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.Text;

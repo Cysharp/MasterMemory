@@ -1,4 +1,5 @@
-﻿using MasterMemory;
+﻿#pragma warning disable
+using MasterMemory;
 using System;
 using System.Collections.Generic;
 using System.IO;

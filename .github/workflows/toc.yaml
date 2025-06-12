@@ -1,0 +1,15 @@
+name: TOC Generator
+
+on:
+  push:
+    paths:
+      - 'README.md'
+
+jobs:
+  toc:
+    permissions:
+      contents: write
+    uses: Cysharp/Actions/.github/workflows/toc-generator.yaml@main
+    with:
+      TOC_TITLE: "## Table of Contents"
+    secrets: inherit

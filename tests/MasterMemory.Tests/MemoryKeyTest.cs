@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿#pragma warning disable
+using Xunit;
 using System.Linq;
 using MasterMemory.Tests.Tables;
 using MessagePack;
