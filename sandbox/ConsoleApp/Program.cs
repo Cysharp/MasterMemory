@@ -1,3 +1,7 @@
+﻿#pragma warning disable CS8618
+#pragma warning disable CS8602
+#pragma warning disable CS8603
+
 using MasterMemory;
 using MessagePack;
 using System;

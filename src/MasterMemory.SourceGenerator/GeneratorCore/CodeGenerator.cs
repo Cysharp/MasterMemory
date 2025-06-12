@@ -91,7 +91,7 @@ namespace MasterMemory.GeneratorCore
                 foreach (var attr in attrList.Attributes)
                 {
                     var attrName = attr.Name.ToFullString().Trim();
-                    if (attrName == "PrimaryKey" || attrName == "MasterMemory.Annotations.PrimaryKey")
+                    if (attrName == "PrimaryKey" || attrName == "MasterMemory.PrimaryKey")
                     {
                         if (resultPrimaryKey != null)
                         {
@@ -114,7 +114,7 @@ namespace MasterMemory.GeneratorCore
 
                         primaryKey.Properties = new[] { keyProperty };
                     }
-                    else if (attrName == "SecondaryKey" || attrName == "MasterMemory.Annotations.SecondaryKey")
+                    else if (attrName == "SecondaryKey" || attrName == "MasterMemory.SecondaryKey")
                     {
                         if (secondaryKey != null)
                         {
@@ -137,11 +137,11 @@ namespace MasterMemory.GeneratorCore
                         }
                         secondaryKey.Properties = new[] { keyProperty };
                     }
-                    else if (attrName == "NonUnique" || attrName == "MasterMemory.Annotations.NonUnique")
+                    else if (attrName == "NonUnique" || attrName == "MasterMemory.NonUnique")
                     {
                         hasNonUnique = true;
                     }
-                    else if (attrName == "StringComparisonOption" || attrName == "MasterMemory.Annotations.StringComparisonOption")
+                    else if (attrName == "StringComparisonOption" || attrName == "MasterMemory.StringComparisonOption")
                     {
                         var option = (attr.ArgumentList.Arguments[0].Expression as MemberAccessExpressionSyntax).ToFullStringTrim();
                         if (primaryKey != null)
