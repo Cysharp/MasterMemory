@@ -2,7 +2,6 @@
 using Xunit;
 using System.Linq;
 using MasterMemory.Tests.Tables;
-using FluentAssertions;
 using MessagePack;
 using System.Collections.Generic;
 
@@ -45,15 +44,15 @@ namespace MasterMemory.Tests
         {
             var table = CreateTable();
 
-            table.FindById(8).Id.Should().Be(8);
+            table.FindById(8).Id.ShouldBe(8);
             Assert.Throws<KeyNotFoundException>(() => table.FindById(100));
 
-            table.FindByIdAndAge((4, 89)).Id.Should().Be(4);
+            table.FindByIdAndAge((4, 89)).Id.ShouldBe(4);
 
             Assert.Throws<KeyNotFoundException>(() => table.FindByIdAndAge((4, 899)));
             Assert.Throws<KeyNotFoundException>(() => table.FindByIdAndAge((5, 89)));
 
-            table.FindByIdAndAgeAndFirstName((6, 29, "bbb")).Id.Should().Be(6);
+            table.FindByIdAndAgeAndFirstName((6, 29, "bbb")).Id.ShouldBe(6);
             Assert.Throws<KeyNotFoundException>(() => table.FindByIdAndAgeAndFirstName((6, 29, "bbbz")));
         }
 
@@ -64,10 +63,10 @@ namespace MasterMemory.Tests
 
             var test = table.FindByFirstName("eee");
 
-            table.FindByFirstName("eee").Select(x => x.Id).OrderBy(x => x).Should().BeEquivalentTo(new[] { 1, 10 });
-            table.FindByFirstName("eeee").Count.Should().Be(0);
+            table.FindByFirstName("eee").Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBeEquivalentTo(new[] { 1, 10 });
+            table.FindByFirstName("eeee").Count.ShouldBe(0);
 
-            table.FindClosestByFirstNameAndLastName(("aaa", "takz")).Id.Should().Be(4);
+            table.FindClosestByFirstNameAndLastName(("aaa", "takz")).Id.ShouldBe(4);
         }
     }
 }

@@ -16,19 +16,19 @@ namespace MasterMemory.Tests
 
             var sampleTable = metaDb.GetTableInfo("s_a_m_p_l_e");
 
-            sampleTable.TableName.Should().Be("s_a_m_p_l_e");
+            sampleTable.TableName.ShouldBe("s_a_m_p_l_e");
 
-            sampleTable.Properties[0].Name.Should().Be("Id");
-            sampleTable.Properties[0].NameLowerCamel.Should().Be("id");
-            sampleTable.Properties[0].NameSnakeCase.Should().Be("id");
+            sampleTable.Properties[0].Name.ShouldBe("Id");
+            sampleTable.Properties[0].NameLowerCamel.ShouldBe("id");
+            sampleTable.Properties[0].NameSnakeCase.ShouldBe("id");
 
-            sampleTable.Properties[2].Name.Should().Be("FirstName");
-            sampleTable.Properties[2].NameLowerCamel.Should().Be("firstName");
-            sampleTable.Properties[2].NameSnakeCase.Should().Be("first_name");
+            sampleTable.Properties[2].Name.ShouldBe("FirstName");
+            sampleTable.Properties[2].NameLowerCamel.ShouldBe("firstName");
+            sampleTable.Properties[2].NameSnakeCase.ShouldBe("first_name");
 
             var primary = sampleTable.Indexes[0];
-            primary.IsUnique.Should().BeTrue();
-            primary.IndexProperties[0].Name.Should().Be("Id");
+            primary.IsUnique.ShouldBeTrue();
+            primary.IndexProperties[0].Name.ShouldBe("Id");
         }
     }
 }

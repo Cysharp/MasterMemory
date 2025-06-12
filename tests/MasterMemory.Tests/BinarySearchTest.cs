@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Xunit;
 using MessagePack;
 
@@ -43,26 +42,26 @@ namespace MasterMemory.Tests
                     // not found
                     if (firstIndex == -1)
                     {
-                        f.Should().Be(-1);
-                        l.Should().Be(-1);
-                        u.Should().Be(-1);
+                        f.ShouldBe(-1);
+                        l.ShouldBe(-1);
+                        u.ShouldBe(-1);
                         continue;
                     }
 
-                    array[f].Should().Be(i);
-                    array[l].Should().Be(i);
-                    array[u].Should().Be(i);
+                    array[f].ShouldBe(i);
+                    array[l].ShouldBe(i);
+                    array[u].ShouldBe(i);
 
-                    l.Should().Be(firstIndex);
-                    u.Should().Be(lastIndex);
+                    l.ShouldBe(firstIndex);
+                    u.ShouldBe(lastIndex);
                 }
             }
 
             // and empty
             var emptyArray = Enumerable.Empty<int>().ToArray();
-            BinarySearch.FindFirst(emptyArray, 0, x => x, Comparer<int>.Default).Should().Be(-1);
-            BinarySearch.LowerBound(emptyArray, 0, emptyArray.Length, 0, x => x, Comparer<int>.Default).Should().Be(-1);
-            BinarySearch.UpperBound(emptyArray, 0, emptyArray.Length, 0, x => x, Comparer<int>.Default).Should().Be(-1);
+            BinarySearch.FindFirst(emptyArray, 0, x => x, Comparer<int>.Default).ShouldBe(-1);
+            BinarySearch.LowerBound(emptyArray, 0, emptyArray.Length, 0, x => x, Comparer<int>.Default).ShouldBe(-1);
+            BinarySearch.UpperBound(emptyArray, 0, emptyArray.Length, 0, x => x, Comparer<int>.Default).ShouldBe(-1);
         }
 
         [Fact]
@@ -72,7 +71,7 @@ namespace MasterMemory.Tests
             var array = Enumerable.Empty<int>().ToArray();
 
             var near = BinarySearch.FindClosest(array, 0, 0, array.Length, x => x, Comparer<int>.Default, false);
-            near.Should().Be(-1);
+            near.ShouldBe(-1);
 
             // mid
             var source = new[]{
@@ -84,24 +83,24 @@ namespace MasterMemory.Tests
                 new { id = 5, bound = 1000 },
             };
 
-            BinarySearch.FindClosest(source, 0, source.Length, -100, x => x.bound, Comparer<int>.Default, true).Should().Be(-1);
-//          BinarySearch.FindClosest(source, 0, source.Length, -100, x => x.bound, Comparer<int>.Default, true).Should().Be(0);
-            BinarySearch.FindClosest(source, 0, source.Length, 0, x => x.bound, Comparer<int>.Default, true).Should().Be(0);
-            BinarySearch.FindClosest(source, 0, source.Length, 10, x => x.bound, Comparer<int>.Default, true).Should().Be(0);
-            BinarySearch.FindClosest(source, 0, source.Length, 50, x => x.bound, Comparer<int>.Default, true).Should().Be(0);
+            BinarySearch.FindClosest(source, 0, source.Length, -100, x => x.bound, Comparer<int>.Default, true).ShouldBe(-1);
+//          BinarySearch.FindClosest(source, 0, source.Length, -100, x => x.bound, Comparer<int>.Default, true).ShouldBe(0);
+            BinarySearch.FindClosest(source, 0, source.Length, 0, x => x.bound, Comparer<int>.Default, true).ShouldBe(0);
+            BinarySearch.FindClosest(source, 0, source.Length, 10, x => x.bound, Comparer<int>.Default, true).ShouldBe(0);
+            BinarySearch.FindClosest(source, 0, source.Length, 50, x => x.bound, Comparer<int>.Default, true).ShouldBe(0);
 
-            source[BinarySearch.FindClosest(source, 0, source.Length, 100, x => x.bound, Comparer<int>.Default, true)].id.Should().Be(1);
-            source[BinarySearch.FindClosest(source, 0, source.Length, 100, x => x.bound, Comparer<int>.Default, false)].id.Should().Be(1);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 100, x => x.bound, Comparer<int>.Default, true)].id.ShouldBe(1);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 100, x => x.bound, Comparer<int>.Default, false)].id.ShouldBe(1);
 
-            source[BinarySearch.FindClosest(source, 0, source.Length, 150, x => x.bound, Comparer<int>.Default, true)].id.Should().Be(1);
-            source[BinarySearch.FindClosest(source, 0, source.Length, 300, x => x.bound, Comparer<int>.Default, true)].id.Should().Be(3);
-            source[BinarySearch.FindClosest(source, 0, source.Length, 999, x => x.bound, Comparer<int>.Default, true)].id.Should().Be(4);
-            source[BinarySearch.FindClosest(source, 0, source.Length, 1000, x => x.bound, Comparer<int>.Default, true)].id.Should().Be(5);
-            source[BinarySearch.FindClosest(source, 0, source.Length, 1001, x => x.bound, Comparer<int>.Default, true)].id.Should().Be(5);
-            source[BinarySearch.FindClosest(source, 0, source.Length, 10000, x => x.bound, Comparer<int>.Default, true)].id.Should().Be(5);
-//          source[BinarySearch.FindClosest(source, 0, source.Length, 10000, x => x.bound, Comparer<int>.Default, false)].id.Should().Be(5);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 150, x => x.bound, Comparer<int>.Default, true)].id.ShouldBe(1);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 300, x => x.bound, Comparer<int>.Default, true)].id.ShouldBe(3);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 999, x => x.bound, Comparer<int>.Default, true)].id.ShouldBe(4);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 1000, x => x.bound, Comparer<int>.Default, true)].id.ShouldBe(5);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 1001, x => x.bound, Comparer<int>.Default, true)].id.ShouldBe(5);
+            source[BinarySearch.FindClosest(source, 0, source.Length, 10000, x => x.bound, Comparer<int>.Default, true)].id.ShouldBe(5);
+//          source[BinarySearch.FindClosest(source, 0, source.Length, 10000, x => x.bound, Comparer<int>.Default, false)].id.ShouldBe(5);
  
-            BinarySearch.FindClosest(source, 0, source.Length, 10000, x => x.bound, Comparer<int>.Default, false).Should().Be(6);
+            BinarySearch.FindClosest(source, 0, source.Length, 10000, x => x.bound, Comparer<int>.Default, false).ShouldBe(6);
         }
     }
 }
