@@ -9,18 +9,11 @@
 		<Company>Cysharp</Company>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1701;1702;1705;1591</NoWarn>
+		<RootNamespace>MasterMemory</RootNamespace>
 
 		<!-- NuGet -->
 		<PackageId>MasterMemory.Annotations</PackageId>
-		<PackageVersion>$(Version)</PackageVersion>
-		<Authors>Cysharp</Authors>
-		<Copyright>Cysharp</Copyright>
 		<Description>Attributes of MasterMemory.</Description>
-		<PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
-		<RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>database, embedded, inmemory, unity</PackageTags>
-		<RootNamespace>MasterMemory</RootNamespace>
 		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 

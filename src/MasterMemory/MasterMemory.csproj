@@ -14,14 +14,7 @@
 
 		<!-- NuGet -->
 		<PackageId>MasterMemory</PackageId>
-		<PackageVersion>$(Version)</PackageVersion>
-		<Authors>Cysharp</Authors>
-		<Copyright>Cysharp</Copyright>
 		<Description>Embedded Typed Readonly In-Memory Document Database for .NET Core and Unity.</Description>
-		<PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
-		<RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>database, embedded, inmemory, unity</PackageTags>
 		<IsPackable>true</IsPackable>
 
 		<!-- SourceGenerator Packaging configs... -->
