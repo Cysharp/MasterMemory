@@ -4,11 +4,12 @@
     <LangVersion>13</LangVersion>
 
     <!-- NuGet Package Information -->
+    <IsPackable>false</IsPackable>
     <PackageVersion>$(Version)</PackageVersion>
     <Company>Cysharp</Company>
     <Authors>Cysharp</Authors>
     <Copyright>© Cysharp, Inc.</Copyright>
-		<PackageTags>database, embedded, inmemory, unity</PackageTags>
+    <PackageTags>database, embedded, inmemory, unity</PackageTags>
     <PackageProjectUrl>https://github.com/Cysharp/MasterMemory</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
@@ -18,7 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Icon.png" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
-		<None Include="$(MSBuildThisFileDirectory)Icon.png" Pack="true" PackagePath="\" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)LICENSE" />
   </ItemGroup>
 </Project>
