@@ -2,7 +2,7 @@
 
 MasterMemory
 ===
-Source Generator based Embedded Typed Readonly In-Memory Document Database for .NET and Unity. 
+Source Generator based Embedded Typed Readonly In-Memory Document Database for .NET and Unity.
 
 ![image](https://user-images.githubusercontent.com/46207/61031896-61890800-a3fb-11e9-86b7-84c821d347a4.png)
 
@@ -26,6 +26,7 @@ This ensures both optimal performance and excellent usability.
 - [DataTable configuration](#datatable-configuration)
 - [MemoryDatabase/RangeView](#memorydatabaserangeview)
 - [Extend Table](#extend-table)
+- [Relations](#relations)
 - [ImmutableBuilder](#immutablebuilder)
 - [Validator](#validator)
 - [Metadata](#metadata)
@@ -362,7 +363,7 @@ public sealed partial class MonsterTable
     int maxHp;
 #pragma warning disable CS0649
     readonly int minHp;
-#pragma warning restore CS0649    
+#pragma warning restore CS0649
 
     // called after constructed
     partial void OnAfterConstruct()
@@ -371,13 +372,79 @@ public sealed partial class MonsterTable
         // you can use Unsafe.AsRef to set readonly field
         Unsafe.AsRef(minHp) = All.Select(x => x.MaxHp).Min();
     }
-    
+
     // add custom method other than standard Find method
     public IEnumerable<Monster> GetRangedMonster(int arg1)
     {
         return All.Where....();
     }
 }
+```
+
+Relations
+---
+
+You can extend table with relations. This is possible by using the `partial void OnAfterContruct(BaseMasterMemory db)`. Here is an example:
+
+```csharp
+[MemoryTable("person_rel"), MessagePackObject(true)]
+public record PersonRelation
+{
+    // index definition by attributes.
+    [PrimaryKey] public int PersonId { get; set; }
+
+    public string Name { get; set; }
+}
+
+[MemoryTable("person_rel_item"), MessagePackObject(true)]
+public record PersonRelationItem
+{
+    [PrimaryKey, NonUnique]
+    [SecondaryKey(0), NonUnique]
+    public int PersonId { get; set; }
+
+    [PrimaryKey, NonUnique]
+    [SecondaryKey(1), NonUnique]
+    public int ItemId { get; set; }
+}
+
+[MemoryTable("relation_item"), MessagePackObject(true)]
+public record RelationItem
+{
+    [PrimaryKey] public int ItemId { get; set; }
+
+    public string Name { get; set; }
+}
+```
+
+Then implement the extension method within PersonRelation table:
+```csharp
+public sealed partial class PersonRelationTable
+{
+    private MemoryDatabase _database;
+
+    partial void OnAfterConstruct(MemoryDatabaseBase db)
+    {
+        _database = (MemoryDatabase)db;
+    }
+
+    public IEnumerable<RelationItem> GetItemsFromPerson(int personId)
+    {
+        foreach (var item in _database.PersonRelationItemTable.FindByPersonId(personId))
+        {
+            yield return _database.RelationItemTable.FindByItemId(item.ItemId);
+        }
+    }
+}
+```
+
+Now you can use `GetItemsFromPerson` method to get all items from a person:
+
+```csharp
+
+var items = db.PersonRelationTable.GetItemsFromPerson(1);
+
+// this will return "Spear", "Bow", "Axe"
 ```
 
 ImmutableBuilder

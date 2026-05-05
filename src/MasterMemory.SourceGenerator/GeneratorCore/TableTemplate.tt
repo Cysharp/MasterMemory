@@ -21,7 +21,7 @@ namespace <#= Namespace #>.Tables
         readonly Func<<#= GenerationContext.ClassName #>, <#= item.BuildTypeName() #>> <#= item.SelectorName #>;
 <# } #>
 
-        public <#= GenerationContext.ClassName #>Table(<#= GenerationContext.ClassName #>[] sortedData)
+        public <#= GenerationContext.ClassName #>Table(MemoryDatabaseBase db, <#= GenerationContext.ClassName #>[] sortedData)
             : base(sortedData)
         {
             this.<#= GenerationContext.PrimaryKey.SelectorName #> = x => <#= GenerationContext.PrimaryKey.BuildKeyAccessor("x") #>;
@@ -30,9 +30,12 @@ namespace <#= Namespace #>.Tables
             this.<#= item.TableName #> = CloneAndSortBy(this.secondaryIndex<#= item.IndexNo #>Selector, <#= item.BuildComparer() #>);
 <# } #>
             OnAfterConstruct();
+            OnAfterConstruct(db);
         }
 
         partial void OnAfterConstruct();
+
+        partial void OnAfterConstruct(MemoryDatabaseBase db);
 
 <# for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var item = GenerationContext.SecondaryKeys[i]; #>
         public RangeView<<#= GenerationContext.ClassName #>> SortBy<#= item.BuildMethodName() #> => new RangeView<<#= GenerationContext.ClassName #>>(<#= item.TableName #>, 0, <#= item.TableName #>.Length - 1, true);
@@ -84,7 +87,7 @@ namespace <#= Namespace #>.Tables
         {
             return <#= item.BuildFindPrefix() #>Core<#= !item.IsNonUnique && item.IsIntType ? "Int" : "" #>(<#= item.TableName #>, <#= item.SelectorName #>, <#= item.BuildComparer() #>, key, <#= ThrowKeyIfNotFound.ToString().ToLower() #>);
         }
-        
+
         public bool TryFindBy<#= item.BuildMethodName() #>(<#= item.BuildTypeName() #> key, out <#= item.BuildReturnTypeName(GenerationContext.ClassName) #> result)
         {
             return Try<#= item.BuildFindPrefix() #>Core<#= !item.IsNonUnique && item.IsIntType ? "Int" : "" #>(<#= item.TableName #>, <#= item.SelectorName #>, <#= item.BuildComparer() #>, key, out result);
@@ -114,11 +117,11 @@ namespace <#= Namespace #>.Tables
 #if !DISABLE_MASTERMEMORY_VALIDATOR
 
 <# if (!GenerationContext.PrimaryKey.IsNonUnique) { var key = GenerationContext.PrimaryKey; #>
-            ValidateUniqueCore(<#= key.TableName #>, <#= key.SelectorName #>, "<#= key.BuildPropertyTupleName() #>", resultSet);       
+            ValidateUniqueCore(<#= key.TableName #>, <#= key.SelectorName #>, "<#= key.BuildPropertyTupleName() #>", resultSet);
 <# } #>
 <# for(var i = 0; i < GenerationContext.SecondaryKeys.Length; i++) { var key = GenerationContext.SecondaryKeys[i]; #>
 <#      if (!key.IsNonUnique) { #>
-            ValidateUniqueCore(<#= key.TableName #>, <#= key.SelectorName #>, "<#= key.BuildPropertyTupleName() #>", resultSet);       
+            ValidateUniqueCore(<#= key.TableName #>, <#= key.SelectorName #>, "<#= key.BuildPropertyTupleName() #>", resultSet);
 <#      } #>
 <# } #>
 
