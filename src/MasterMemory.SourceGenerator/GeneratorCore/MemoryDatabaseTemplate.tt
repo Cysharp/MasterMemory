@@ -48,7 +48,7 @@ namespace <#= Namespace #>
         void InitSequential(Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism)
         {
 <# foreach(var item in GenerationContexts) { #>
-            this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(xs));
+            this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(this, xs));
 <# } #>
         }
 
@@ -57,10 +57,10 @@ namespace <#= Namespace #>
             var extracts = new Action[]
             {
 <# foreach(var item in GenerationContexts) { #>
-                () => this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(xs)),
+                () => this.<#= item.ClassName #>Table = ExtractTableData<<#= item.ClassName #>, <#= item.ClassName #>Table>(header, databaseBinary, options, xs => new <#= item.ClassName #>Table(this, xs)),
 <# } #>
             };
-            
+
             System.Threading.Tasks.Parallel.Invoke(new System.Threading.Tasks.ParallelOptions
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism
@@ -121,7 +121,7 @@ namespace <#= Namespace #>
 <# foreach(var item in GenerationContexts) { #>
                 case "<#= item.MemoryTableName #>":
                     return db.<#= item.ClassName #>Table;
-<# } #>                
+<# } #>
                 default:
                     return null;
             }
