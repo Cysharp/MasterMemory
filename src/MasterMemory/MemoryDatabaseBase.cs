@@ -62,7 +62,8 @@ namespace MasterMemory
             var reader = new MessagePackReader(databaseBinary);
             var header = formatter.Deserialize(ref reader, HeaderFormatterResolver.StandardOptions);
 
-            return header.Select(x => new TableInfo(x.Key, x.Value.Item2, storeTableData ? databaseBinary : null, x.Value.Item1)).ToArray();
+            var headerSize = (int)reader.Consumed;
+            return header.Select(x => new TableInfo(x.Key, x.Value.Item2, storeTableData ? databaseBinary : null, headerSize + x.Value.Item1)).ToArray();
         }
 
         protected void ValidateTable<TElement>(IReadOnlyList<TElement> table, ValidationDatabase database, string pkName, Delegate pkSelector, ValidateResult result)

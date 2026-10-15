@@ -52,6 +52,20 @@ namespace MasterMemory.Tests
         }
 
         [Fact]
+        public void DumpTableDataAsJson()
+        {
+            var samples = CreateData();
+            var items = new[] { new TestStructures.ItemMaster { ItemId = 42 } };
+            var bin = new DatabaseBuilder().Append(samples).Append(items).Build();
+            var tableInfo = MemoryDatabase.GetTableInfo(bin);
+
+            tableInfo.Single(x => x.TableName == "s_a_m_p_l_e").DumpAsJson()
+                .ShouldBe(MessagePackSerializer.ConvertToJson(MessagePackSerializer.Serialize(samples.OrderBy(x => x.Id).ToArray())));
+            tableInfo.Single(x => x.TableName == "item_master").DumpAsJson(MessagePackSerializer.DefaultOptions)
+                .ShouldBe(MessagePackSerializer.ConvertToJson(MessagePackSerializer.Serialize(items)));
+        }
+
+        [Fact]
         public void All()
         {
             var builder = new DatabaseBuilder();
