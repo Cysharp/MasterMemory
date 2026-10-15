@@ -251,7 +251,7 @@ public class Sample
 db.Sample.FindByBarAndFoo((int Bar, int Foo))
 ```
 
-Default of `FindBy***` return type is single(if not found, returns `null`). It means key is unique by default. If mark `[NonUnique]` in same AttributeList, return type is `RangeView<T>`(if not found, return empty).
+By default, `FindBy***` returns a single element and throws `KeyNotFoundException` if the key is not found. Keys are unique by default. To return `null` for a missing unique key instead, set `IsReturnNullIfKeyNotFound = true` in `[MasterMemoryGeneratorOptions]`. If marked with `[NonUnique]` in the same AttributeList, the return type is `RangeView<T>` (empty if not found).
 
 ```csharp
 [MemoryTable("sample"), MessagePackObject(true)]
