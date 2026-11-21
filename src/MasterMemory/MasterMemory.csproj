@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<!-- The same split as MessagePack v4 itself: on net9.0 and later its buffers are ref structs, and a formatter
+		     compiled only against a netstandard build falls back to the slower compatible buffers there. -->
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net9.0</TargetFrameworks>
 		<RootNamespace>MasterMemory</RootNamespace>
 		<AssemblyName>MasterMemory</AssemblyName>
 		<LangVersion>13</LangVersion>
@@ -22,7 +24,8 @@
 	</PropertyGroup>
 
 	<!-- for nuget publish -->
-	<Target Name="PackBuildOutputs" DependsOnTargets="SatelliteDllsProjectOutputGroup;DebugSymbolsProjectOutputGroup">
+	<!-- this target runs once per target framework and the generator is the same file each time, so one of them adds it -->
+	<Target Name="PackBuildOutputs" DependsOnTargets="SatelliteDllsProjectOutputGroup;DebugSymbolsProjectOutputGroup" Condition="'$(TargetFramework)' == 'netstandard2.0'">
 		<ItemGroup>
 			<TfmSpecificPackageFile Include="$(TargetDir)\MasterMemory.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" />
 			<TfmSpecificPackageFile Include="@(SatelliteDllsProjectOutputGroupOutput->'%(FinalOutputPath)')" PackagePath="analyzers\dotnet\cs\%(SatelliteDllsProjectOutputGroupOutput.Culture)\" />
@@ -30,7 +33,11 @@
 	</Target>
 
 	<ItemGroup>
-		<PackageReference Include="MessagePack" Version="3.1.3" />
+		<!-- PrivateAssets="none": the default would pack these dependencies with exclude="Build,Analyzers" and keep MessagePack's
+		     source generator from a project that references only MasterMemory, whose tables then had no formatter. -->
+		<PackageReference Include="MessagePack" Version="4.0.0-rc.1" PrivateAssets="none" />
+		<!-- every table is stored in the Lz4Block envelope, the format MasterMemory has used since v2 -->
+		<PackageReference Include="MessagePack.LZ4" Version="4.0.0-rc.1" PrivateAssets="none" />
 	</ItemGroup>
 
 	<ItemGroup>

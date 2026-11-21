@@ -35,7 +35,9 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("() : this(null) { }\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write("(MessagePack.IFormatterResolver? resolver) : base(resolver) { }\r\n\r\n");
+            this.Write("(MessagePack.MessagePackFormatterFactory? formatterFactory) : base(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write("MasterMemoryFormatterFactory.Instance, formatterFactory) { }\r\n\r\n");
  foreach(var item in GenerationContexts) { 
             this.Write("        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));

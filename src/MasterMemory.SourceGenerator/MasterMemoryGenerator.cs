@@ -83,7 +83,7 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         var builderTemplate = new DatabaseBuilderTemplate();
         var databaseTemplate = new MemoryDatabaseTemplate();
         var immutableBuilderTemplate = new ImmutableBuilderTemplate();
-        var resolverTemplate = new MessagePackResolverTemplate();
+        var resolverTemplate = new FormatterFactoryTemplate();
         builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
         builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
         builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));

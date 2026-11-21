@@ -1,5 +1,4 @@
 ﻿using MasterMemory.Internal;
-using MessagePack.Resolvers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +11,6 @@ namespace MasterMemory.Tests
 {
     public class BinarySearchTest
     {
-        public BinarySearchTest()
-        {
-            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
-        }
-
         [Fact]
         public void Find()
         {

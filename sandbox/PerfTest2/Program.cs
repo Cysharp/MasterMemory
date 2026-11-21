@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using LiteDB;
 using System.IO;
 
+// the generated MemoryDatabase / DatabaseBuilder go next to the hand-written code
+[assembly: MasterMemory.MasterMemoryGeneratorOptions(Namespace = "TestPerfLiteDB")]
+
 // based test code -> https://github.com/mbdavid/LiteDB-Perf
 
 namespace TestPerfLiteDB

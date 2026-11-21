@@ -18,7 +18,7 @@ namespace MasterMemory.GeneratorCore
     /// Class to produce the template output
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "17.0.0.0")]
-    public partial class MessagePackResolverTemplate : MessagePackResolverTemplateBase
+    public partial class FormatterFactoryTemplate : FormatterFactoryTemplateBase
     {
         /// <summary>
         /// Create the template output
@@ -29,67 +29,19 @@ namespace MasterMemory.GeneratorCore
             this.Write(this.ToStringHelper.ToStringWithCulture(Using));
             this.Write("\r\n\r\nnamespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
-            this.Write("\r\n{\r\n    public class ");
+            this.Write("\r\n{\r\n    /// <summary>\r\n    /// The MessagePack formatters of every table array. MemoryDatabase and DatabaseBuilder compose it" +
+                    " into the serializer themselves.\r\n    /// </summary>\r\n    public static class ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write(" : global::MessagePack.IFormatterResolver\r\n    {\r\n        public static readonly " +
-                    "global::MessagePack.IFormatterResolver Instance = new ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write("();\r\n\r\n        ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write(@"()
-        {
-
-        }
-
-        public global::MessagePack.Formatters.IMessagePackFormatter<T>? GetFormatter<T>()
-        {
-            return FormatterCache<T>.formatter;
-        }
-
-        static class FormatterCache<T>
-        {
-            public static readonly global::MessagePack.Formatters.IMessagePackFormatter<T>? formatter;
-
-            static FormatterCache()
-            {
-                var f = ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write(@"GetFormatterHelper.GetFormatter(typeof(T));
-                if (f != null)
-                {
-                    formatter = (global::MessagePack.Formatters.IMessagePackFormatter<T>)f;
-                }
-            }
-        }
-    }
-
-    internal static class ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write("GetFormatterHelper\r\n    {\r\n        static readonly global::System.Collections.Gen" +
-                    "eric.Dictionary<Type, int> lookup;\r\n\r\n        static ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write("GetFormatterHelper()\r\n        {\r\n            lookup = new global::System.Collecti" +
-                    "ons.Generic.Dictionary<Type, int>(");
+            this.Write("\r\n    {\r\n        public static readonly global::MessagePack.MessagePackFormatterFactory Instance = new global::Mas" +
+                    "terMemory.TableFormatterFactory.Builder(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GenerationContexts.Length));
-            this.Write(")\r\n            {\r\n");
- for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; 
-            this.Write("                {typeof(");
+            this.Write(")\r\n");
+ foreach(var item in GenerationContexts) { 
+            this.Write("            .Add<");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write("[]), ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(i));
-            this.Write(" },\r\n");
+            this.Write(">()\r\n");
  } 
-            this.Write("            };\r\n        }\r\n\r\n        internal static object? GetFormatter(Type t)" +
-                    "\r\n        {\r\n            int key;\r\n            if (!lookup.TryGetValue(t, out ke" +
-                    "y)) return null;\r\n\r\n            switch (key)\r\n            {\r\n");
- for(var i = 0; i < GenerationContexts.Length; i++) { var item = GenerationContexts[i]; 
-            this.Write("                case ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(i));
-            this.Write(": return new MessagePack.Formatters.ArrayFormatter<");
-            this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
-            this.Write(">();\r\n");
- } 
-            this.Write("                default: return null;\r\n            }\r\n        }\r\n    }\r\n}");
+            this.Write("            .Build();\r\n    }\r\n}");
             return this.GenerationEnvironment.ToString();
         }
     }
@@ -98,7 +50,7 @@ namespace MasterMemory.GeneratorCore
     /// Base class for this transformation
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "17.0.0.0")]
-    public class MessagePackResolverTemplateBase
+    public class FormatterFactoryTemplateBase
     {
         #region Fields
         private global::System.Text.StringBuilder generationEnvironmentField;

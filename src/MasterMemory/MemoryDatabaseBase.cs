@@ -1,6 +1,5 @@
 ﻿using MasterMemory.Internal;
 using MessagePack;
-using MessagePack.Formatters;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -17,23 +16,21 @@ namespace MasterMemory
 
         }
 
-        public MemoryDatabaseBase(byte[] databaseBinary, bool internString = true, IFormatterResolver? formatterResolver = null, int maxDegreeOfParallelism = 1)
+        /// <param name="databaseBinary">The database, as <see cref="DatabaseBuilderBase.Build"/> wrote it.</param>
+        /// <param name="internString">Intern every string read from the tables.</param>
+        /// <param name="tableFormatterFactory">The generated factory that serves the array of each table type.</param>
+        /// <param name="formatterFactory">The formatters of the table types and their members; null is <see cref="MessagePackFormatterFactory.DefaultAot"/>.</param>
+        /// <param name="maxDegreeOfParallelism">How many tables are deserialized at the same time.</param>
+        protected MemoryDatabaseBase(byte[] databaseBinary, bool internString, MessagePackFormatterFactory tableFormatterFactory, MessagePackFormatterFactory? formatterFactory, int maxDegreeOfParallelism)
         {
-            var reader = new MessagePackReader(databaseBinary);
-            var formatter = new DictionaryFormatter<string, (int, int)>();
-
-            var header = formatter.Deserialize(ref reader, HeaderFormatterResolver.StandardOptions);
-            var resolver = formatterResolver ?? MessagePackSerializer.DefaultOptions.Resolver;
-            if (internString)
-            {
-                resolver = new InternStringResolver(resolver);
-            }
+            var header = DatabaseHeader.Read(databaseBinary, out var headerLength);
             if (maxDegreeOfParallelism < 1)
             {
                 maxDegreeOfParallelism = 1;
             }
 
-            Init(header!, databaseBinary.AsMemory((int)reader.Consumed), MessagePackSerializer.DefaultOptions.WithResolver(resolver).WithCompression(MessagePackCompression.Lz4Block), maxDegreeOfParallelism);
+            var options = SerializerOptionsCache.Get(tableFormatterFactory, formatterFactory, internString);
+            Init(header, databaseBinary.AsMemory(headerLength), options, maxDegreeOfParallelism);
         }
 
         protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, Func<T[], TView> createView)
@@ -43,7 +40,7 @@ namespace MasterMemory
 
             if (header.TryGetValue(tableName.TableName, out var segment))
             {
-                var data = MessagePackSerializer.Deserialize<T[]>(databaseBinary.Slice(segment.offset, segment.count), options);
+                var data = MessagePackSerializer.Deserialize<T[]>(databaseBinary.Span.Slice(segment.offset, segment.count), options);
                 return createView(data);
             }
             else
@@ -58,11 +55,10 @@ namespace MasterMemory
 
         public static TableInfo[] GetTableInfo(byte[] databaseBinary, bool storeTableData = true)
         {
-            var formatter = new DictionaryFormatter<string, (int, int)>();
-            var reader = new MessagePackReader(databaseBinary);
-            var header = formatter.Deserialize(ref reader, HeaderFormatterResolver.StandardOptions);
+            var header = DatabaseHeader.Read(databaseBinary, out var headerLength);
 
-            return header.Select(x => new TableInfo(x.Key, x.Value.Item2, storeTableData ? databaseBinary : null, x.Value.Item1)).ToArray();
+            // a table's offset counts from the end of the header
+            return header.Select(x => new TableInfo(x.Key, x.Value.count, storeTableData ? databaseBinary : null, headerLength + x.Value.offset)).ToArray();
         }
 
         protected void ValidateTable<TElement>(IReadOnlyList<TElement> table, ValidationDatabase database, string pkName, Delegate pkSelector, ValidateResult result)
@@ -101,17 +97,30 @@ namespace MasterMemory
 
         public string DumpAsJson()
         {
-            return DumpAsJson(MessagePackSerializer.DefaultOptions);
-        }
-
-        public string DumpAsJson(MessagePackSerializerOptions options)
-        {
             if (binaryData == null)
             {
                 throw new InvalidOperationException("DumpAsJson can only call from GetTableInfo(storeTableData = true).");
             }
 
-            return MessagePackSerializer.ConvertToJson(binaryData, options.WithCompression(MessagePackCompression.Lz4Block));
+            // a small table is stored without the Lz4Block envelope, and TryDecode says so
+            if (!SerializerOptionsCache.TableProcessor.TryDecode(binaryData, out var decoded))
+            {
+                return MessagePackSerializer.ConvertToJson(binaryData);
+            }
+
+            using (decoded)
+            {
+                if (decoded.TryGetValue(out DecodedMessage.Buffer buffer))
+                {
+                    return MessagePackSerializer.ConvertToJson(buffer.Sequence);
+                }
+                if (decoded.TryGetValue(out DecodedMessage.SourceSlice slice))
+                {
+                    return MessagePackSerializer.ConvertToJson(binaryData.AsSpan(slice.Offset, slice.Length));
+                }
+
+                throw new InvalidOperationException("The table data could not be decoded. TableName: " + TableName);
+            }
         }
     }
 }

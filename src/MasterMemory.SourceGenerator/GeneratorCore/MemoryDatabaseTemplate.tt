@@ -28,8 +28,8 @@ namespace <#= Namespace #>
 <# } #>
         }
 
-        public <#= ClassName #>(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver? formatterResolver = null, int maxDegreeOfParallelism = 1)
-            : base(databaseBinary, internString, formatterResolver, maxDegreeOfParallelism)
+        public <#= ClassName #>(byte[] databaseBinary, bool internString = true, MessagePack.MessagePackFormatterFactory? formatterFactory = null, int maxDegreeOfParallelism = 1)
+            : base(databaseBinary, internString, <#= PrefixClassName #>MasterMemoryFormatterFactory.Instance, formatterFactory, maxDegreeOfParallelism)
         {
         }
 
@@ -81,9 +81,9 @@ namespace <#= Namespace #>
             return builder;
         }
 
-        public <#= PrefixClassName #>DatabaseBuilder ToDatabaseBuilder(MessagePack.IFormatterResolver resolver)
+        public <#= PrefixClassName #>DatabaseBuilder ToDatabaseBuilder(MessagePack.MessagePackFormatterFactory formatterFactory)
         {
-            var builder = new <#= PrefixClassName #>DatabaseBuilder(resolver);
+            var builder = new <#= PrefixClassName #>DatabaseBuilder(formatterFactory);
 <# foreach(var item in GenerationContexts) { #>
             builder.Append(this.<#= item.ClassName #>Table.GetRawDataUnsafe());
 <# } #>

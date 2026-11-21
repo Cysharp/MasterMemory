@@ -14,7 +14,7 @@ namespace <#= Namespace #>
    public sealed class <#= ClassName #> : DatabaseBuilderBase
    {
         public <#= ClassName #>() : this(null) { }
-        public <#= ClassName #>(MessagePack.IFormatterResolver? resolver) : base(resolver) { }
+        public <#= ClassName #>(MessagePack.MessagePackFormatterFactory? formatterFactory) : base(<#= PrefixClassName #>MasterMemoryFormatterFactory.Instance, formatterFactory) { }
 
 <# foreach(var item in GenerationContexts) { #>
         public <#= ClassName #> Append(System.Collections.Generic.IEnumerable<<#= item.ClassName #>> dataSource)

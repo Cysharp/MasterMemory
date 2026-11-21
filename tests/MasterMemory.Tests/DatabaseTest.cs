@@ -1,6 +1,5 @@
 ﻿#pragma warning disable
 using MessagePack;
-using MessagePack.Resolvers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +11,6 @@ namespace MasterMemory.Tests
 {
     public class DatabaseTest
     {
-        public DatabaseTest()
-        {
-            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
-        }
-
         Sample[] CreateData()
         {
             // Id = Unique, PK

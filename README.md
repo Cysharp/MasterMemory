@@ -32,6 +32,7 @@ This ensures both optimal performance and excellent usability.
 - [Inheritance](#inheritance)
 - [Optimization](#optimization)
 - [MasterMemoryGeneratorOptions](#mastermemorygeneratoroptions)
+- [v3 -> v4 migration](#v3---v4-migration)
 - [v2 -> v3 migration](#v2---v3-migration)
 - [License](#license)
 
@@ -194,28 +195,19 @@ public record Person
 }
 ```
 
-Also, for use with IL2CPP, you need to add the generated `MasterMemoryResolver` to MessagePack's Resolver. If you need other generated Resolvers, such as those from [MagicOnion](https://github.com/Cysharp/MagicOnion), please add and compose them here.
+No serializer setup is needed for IL2CPP: the generated `MemoryDatabase` and `DatabaseBuilder` already carry the formatters of every table, and by default they run on `MessagePackFormatterFactory.DefaultAot`, which never creates a generic formatter at run time. The table types themselves are served by the MessagePack for C# source generator, which runs in every assembly that references MessagePack.
+
+If your tables contain types that need their own formatters (the `UnityEngine` value types, for example), pass the factory that serves them:
 
 ```csharp
-public static class Initializer
-{
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    public static void SetupMessagePackResolver()
-    {
-        // Create CompositeResolver
-        StaticCompositeResolver.Instance.Register(new[]{
-            MasterMemoryResolver.Instance, // set MasterMemory generated resolver
-            StandardResolver.Instance      // set default MessagePack resolver
-        });
+// Vector3 and friends: the MessagePack.Unity package
+var factory = MessagePackFormatterFactory.DefaultAot.WithUnity();
 
-        // Create options with resolver
-        var options = MessagePackSerializerOptions.Standard.WithResolver(StaticCompositeResolver.Instance);
-
-        // Optional: as default.
-        MessagePackSerializer.DefaultOptions = options;
-    }
-}
+var bin = new DatabaseBuilder(factory).Append(data).Build();
+var db = new MemoryDatabase(bin, formatterFactory: factory);
 ```
+
+Every table is compressed with LZ4 through the `MessagePack.LZ4` package, which uses the native libraries of [NativeCompressions](https://github.com/Cysharp/NativeCompressions). In Unity it needs the NuGetForUnity runtime settings and, for iOS, the `NativeCompressions.Unity` editor package, as described in the [NativeCompressions README](https://github.com/Cysharp/NativeCompressions#unity).
 
 DataTable configuration
 ---
@@ -318,7 +310,9 @@ In default, `MemoryDatabase` do all string data automatically interning(see: [Wi
 
 Use intern or not is selected in constructor. If you want to disable automatically interning, use `internString:false`.
 
-`MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver formatterResolver = null, int maxDegreeOfParallelism = 1)`.
+`MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.MessagePackFormatterFactory formatterFactory = null, int maxDegreeOfParallelism = 1)`.
+
+`formatterFactory` supplies the formatters of the table types and their members. The default is `MessagePackFormatterFactory.DefaultAot` (source-generated and built-in formatters only, the same on the JIT as under IL2CPP and Native AOT); pass `MessagePackFormatterFactory.Default` for types that only the reflection-based formatters can serve, or your own chain for custom formatters. Use the same factory for `DatabaseBuilder`.
 
 MemoryDatabase has three(or four) query methods.
 
@@ -815,6 +809,18 @@ The Source Generator settings are configured using the assembly attribute `[Mast
 * `Namespace`: Changes the namespace of generated files. If not specified, it tries to get the `RootNamespace` set in the csproj file; if that's not available, it defaults to `MasterMemory`
 * `IsReturnNullIfKeyNotFound`: By default, the `Find` method throws a `KeyNotFoundException` when a key is not found. If set to true, the return type becomes `T?` and returns null instead
 * `PrefixClassName`: Adds a prefix to the class names of generated files. For example, `DatabaseBuilder` becomes `FooDatabaseBuilder`. This allows you to distinguish between multiple MasterMemory projects by name.
+
+v3 -> v4 migration
+---
+MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-CSharp/MessagePack-CSharp). The database binary format is unchanged: v4 reads a database built by v3, and v3 reads a database built by v4.
+
+* `IFormatterResolver` parameters became `MessagePackFormatterFactory`: `new MemoryDatabase(bin, formatterFactory: factory)`, `new DatabaseBuilder(factory)`, `ToDatabaseBuilder(factory)`
+* The generated `MasterMemoryResolver` is gone, and so is its registration (`StaticCompositeResolver`, `MessagePackSerializer.DefaultOptions`). The table formatters are composed by `MemoryDatabase` and `DatabaseBuilder` themselves; the generated `MasterMemoryFormatterFactory.Instance` exists if you serialize a table array on your own
+* With no factory given, the formatters come from `MessagePackFormatterFactory.DefaultAot` instead of the process-wide default options, which v4 no longer has. A type that has no source-generated formatter (declared in an assembly built without the MessagePack package, or without attributes) needs `MessagePackFormatterFactory.Default` or `Default.WithContractless()` passed explicitly
+* `TableInfo.DumpAsJson(MessagePackSerializerOptions)` is removed; use `DumpAsJson()`
+* LZ4 comes from the `MessagePack.LZ4` package (native, [NativeCompressions](https://github.com/Cysharp/NativeCompressions)); see its supported platforms
+* The table types follow MessagePack for C# v4's rules, see [Migrating from v3](https://github.com/MessagePack-CSharp/MessagePack-CSharp/tree/v4#migrating-from-v3). The ones master data meets most: in a `#nullable enable` context a `null` in a member declared non-nullable is refused on both build and load (declare it `string?`), and constructor parameters bind to members by name
+* Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
 
 v2 -> v3 migration
 ---

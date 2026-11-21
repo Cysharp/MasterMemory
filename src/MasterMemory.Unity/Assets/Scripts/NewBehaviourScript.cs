@@ -1,6 +1,5 @@
 using MasterMemory;
 using MessagePack;
-using MessagePack.Resolvers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -58,19 +57,5 @@ public record Person
     public string Name { get; init; }
 }
 
-public static class Initializer
-{
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    public static void SetupMessagePackResolver()
-    {
-        // Create CompositeResolver
-        StaticCompositeResolver.Instance.Register(new[]{
-            MasterMemoryResolver.Instance, // set MasterMemory generated resolver
-            StandardResolver.Instance      // set default MessagePack resolver
-        });
-
-        // Set as default
-        var options = MessagePackSerializerOptions.Standard.WithResolver(StaticCompositeResolver.Instance);
-        MessagePackSerializer.DefaultOptions = options;
-    }
-}
+// MessagePack for C# v4 needs no resolver registration: the generated MemoryDatabase / DatabaseBuilder
+// carry the formatters of every table and default to MessagePackFormatterFactory.DefaultAot, which is IL2CPP safe.

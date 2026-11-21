@@ -16,13 +16,11 @@ namespace MasterMemory.Tests
         public ValidatorTest()
         {
             this.output = new Xunit.Abstractions.DebugLogTestOutputHelper();
-            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 #else
         public ValidatorTest(Xunit.Abstractions.ITestOutputHelper output)
         {
             this.output = output;
-            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 #endif
 

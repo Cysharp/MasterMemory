@@ -9,11 +9,6 @@ namespace MasterMemory.Tests
 {
     public class MemoryKeyMemoryTest
     {
-        public MemoryKeyMemoryTest()
-        {
-            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
-        }
-
         Sample[] CreateData()
         {
             // Id = Unique, PK

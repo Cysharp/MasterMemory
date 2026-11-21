@@ -43,13 +43,13 @@ namespace MasterMemory.GeneratorCore
         public string ClassName => PrefixClassName + "ImmutableBuilder";
     }
 
-    public partial class MessagePackResolverTemplate
+    public partial class FormatterFactoryTemplate
     {
         public string Namespace { get; set; }
         public string Using { get; set; }
         public string PrefixClassName { get; set; }
         public GenerationContext[] GenerationContexts { get; set; }
-        public string ClassName => PrefixClassName + "MasterMemoryResolver";
+        public string ClassName => PrefixClassName + "MasterMemoryFormatterFactory";
     }
 
     public partial class TableTemplate

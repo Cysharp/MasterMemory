@@ -14,26 +14,13 @@ namespace MasterMemory
 
         // TableName, (Offset, Count)
         readonly Dictionary<string, (int offset, int count)> header = new Dictionary<string, (int offset, int count)>();
-        readonly MessagePackSerializerOptions? options;
+        readonly MessagePackSerializerOptions options;
 
-        public DatabaseBuilderBase(MessagePackSerializerOptions? options)
+        /// <param name="tableFormatterFactory">The generated factory that serves the array of each table type.</param>
+        /// <param name="formatterFactory">The formatters of the table types and their members; null is <see cref="MessagePackFormatterFactory.DefaultAot"/>.</param>
+        protected DatabaseBuilderBase(MessagePackFormatterFactory tableFormatterFactory, MessagePackFormatterFactory? formatterFactory)
         {
-            // options keep null to lazily use default options
-            if (options != null)
-            {
-                options = options.WithCompression(MessagePackCompression.Lz4Block);
-            }
-        }
-
-        public DatabaseBuilderBase(IFormatterResolver? resolver)
-        {
-            if (resolver != null)
-            {
-                this.options = MessagePackSerializer.DefaultOptions
-                    .WithCompression(MessagePackCompression.Lz4Block)
-                    .WithResolver(resolver);
-            }
-
+            this.options = SerializerOptionsCache.Get(tableFormatterFactory, formatterFactory, internString: false);
         }
 
         protected void AppendCore<T, TKey>(IEnumerable<T> datasource, Func<T, TKey> indexSelector, IComparer<TKey> comparer)
@@ -52,10 +39,8 @@ namespace MasterMemory
             var source = FastSort(datasource, indexSelector, comparer);
 
             // write data and store header-data.
-            var useOption = options ?? MessagePackSerializer.DefaultOptions.WithCompression(MessagePackCompression.Lz4Block);
-
             var offset = bufferWriter.CurrentOffset;
-            MessagePackSerializer.Serialize(bufferWriter, source, useOption);
+            MessagePackSerializer.Serialize(bufferWriter, source, options);
 
             header.Add(tableName.TableName, (offset, bufferWriter.CurrentOffset - offset));
         }
@@ -105,7 +90,7 @@ namespace MasterMemory
 
         public void WriteToStream(Stream stream)
         {
-            MessagePackSerializer.Serialize(stream, header, HeaderFormatterResolver.StandardOptions);
+            DatabaseHeader.Write(stream, header);
             MemoryMarshal.TryGetArray(bufferWriter.WrittenMemory, out var segment);
             stream.Write(segment.Array, segment.Offset, segment.Count);
         }

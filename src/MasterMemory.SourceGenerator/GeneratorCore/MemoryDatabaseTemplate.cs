@@ -61,8 +61,9 @@ namespace MasterMemory.GeneratorCore
  } 
             this.Write("        }\r\n\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write(@"(byte[] databaseBinary, bool internString = true, MessagePack.IFormatterResolver? formatterResolver = null, int maxDegreeOfParallelism = 1)
-            : base(databaseBinary, internString, formatterResolver, maxDegreeOfParallelism)
+            this.Write("(byte[] databaseBinary, bool internString = true, MessagePack.MessagePackFormatterFactory? formatterFactory = null, int maxDegreeOfParallelism = 1)\r\n            : base(databaseBinary, internString, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
+            this.Write(@"MasterMemoryFormatterFactory.Instance, formatterFactory, maxDegreeOfParallelism)
         {
         }
 
@@ -134,10 +135,10 @@ namespace MasterMemory.GeneratorCore
  } 
             this.Write("            return builder;\r\n        }\r\n\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
-            this.Write("DatabaseBuilder ToDatabaseBuilder(MessagePack.IFormatterResolver resolver)\r\n     " +
+            this.Write("DatabaseBuilder ToDatabaseBuilder(MessagePack.MessagePackFormatterFactory formatterFactory)\r\n     " +
                     "   {\r\n            var builder = new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(PrefixClassName));
-            this.Write("DatabaseBuilder(resolver);\r\n");
+            this.Write("DatabaseBuilder(formatterFactory);\r\n");
  foreach(var item in GenerationContexts) { 
             this.Write("            builder.Append(this.");
             this.Write(this.ToStringHelper.ToStringWithCulture(item.ClassName));
