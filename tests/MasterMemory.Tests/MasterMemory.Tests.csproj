@@ -23,6 +23,7 @@
 	<ItemGroup>
 		<!-- a database written by MasterMemory 3.0.4, see CompatibilityTest -->
 		<None Update="Golden\v3.bin" CopyToOutputDirectory="PreserveNewest" />
+		<None Update="Golden\v3-string-keys.bin" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 	<ItemGroup>
 		<Using Include="Xunit" />

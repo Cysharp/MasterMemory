@@ -44,8 +44,10 @@ static class TableEmitter
             }
 
             writer.Line();
+            // v3 stored a primary key with a string member in another order (see EmitSortedByPrimaryKey)
+            var checksOrder = primaryKey.Properties.ToArray().Any(x => x.Kind == KeyTypeKind.String);
             writer.Line($"public {table.ClassName}Table({element}[] sortedData)");
-            writer.Indent().Line(": base(sortedData)").Unindent();
+            writer.Indent().Line(checksOrder ? ": base(SortedByPrimaryKey(sortedData))" : ": base(sortedData)").Unindent();
             using (writer.OpenScope())
             {
                 writer.Line($"this.{primaryKey.SelectorName} = x => {primaryKey.BuildKeyAccessor("x")};");
@@ -76,6 +78,11 @@ static class TableEmitter
             writer.Line();
             writer.Line("partial void OnAfterConstruct();");
             writer.Line();
+            if (checksOrder)
+            {
+                EmitSortedByPrimaryKey(writer, element, primaryKey);
+                writer.Line();
+            }
 
             foreach (var key in table.SecondaryKeys)
             {
@@ -133,6 +140,47 @@ static class TableEmitter
         }
 
         return writer.ToStringAndReturn();
+    }
+
+    // A table is stored in the database binary in the order of its primary key, and searched in that order. Where the
+    // primary key has a string member, MasterMemory v3 could order it differently from v4: a "string?" key and a string
+    // in a composite key by the current culture, and a key whose [StringComparisonOption] v3 did not apply, without it.
+    // Read as it is, such a table from a database built by v3 would be searched by an order it is not in, and lookups
+    // would miss rows that are there, without any error. So the rows are checked on the way in, one comparison a row,
+    // and put in order when they are not: in a copy, the array handed in is left alone. A table written by v4 passes
+    // the check and is used as it is. Keys without a string member have one order in both versions and no check.
+    static void EmitSortedByPrimaryKey(CodeWriter writer, string element, KeyBase key)
+    {
+        var properties = key.Properties.ToArray();
+
+        writer.Line("// A database built by MasterMemory v3 may hold this table in another order (the key was compared by the current");
+        writer.Line("// culture, or without its StringComparisonOption). Rows out of order are put in order, in a copy.");
+        using (writer.Block($"static {element}[] SortedByPrimaryKey({element}[] rows)"))
+        {
+            using (writer.Block("for (var i = 1; i < rows.Length; i++)"))
+            using (writer.Block("if (ComparePrimaryKey(rows[i - 1], rows[i]) > 0)"))
+            {
+                writer.Line($"var sorted = ({element}[])rows.Clone();");
+                writer.Line($"var keys = new {key.BuildTypeName()}[sorted.Length];");
+                writer.Line($"for (var j = 0; j < sorted.Length; j++) {{ keys[j] = {key.BuildKeyAccessor("sorted[j]")}; }}");
+                writer.Line($"System.Array.Sort(keys, sorted, 0, sorted.Length, {key.BuildComparer("")});");
+                writer.Line("return sorted;");
+            }
+            writer.Line("return rows;");
+        }
+
+        writer.Line();
+        using (writer.Block($"static int ComparePrimaryKey({element} x, {element} y)"))
+        {
+            if (properties.Length == 1)
+            {
+                writer.Line($"return {CompareExpression(properties[0], "x." + properties[0].Identifier, "y." + properties[0].Identifier)};");
+            }
+            else
+            {
+                EmitMemberwiseCompare(writer, properties, "x", "y");
+            }
+        }
     }
 
     // one row per key: Find, TryFind, FindClosest (the row at the key, or the nearest one), FindRange

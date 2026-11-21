@@ -262,6 +262,55 @@ public class Item
         table.ShouldContain("GetProperty(\"class\")");
     }
 
+    // ---- a table from a database built by v3 ----
+
+    // v3 could store a primary key with a string member in another order than v4 searches by. The constructor of such
+    // a table checks the order of its rows and sorts a copy when they are out of order; no other table pays for it.
+    [Fact]
+    public void PrimaryKeyWithAStringChecksItsOrder()
+    {
+        var codes = Helper.GenerateCode("""
+[MemoryTable("composite")]
+public class Composite
+{
+    [PrimaryKey(0)] public string Code { get; set; }
+    [PrimaryKey(1)] public int No { get; set; }
+}
+
+[MemoryTable("text")]
+public class Text
+{
+    [PrimaryKey, StringComparisonOption(System.StringComparison.OrdinalIgnoreCase)] public string Code { get; set; }
+}
+
+[MemoryTable("number")]
+public class Number
+{
+    [PrimaryKey] public int Id { get; set; }
+    [SecondaryKey(0)] public string Name { get; set; }
+}
+""");
+
+        var composite = codes["MasterMemory.CompositeTable.g.cs"];
+        WriteLine(composite);
+        composite.ShouldContain(": base(SortedByPrimaryKey(sortedData))");
+        composite.ShouldContain("if (ComparePrimaryKey(rows[i - 1], rows[i]) > 0)");
+        composite.ShouldContain("var sorted = (global::Composite[])rows.Clone();");
+        composite.ShouldContain("for (var j = 0; j < sorted.Length; j++) { keys[j] = (sorted[j].Code, sorted[j].No); }");
+        composite.ShouldContain("System.Array.Sort(keys, sorted, 0, sorted.Length, PrimaryIndexKeyComparer.Instance);");
+        composite.ShouldContain("c = string.CompareOrdinal(x.Code, y.Code); if (c != 0) { return c; }");
+
+        var text = codes["MasterMemory.TextTable.g.cs"];
+        text.ShouldContain(": base(SortedByPrimaryKey(sortedData))");
+        text.ShouldContain("return string.Compare(x.Code, y.Code, System.StringComparison.OrdinalIgnoreCase);");
+        text.ShouldContain("System.Array.Sort(keys, sorted, 0, sorted.Length, System.StringComparer.OrdinalIgnoreCase);");
+
+        // no string in the primary key: one order in both versions, nothing to check (a secondary key is sorted on load anyway)
+        var number = codes["MasterMemory.NumberTable.g.cs"];
+        number.ShouldContain(": base(sortedData)");
+        number.ShouldNotContain("SortedByPrimaryKey");
+    }
+
     // ---- how a key is passed ----
 
     // A composite key is passed member by member, not as a tuple: FindByAAndB(a, b), and for a range the members of
