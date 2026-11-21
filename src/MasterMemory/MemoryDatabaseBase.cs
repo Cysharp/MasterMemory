@@ -40,7 +40,22 @@ namespace MasterMemory
 
             if (header.TryGetValue(tableName.TableName, out var segment))
             {
+                DatabaseHeader.ThrowIfOutside(tableName.TableName, segment.offset, segment.count, databaseBinary.Length);
                 var data = MessagePackSerializer.Deserialize<T[]>(databaseBinary.Span.Slice(segment.offset, segment.count), options);
+
+                // A table is an array of rows. Nil in place of the array or of a row is well-formed MessagePack and so
+                // gets this far, where a table would fail on it with a NullReferenceException somewhere inside.
+                if (data == null)
+                {
+                    throw new InvalidOperationException($"Invalid database, the table '{tableName.TableName}' is nil where its rows should be. The binary may be damaged.");
+                }
+                for (int i = 0; i < data.Length; i++)
+                {
+                    if (data[i] == null)
+                    {
+                        throw new InvalidOperationException($"Invalid database, the table '{tableName.TableName}' has nil where its row {i} should be. The binary may be damaged.");
+                    }
+                }
                 return createView(data);
             }
             else
@@ -58,6 +73,10 @@ namespace MasterMemory
             var header = DatabaseHeader.Read(databaseBinary, out var headerLength);
 
             // a table's offset counts from the end of the header
+            foreach (var item in header)
+            {
+                DatabaseHeader.ThrowIfOutside(item.Key, item.Value.offset, item.Value.count, databaseBinary.Length - headerLength);
+            }
             return header.Select(x => new TableInfo(x.Key, x.Value.count, storeTableData ? databaseBinary : null, headerLength + x.Value.offset)).ToArray();
         }
 

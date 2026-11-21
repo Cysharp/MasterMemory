@@ -60,7 +60,15 @@ public static class FindFuzzTargets
             var table = new CharKeyRowTable(rows);
             return new(table.FindById, table.TryFindById, table.FindClosestById, table.FindRangeById);
         })),
+        // not a lookup: the input is loaded as a database binary (DatabaseFuzzTargets)
+        (DatabaseFuzzTargets.Name, DatabaseFuzzTargets.Load),
     ];
+
+    /// <summary>The inputs a campaign of one target starts from.</summary>
+    public static byte[][] SeedCorpus(string targetName)
+    {
+        return (targetName == DatabaseFuzzTargets.Name) ? DatabaseFuzzTargets.SeedCorpus() : SeedCorpus();
+    }
 
     /// <summary>Inputs to start a campaign from: tables of several sizes, with and without gaps in their ids, and a few keys each.</summary>
     public static byte[][] SeedCorpus()

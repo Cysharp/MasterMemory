@@ -45,10 +45,80 @@ namespace MasterMemory.Tests
         public void Seeds(string name)
         {
             var run = Find(name);
-            foreach (var seed in FindFuzzTargets.SeedCorpus())
+            foreach (var seed in FindFuzzTargets.SeedCorpus(name))
             {
                 Run(run, name, seed);
             }
+        }
+
+        // The target that loads its input as a database, on databases damaged the ways a file gets damaged: cut short,
+        // a bit flipped, bytes overwritten, a length field set to an extreme, bytes missing or added in the middle.
+        // Random bytes alone seldom get past the header; these reach the tables.
+        [Fact]
+        public void DamagedDatabases()
+        {
+            var random = new Random(20261121);
+            foreach (var seed in DatabaseFuzzTargets.SeedCorpus())
+            {
+                for (var i = 0; i < 4000; i++)
+                {
+                    var input = Damage(seed, random);
+                    if (i % 5 == 0) input = Damage(input, random);
+                    Run(DatabaseFuzzTargets.Load, DatabaseFuzzTargets.Name, input);
+                }
+            }
+        }
+
+        static readonly int[] Extremes = { 0, 1, -1, int.MaxValue, int.MinValue, 0x7FFFFFF0, 0x00010000, 255, 65536 };
+
+        static byte[] Damage(byte[] source, Random random)
+        {
+            var data = (byte[])source.Clone();
+            if (data.Length == 0) return data;
+
+            switch (random.Next(6))
+            {
+                case 0: // cut short
+                    Array.Resize(ref data, random.Next(0, data.Length));
+                    break;
+                case 1: // one bit
+                    data[random.Next(data.Length)] ^= (byte)(1 << random.Next(8));
+                    break;
+                case 2: // a few bytes
+                    for (var n = random.Next(1, 4); n > 0; n--) data[random.Next(data.Length)] = (byte)random.Next(256);
+                    break;
+                case 3: // four bytes that may be a length, an offset or a count: an extreme, in the byte order MessagePack writes
+                    if (data.Length >= 4)
+                    {
+                        var at = random.Next(data.Length - 3);
+                        var value = Extremes[random.Next(Extremes.Length)];
+                        data[at] = (byte)(value >> 24); data[at + 1] = (byte)(value >> 16); data[at + 2] = (byte)(value >> 8); data[at + 3] = (byte)value;
+                    }
+                    break;
+                case 4: // bytes missing from the middle
+                    {
+                        var at = random.Next(data.Length);
+                        var length = Math.Min(random.Next(1, 9), data.Length - at);
+                        var result = new byte[data.Length - length];
+                        Array.Copy(data, 0, result, 0, at);
+                        Array.Copy(data, at + length, result, at, data.Length - at - length);
+                        data = result;
+                    }
+                    break;
+                default: // bytes added in the middle
+                    {
+                        var at = random.Next(data.Length + 1);
+                        var added = new byte[random.Next(1, 9)];
+                        random.NextBytes(added);
+                        var result = new byte[data.Length + added.Length];
+                        Array.Copy(data, 0, result, 0, at);
+                        Array.Copy(added, 0, result, at, added.Length);
+                        Array.Copy(data, at, result, at + added.Length, data.Length - at);
+                        data = result;
+                    }
+                    break;
+            }
+            return data;
         }
 
         [Theory]

@@ -29,7 +29,10 @@ namespace MasterMemory.Internal
             using var reader = new MessagePackReader(new ReadOnlyMemory<byte>(databaseBinary));
 
             var count = reader.ReadMapHeader();
-            var header = new Dictionary<string, (int offset, int count)>(count);
+
+            // The count is what the binary says, so it is not what the dictionary is sized by: an entry takes at least
+            // four bytes (a name, an array header, two numbers), and a damaged count must not be an allocation.
+            var header = new Dictionary<string, (int offset, int count)>(Math.Min(count, databaseBinary.Length / 4));
             for (int i = 0; i < count; i++)
             {
                 var tableName = reader.ReadString();
@@ -45,11 +48,25 @@ namespace MasterMemory.Internal
 
                 var offset = reader.ReadInt32();
                 var length = reader.ReadInt32();
+                if (header.ContainsKey(tableName))
+                {
+                    throw new InvalidOperationException("Invalid database header, a table is listed twice. TableName: " + tableName);
+                }
                 header.Add(tableName, (offset, length));
             }
 
             headerLength = checked((int)reader.BytesConsumed);
             return header;
+        }
+
+        // A header that places a table outside the data is what a file cut short looks like, or a damaged one. Slicing
+        // would say only that an argument was out of range.
+        public static void ThrowIfOutside(string tableName, int offset, int count, int dataLength)
+        {
+            if (offset < 0 || count < 0 || offset > dataLength || count > dataLength - offset)
+            {
+                throw new InvalidOperationException($"Invalid database, the header places the table '{tableName}' at offset {offset} with {count} bytes, and the data after the header is {dataLength} bytes. The binary may be cut short or damaged.");
+            }
         }
     }
 }

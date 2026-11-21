@@ -16,7 +16,8 @@ param(
     [string]$Corpus = "",         # corpus dir; default <script dir>/corpus (seeded when empty)
     [int]$TimeoutSec = 10,        # per-input hang deadline
     [int]$RssLimitMb = 4096,      # generous: the CLR reserves a lot
-    [int]$MaxLen = 512,           # 1 selector byte + 2 header bytes + 32 rows x 4 + 48 keys x 4, with room to spare
+    [int]$MaxLen = 512,           # the lookups: 1 selector byte + 2 header bytes + 32 rows x 4 + 48 keys x 4, with room to spare.
+                                  # db/load takes whole databases: run it with -Target db -MaxLen 4096
     [int]$MaxTotalTimeSec = 0,    # 0 = run until Ctrl+C
     [switch]$SkipBuild            # reuse the existing instrumented publish dir as-is
 )
@@ -65,10 +66,10 @@ if (-not $SkipBuild) {
     }
 }
 
-if (-not (Test-Path $Corpus) -or -not (Get-ChildItem $Corpus -ErrorAction SilentlyContinue)) {
-    dotnet $harnessDll --seeds $Corpus
-    if ($LastExitCode -ne 0) { throw "seed generation failed" }
-}
+# every run: the seeds are the same bytes under the same names each time, and a target added since the corpus was
+# first seeded gets its own
+dotnet $harnessDll --seeds $Corpus
+if ($LastExitCode -ne 0) { throw "seed generation failed" }
 
 if ($Target) { $env:FUZZ_TARGET = $Target } else { Remove-Item Env:FUZZ_TARGET -ErrorAction SilentlyContinue }
 

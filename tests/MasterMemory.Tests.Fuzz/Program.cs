@@ -93,10 +93,10 @@ static void WriteSeeds(string dir)
 {
     Directory.CreateDirectory(dir);
     var targets = FindFuzzTargets.Targets;
-    var seeds = FindFuzzTargets.SeedCorpus();
     var written = 0;
     for (var t = 0; t < targets.Length; t++)
     {
+        var seeds = FindFuzzTargets.SeedCorpus(targets[t].Name);
         for (var s = 0; s < seeds.Length; s++)
         {
             byte[] input = [(byte)t, .. seeds[s]];
@@ -104,5 +104,5 @@ static void WriteSeeds(string dir)
             written++;
         }
     }
-    Console.WriteLine($"{written} seed inputs ({targets.Length} targets x {seeds.Length} payloads) -> {dir}");
+    Console.WriteLine($"{written} seed inputs of {targets.Length} targets -> {dir}");
 }
