@@ -53,18 +53,62 @@ namespace MasterMemory
             this.ascendant = ascendant;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        /// <summary>Enumerates without allocating: foreach binds to this struct, not to the interface.</summary>
+        public Enumerator GetEnumerator()
         {
-            var count = Count;
-            for (int i = 0; i < count; i++)
-            {
-                yield return this[i];
-            }
+            return new Enumerator(this);
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public struct Enumerator : IEnumerator<T>
+        {
+            readonly T[]? orderedData;
+            readonly int first; // index of the first element in enumeration order
+            readonly int step;  // 1 when ascendant, -1 when not
+            readonly int count;
+            int index;
+
+            internal Enumerator(RangeView<T> view)
+            {
+                this.orderedData = view.orderedData;
+                this.count = view.Count;
+                this.first = view.FirstIndex;
+                this.step = view.ascendant ? 1 : -1;
+                this.index = -1;
+            }
+
+            public T Current => orderedData![first + (index * step)];
+
+            object? IEnumerator.Current => Current;
+
+            public bool MoveNext()
+            {
+                var next = index + 1;
+                if (next < count)
+                {
+                    index = next;
+                    return true;
+                }
+                return false;
+            }
+
+            public void Reset()
+            {
+                index = -1;
+            }
+
+            public void Dispose()
+            {
+            }
         }
 
         public bool Any()
