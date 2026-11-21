@@ -11,11 +11,11 @@ static class TableEmitter
     public static string Emit(string @namespace, GenerationContext table, bool throwIfKeyNotFound)
     {
         var writer = CodeWriter.Rent();
-        var element = table.ClassName;
+        var element = table.FullTypeName;
         var primaryKey = table.PrimaryKey;
 
-        using (DatabaseModel.BeginFile(writer, table.UsingStrings, @namespace + ".Tables"))
-        using (writer.Block($"public sealed partial class {element}Table : TableBase<{element}>, ITableUniqueValidate"))
+        using (DatabaseModel.BeginFile(writer, DatabaseModel.CommonUsings, @namespace + ".Tables"))
+        using (writer.Block($"public sealed partial class {table.ClassName}Table : TableBase<{element}>, ITableUniqueValidate"))
         {
             writer.Line($"public Func<{element}, {primaryKey.BuildTypeName()}> PrimaryKeySelector => {primaryKey.SelectorName};");
             writer.Line($"readonly Func<{element}, {primaryKey.BuildTypeName()}> {primaryKey.SelectorName};");
@@ -27,7 +27,7 @@ static class TableEmitter
             }
 
             writer.Line();
-            writer.Line($"public {element}Table({element}[] sortedData)");
+            writer.Line($"public {table.ClassName}Table({element}[] sortedData)");
             writer.Indent().Line(": base(sortedData)").Unindent();
             using (writer.OpenScope())
             {
@@ -162,7 +162,7 @@ static class TableEmitter
 
         var core = key.BuildFindPrefix() + "Core" + (key.IsIntType ? "Int" : "");
 
-        using (writer.Block($"public {returnType} FindBy{methodName}({keyType} key)"))
+        using (writer.Block($"public {returnType}{(throwIfKeyNotFound ? "" : "?")} FindBy{methodName}({keyType} key)"))
         {
             writer.Line($"return {core}({arguments}, key, {(throwIfKeyNotFound ? "true" : "false")});");
         }
@@ -175,11 +175,11 @@ static class TableEmitter
 
     static void EmitCreateMetaTable(CodeWriter writer, GenerationContext table)
     {
-        var element = table.ClassName;
+        var element = table.FullTypeName;
 
         using (writer.Block("public static MasterMemory.Meta.MetaTable CreateMetaTable()"))
         {
-            writer.Line($"return new MasterMemory.Meta.MetaTable(typeof({element}), typeof({element}Table), \"{table.MemoryTableName}\",");
+            writer.Line($"return new MasterMemory.Meta.MetaTable(typeof({element}), typeof({table.ClassName}Table), \"{table.MemoryTableName}\",");
             writer.Indent();
 
             writer.Line("new MasterMemory.Meta.MetaProperty[]");

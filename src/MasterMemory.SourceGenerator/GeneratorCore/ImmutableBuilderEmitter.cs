@@ -37,7 +37,7 @@ static class ImmutableBuilderEmitter
                 var comparer = key.BuildComparer();
 
                 writer.Line();
-                using (writer.Block($"public void ReplaceAll(System.Collections.Generic.IList<{table.ClassName}> data)"))
+                using (writer.Block($"public void ReplaceAll(System.Collections.Generic.IList<{table.FullTypeName}> data)"))
                 {
                     writer.Line($"var newData = CloneAndSortBy(data, x => {keyAccessor}, {comparer});");
                     EmitReplaceTable(writer, model, i);
@@ -57,7 +57,7 @@ static class ImmutableBuilderEmitter
                 }
 
                 writer.Line();
-                using (writer.Block($"public void Diff({table.ClassName}[] addOrReplaceData)"))
+                using (writer.Block($"public void Diff({table.FullTypeName}[] addOrReplaceData)"))
                 {
                     writer.Line($"var data = DiffCore(memory.{table.ClassName}Table.GetRawDataUnsafe(), addOrReplaceData, x => {keyAccessor}, {comparer});");
                     writer.Line($"var newData = CloneAndSortBy(data, x => {keyAccessor}, {comparer});");

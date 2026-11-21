@@ -11,7 +11,19 @@ sealed class DatabaseModel
     public string PrefixClassName { get; }
     public GenerationContext[] Tables { get; }
 
-    /// <summary>The using directives of every table's source file, plus the generated Tables namespace.</summary>
+    /// <summary>
+    /// What every generated file imports. Table and key types are written in full, so nothing is taken from the files
+    /// the tables are declared in.
+    /// </summary>
+    public static readonly string[] CommonUsings =
+    [
+        "using MasterMemory;",
+        "using MasterMemory.Validation;",
+        "using System;",
+        "using System.Collections.Generic;",
+    ];
+
+    /// <summary><see cref="CommonUsings"/> plus the namespace of the generated table classes.</summary>
     public string[] Usings { get; }
 
     public string DatabaseBuilderName => PrefixClassName + "DatabaseBuilder";
@@ -24,11 +36,7 @@ sealed class DatabaseModel
         Namespace = @namespace;
         PrefixClassName = prefixClassName;
         Tables = tables;
-        Usings = tables.SelectMany(x => x.UsingStrings)
-            .Distinct()
-            .OrderBy(x => x, StringComparer.Ordinal)
-            .Append("using " + @namespace + ".Tables;")
-            .ToArray();
+        Usings = [.. CommonUsings, "using " + @namespace + ".Tables;"];
     }
 
     /// <summary>The head of a generated file up to the opened namespace, which the returned scope closes.</summary>
@@ -38,7 +46,7 @@ sealed class DatabaseModel
         writer.Line();
         foreach (var item in usings)
         {
-            writer.Lines(item); // a directive carries the comment lines that preceded it in the source
+            writer.Line(item);
         }
         writer.Line();
         return writer.Block("namespace " + @namespace);

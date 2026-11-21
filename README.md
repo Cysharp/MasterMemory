@@ -812,7 +812,7 @@ The Source Generator settings are configured using the assembly attribute `[Mast
 
 v3 -> v4 migration
 ---
-MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-CSharp/MessagePack-CSharp). The database binary format is unchanged: v4 reads a database built by v3, and v3 reads a database built by v4.
+MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-CSharp/MessagePack-CSharp). The database binary format is unchanged: v4 reads a database built by v3, and v3 reads a database built by v4. The one exception is a table whose primary key is declared `string?`, see below.
 
 * `IFormatterResolver` parameters became `MessagePackFormatterFactory`: `new MemoryDatabase(bin, formatterFactory: factory)`, `new DatabaseBuilder(factory)`, `ToDatabaseBuilder(factory)`
 * The generated `MasterMemoryResolver` is gone, and so is its registration (`StaticCompositeResolver`, `MessagePackSerializer.DefaultOptions`). The table formatters are composed by `MemoryDatabase` and `DatabaseBuilder` themselves; the generated `MasterMemoryFormatterFactory.Instance` exists if you serialize a table array on your own
@@ -820,6 +820,12 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `TableInfo.DumpAsJson(MessagePackSerializerOptions)` is removed; use `DumpAsJson()`
 * LZ4 comes from the `MessagePack.LZ4` package (native, [NativeCompressions](https://github.com/Cysharp/NativeCompressions)); see its supported platforms
 * The table types follow MessagePack for C# v4's rules, see [Migrating from v3](https://github.com/MessagePack-CSharp/MessagePack-CSharp/tree/v4#migrating-from-v3). The ones master data meets most: in a `#nullable enable` context a `null` in a member declared non-nullable is refused on both build and load (declare it `string?`), and constructor parameters bind to members by name
+* A key declared `string?` is compared like a `string` key: `StringComparer.Ordinal`, or what `[StringComparisonOption]` says. Before, it was compared by the current culture and the attribute was ignored. A table is stored in the order of its primary key, so **a database containing a table whose primary key is `string?` has to be rebuilt**; secondary keys are sorted on load and need nothing
+* The generated `MemoryDatabase` is `partial`: members of your own, such as a query across several tables, can be added to it
+* Generated code names table and key types in full (`global::MyGame.Master.Item`), so a table may be declared in a file-scoped namespace, inside another type, or in a file whose `using` directives sit inside `#if`
+* Two `[MemoryTable]` classes with the same name in different namespaces are reported as error `MAM004`; before, nothing was generated at all
+* With `IsReturnNullIfKeyNotFound = true` every unique `FindBy***` returns `T?`; before, only a numeric primary key did
+* `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
 
 v2 -> v3 migration

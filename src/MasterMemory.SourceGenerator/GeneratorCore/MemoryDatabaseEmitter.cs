@@ -17,7 +17,7 @@ static class MemoryDatabaseEmitter
         var tables = model.Tables;
 
         using (DatabaseModel.BeginFile(writer, model.Usings, model.Namespace))
-        using (writer.Block($"public sealed class {name} : MemoryDatabaseBase"))
+        using (writer.Block($"public sealed partial class {name} : MemoryDatabaseBase"))
         {
             foreach (var table in tables)
             {
@@ -182,7 +182,7 @@ static class MemoryDatabaseEmitter
 
     static string ExtractTableData(GenerationContext table)
     {
-        return $"ExtractTableData<{table.ClassName}, {table.ClassName}Table>(header, databaseBinary, options, xs => new {table.ClassName}Table(xs))";
+        return $"ExtractTableData<{table.FullTypeName}, {table.ClassName}Table>(header, databaseBinary, options, xs => new {table.ClassName}Table(xs))";
     }
 
     static void EmitAppendTables(CodeWriter writer, GenerationContext[] tables)

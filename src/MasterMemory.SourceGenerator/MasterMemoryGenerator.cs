@@ -46,12 +46,25 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
                 {
                     var memoryTableAttr = ctx.Attributes[0]; // AllowMultiple=false
                     var classDecl = ctx.TargetNode as TypeDeclarationSyntax; // class or record
-                    var context = CodeGenerator.CreateGenerationContext(classDecl!, memoryTableAttr, reporter);
+                    var context = CodeGenerator.CreateGenerationContext(classDecl!, (INamedTypeSymbol)ctx.TargetSymbol, ctx.SemanticModel, memoryTableAttr, reporter);
                     if (context != null)
                     {
                         list.Add(context);
                     }
                 }
+
+                // The generated members are named after the simple class name (ItemTable, db.ItemTable, RemoveItem),
+                // so two tables that share it, in different namespaces, cannot both be generated. Say so on each of
+                // them and leave them out; adding the same file name twice would otherwise fail the whole generator.
+                foreach (var duplicated in list.GroupBy(x => x.ClassName, StringComparer.Ordinal).Where(x => x.Count() > 1).ToArray())
+                {
+                    foreach (var item in duplicated)
+                    {
+                        reporter.ReportDiagnostic(DiagnosticDescriptors.DuplicateClassName, item.OriginalClassDeclaration.Value.Identifier.GetLocation(), item.ClassName, string.Join(", ", duplicated.Select(x => x.FullTypeName)));
+                        list.Remove(item);
+                    }
+                }
+
                 list.Sort((a, b) => string.Compare(a.ClassName, b.ClassName, StringComparison.Ordinal));
                 return (reporter, new EquatableArray<GenerationContext>(list.ToArray()));
             })

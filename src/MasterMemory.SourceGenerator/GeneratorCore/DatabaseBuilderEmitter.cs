@@ -19,7 +19,7 @@ static class DatabaseBuilderEmitter
             foreach (var table in model.Tables)
             {
                 writer.Line();
-                using (writer.Block($"public {name} Append(System.Collections.Generic.IEnumerable<{table.ClassName}> dataSource)"))
+                using (writer.Block($"public {name} Append(System.Collections.Generic.IEnumerable<{table.FullTypeName}> dataSource)"))
                 {
                     writer.Line($"AppendCore(dataSource, x => {table.PrimaryKey.BuildKeyAccessor("x")}, {table.PrimaryKey.BuildComparer()});");
                     writer.Line("return this;");

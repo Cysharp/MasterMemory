@@ -81,4 +81,8 @@ internal static class DiagnosticDescriptors
     public static DiagnosticDescriptor DuplicateSecondaryKey { get; } = Create(
         3,
         "Duplicate SecondaryKey, doesn't allow to add multiple attribute in same attribute list:{0}.{1}");
+
+    public static DiagnosticDescriptor DuplicateClassName { get; } = Create(
+        4,
+        "MemoryTable class name must be unique, generated code is named after it: {0}Table. Rename one of: {1}.");
 }

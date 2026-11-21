@@ -8,9 +8,11 @@ namespace MasterMemory.GeneratorCore
 
     public record GenerationContext
     {
+        // the simple name: what the generated members are named after (ItemTable, RemoveItem)
         public string ClassName { get; set; }
+        // global::Namespace.Outer.Item: how generated code refers to the type, wherever it is declared
+        public string FullTypeName { get; set; }
         public string MemoryTableName { get; set; }
-        public EquatableArray<string> UsingStrings { get; set; }
         public PrimaryKey PrimaryKey { get; set; }
         public EquatableArray<SecondaryKey> SecondaryKeys { get; set; }
 
@@ -52,11 +54,11 @@ namespace MasterMemory.GeneratorCore
         {
             if (Properties.Length == 1)
             {
-                return Properties[0].TypeName;
+                return Properties[0].FullTypeName;
             }
             else
             {
-                return "(" + string.Join(", ", Properties.Select(x => x.TypeName + " " + x.Name)) + ")";
+                return "(" + string.Join(", ", Properties.Select(x => x.FullTypeName + " " + x.Name)) + ")";
             }
         }
 
@@ -147,7 +149,10 @@ namespace MasterMemory.GeneratorCore
             {
                 if (Properties.Length == 1)
                 {
-                    var typeName = Properties[0].TypeName;
+                    // "string?" is a string key too. Without this it fell to Comparer<string?>.Default, which compares by the
+                    // current culture (the machine that builds and the device that loads may not agree on the order), and
+                    // [StringComparisonOption] was ignored.
+                    var typeName = Properties[0].TypeName.TrimEnd('?');
                     if (typeName == "string" || typeName == "String" || typeName == "System.String")
                     {
                         return true;
@@ -221,7 +226,10 @@ namespace MasterMemory.GeneratorCore
     {
         public int KeyOrder { get; set; }
         public string Name { get; set; }
+        // as written in the source: what the key is classified by (string, int, comparable number)
         public string TypeName { get; set; }
+        // fully qualified, from the symbol: what generated code writes
+        public string FullTypeName { get; set; }
 
         public override string ToString()
         {

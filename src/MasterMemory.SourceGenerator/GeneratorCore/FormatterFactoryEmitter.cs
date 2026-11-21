@@ -23,7 +23,7 @@ static class FormatterFactoryEmitter
                 writer.Indent();
                 foreach (var table in model.Tables)
                 {
-                    writer.Line($".Add<{table.ClassName}>()");
+                    writer.Line($".Add<{table.FullTypeName}>()");
                 }
                 writer.Line(".Build();");
                 writer.Unindent();

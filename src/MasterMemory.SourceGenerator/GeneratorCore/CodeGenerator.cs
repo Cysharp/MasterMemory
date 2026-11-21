@@ -9,18 +9,19 @@ namespace MasterMemory.GeneratorCore
     internal static class CodeGenerator
     {
         // return GenerationContext?
-        public static GenerationContext CreateGenerationContext(TypeDeclarationSyntax classDecl, AttributeData memoryTableAttribute, DiagnosticReporter reporter)
+        public static GenerationContext CreateGenerationContext(TypeDeclarationSyntax classDecl, INamedTypeSymbol typeSymbol, SemanticModel semanticModel, AttributeData memoryTableAttribute, DiagnosticReporter reporter)
         {
             var context = new GenerationContext();
 
             context.ClassName = classDecl.Identifier.ToFullString().Trim();
+            context.FullTypeName = typeSymbol.ToDisplayString(FullyQualifiedFormat);
             context.MemoryTableName = memoryTableAttribute.ConstructorArguments[0].Value as string ?? context.ClassName;
 
             var hasError = false;
             var members = classDecl.Members.OfType<PropertyDeclarationSyntax>()
                 .Select(x =>
                 {
-                    var prop = ExtractPropertyAttribute(x, reporter);
+                    var prop = ExtractPropertyAttribute(x, GetFullTypeName(x, semanticModel), reporter);
                     if (prop == null)
                     {
                         hasError = true;
@@ -45,32 +46,30 @@ namespace MasterMemory.GeneratorCore
                 Name = x.Item3.Identifier.Text,
             }).ToArray();
 
-            var root = classDecl.SyntaxTree.GetRoot();
-
-            var ns = root.DescendantNodes().OfType<NamespaceDeclarationSyntax>()
-                .Select(x => "using " + x.Name.ToFullStringTrim() + ";")
-                .ToArray();
-
-            var usingStrings = root.DescendantNodes()
-                .OfType<UsingDirectiveSyntax>()
-                .Select(x => x.ToFullString().Trim())
-                .Concat(new[] { "using MasterMemory", "using MasterMemory.Validation", "using System", "using System.Collections.Generic" })
-                .Concat(ns)
-                .Select(x => x.Trim(';') + ";")
-                .Distinct()
-                .OrderBy(x => x, StringComparer.Ordinal)
-                .ToArray();
-
             context.PrimaryKey = primaryKey;
             context.SecondaryKeys = secondaryKeys;
             context.Properties = properties;
-            context.UsingStrings = usingStrings;
             context.OriginalClassDeclaration = classDecl;
             return context;
         }
 
 
-        static (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax)? ExtractPropertyAttribute(PropertyDeclarationSyntax property, DiagnosticReporter reporter)
+        // Generated code names every type in full (global::Namespace.Type), so it does not depend on the using directives
+        // of the file a table is declared in: those can sit inside #if, and a file-scoped namespace has none to copy.
+        static readonly SymbolDisplayFormat FullyQualifiedFormat = SymbolDisplayFormat.FullyQualifiedFormat
+            .AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
+        static string GetFullTypeName(PropertyDeclarationSyntax property, SemanticModel semanticModel)
+        {
+            var type = (semanticModel.GetDeclaredSymbol(property) as IPropertySymbol)?.Type;
+            if (type == null || type.TypeKind == TypeKind.Error)
+            {
+                return property.Type.ToFullStringTrim(); // unresolved: the compiler reports it at the declaration
+            }
+            return type.ToDisplayString(FullyQualifiedFormat);
+        }
+
+        static (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax)? ExtractPropertyAttribute(PropertyDeclarationSyntax property, string fullTypeName, DiagnosticReporter reporter)
         {
             // Attribute Parterns:
             // Primarykey(keyOrder = 0)
@@ -104,7 +103,8 @@ namespace MasterMemory.GeneratorCore
                         var keyProperty = new KeyProperty()
                         {
                             Name = property.Identifier.ToFullStringTrim(),
-                            TypeName = property.Type.ToFullStringTrim()
+                            TypeName = property.Type.ToFullStringTrim(),
+                            FullTypeName = fullTypeName
                         };
 
                         foreach (var arg in attr.ArgumentList?.Arguments ?? default)
@@ -126,7 +126,8 @@ namespace MasterMemory.GeneratorCore
                         var keyProperty = new KeyProperty()
                         {
                             Name = property.Identifier.ToFullStringTrim(),
-                            TypeName = property.Type.ToFullStringTrim()
+                            TypeName = property.Type.ToFullStringTrim(),
+                            FullTypeName = fullTypeName
                         };
 
                         var args = attr.ArgumentList.Arguments;
