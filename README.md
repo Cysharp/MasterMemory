@@ -825,8 +825,11 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * Generated code names table and key types in full (`global::MyGame.Master.Item`), so a table may be declared in a file-scoped namespace, inside another type, or in a file whose `using` directives sit inside `#if`
 * Two `[MemoryTable]` classes with the same name in different namespaces are reported as error `MAM004`; before, nothing was generated at all
 * With `IsReturnNullIfKeyNotFound = true` every unique `FindBy***` returns `T?`; before, only a numeric primary key did
+* `FindClosestBy***(key, selectLower: false)` of a unique key returns `null` when the key is after every row; before, it threw `IndexOutOfRangeException`
+* `FindRangeBy***` of a `[NonUnique]` string key no longer returns an empty range for a valid one: whether `min` is after `max` was decided by the culture, not by the ordinal order the index is in (`FindRangeByName("B", "a")`)
+* `RangeView<T>.CopyTo` of an empty view does nothing instead of throwing `ArgumentNullException`
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
-* `FindBy***` / `TryFindBy***` of a unique numeric primary key is faster. When the keys run without a gap (1, 2, 3, ...) the row is read at its position, with no search at all; otherwise tables up to 32,768 rows are searched without conditional jumps. Nothing changes in the database binary or in what a lookup returns
+* Lookups are faster. Every key is searched through a struct generated for it, with no delegate and no comparer object per comparison. On top of that, a unique integer key of 32 bits or less is searched without conditional jumps in tables up to 32,768 rows, and a unique numeric primary key whose values run without a gap (1, 2, 3, ...) is not searched at all: the row is read at its position. Nothing changes in the database binary or in what a lookup returns
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
 
 v2 -> v3 migration

@@ -147,7 +147,12 @@ namespace MasterMemory
         public void CopyTo(T[] array, int arrayIndex)
         {
             var count = Count;
-            Array.Copy(orderedData, left, array, arrayIndex, count);
+            if (count == 0)
+            {
+                return; // an empty view may have no array at all (RangeView<T>.Empty), or bounds outside of it
+            }
+
+            Array.Copy(orderedData!, left, array, arrayIndex, count);
             if (!ascendant)
             {
                 Array.Reverse(array, arrayIndex, count);
@@ -162,7 +167,7 @@ namespace MasterMemory
             }
             set
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException(); // read-only, like the other members that would change it
             }
         }
 

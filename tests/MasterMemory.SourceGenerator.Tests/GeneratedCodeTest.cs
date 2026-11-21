@@ -65,6 +65,9 @@ public class Person
         codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("IEnumerable<global::Foo.Bar.Person>");
         codes["MasterMemory.PersonTable.g.cs"].ShouldContain("Func<global::Foo.Bar.Person, global::Foo.Bar.Kind>");
         codes["MasterMemory.PersonTable.g.cs"].ShouldContain("FindByKind(global::Foo.Bar.Kind key)");
+
+        // an enum is compared by its underlying value, which is what Comparer<Kind>.Default orders by
+        codes["MasterMemory.PersonTable.g.cs"].ShouldContain("return ((int)key < (int)other.Kind) ? -1 : ((int)key > (int)other.Kind) ? 1 : 0;");
     }
 
     [Fact]
@@ -109,14 +112,22 @@ public class Item
         var code = codes["MasterMemory.ItemTable.g.cs"];
         WriteLine(code);
 
-        code.ShouldContain("FindUniqueCore(data, primaryIndexSelector, System.StringComparer.Ordinal, key, true)");
+        // sorting: the comparer an index is built with
+        code.ShouldContain("System.Collections.Generic.Comparer<(int Level, global::System.DateTime CreatedAt)>.Default");
+
+        // searching: what the struct of each key compares with, which has to be the same order
+        code.ShouldContain("return string.CompareOrdinal(key, other.Name);");
+        code.ShouldContain("return string.CompareOrdinal(key, other.Alias);");
+        code.ShouldContain("return string.Compare(key, other.Code, System.StringComparison.OrdinalIgnoreCase);");
+        code.ShouldContain("return (key < other.Serial) ? -1 : (key > other.Serial) ? 1 : 0;");
+        code.ShouldContain("c = (key.Level < other.Level) ? -1 : (key.Level > other.Level) ? 1 : 0; if (c != 0) { return c; }");
+        code.ShouldContain("return System.Collections.Generic.Comparer<global::System.DateTime>.Default.Compare(key.CreatedAt, other.CreatedAt);");
         // a nullable string is compared like a string: ordinal unless told otherwise, never by the current culture
         code.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, System.StringComparer.Ordinal)");
         code.ShouldContain("CloneAndSortBy(this.secondaryIndex3Selector, System.StringComparer.OrdinalIgnoreCase)");
         code.ShouldContain("Func<global::Item, string?> secondaryIndex0Selector");
         code.ShouldNotContain("Comparer<string?>");
         code.ShouldContain("CloneAndSortBy(this.secondaryIndex1Selector, System.Collections.Generic.Comparer<long>.Default)");
-        code.ShouldContain("System.Collections.Generic.Comparer<(int Level, global::System.DateTime CreatedAt)>.Default");
     }
 
     // issue 108: the same file name was added twice, which threw and left the project without any generated code
@@ -185,7 +196,8 @@ public class Item
         // every unique key says it in its return type, not only the inlined numeric primary key
         code.ShouldContain("public global::Item? FindByItemId(int key)");
         code.ShouldContain("public global::Item? FindByName(string key)");
-        code.ShouldContain("System.StringComparer.Ordinal, key, false);");
+        code.ShouldContain("return default;");
+        code.ShouldNotContain("return ThrowKeyNotFound(key);");
         code.ShouldContain("public RangeView<global::Item> FindByLevel(int key)");
     }
 
@@ -236,11 +248,19 @@ public class Item
         longKey.ShouldNotContain("FindIndexByBranchlessSearch");
         longKey.ShouldNotContain("AtOrAfterMask");
 
+        // no direct hit for a primary key that is not a unique number, and no jump-free search for a string or a shared key
         foreach (var name in new[] { "StringKey", "NonUniqueKey", "SecondaryOnly" })
         {
             codes[$"MasterMemory.{name}Table.g.cs"].ShouldNotContain("primaryIndexFirstKey");
-            codes[$"MasterMemory.{name}Table.g.cs"].ShouldNotContain("PrimaryIndexComparable");
         }
+        codes["MasterMemory.StringKeyTable.g.cs"].ShouldContain("readonly struct PrimaryIndexComparable : IComparable<global::StringKey>");
+        codes["MasterMemory.NonUniqueKeyTable.g.cs"].ShouldContain("readonly struct PrimaryIndexComparable : IComparable<global::NonUniqueKey>");
+        codes["MasterMemory.NonUniqueKeyTable.g.cs"].ShouldContain("return FindManyCore(data, new PrimaryIndexComparable(key));");
+
+        // a unique integer secondary key is searched like a primary one, over its own index
+        var secondary = codes["MasterMemory.SecondaryOnlyTable.g.cs"];
+        secondary.ShouldContain("readonly struct SecondaryIndex0Comparable : IBranchlessComparable<global::SecondaryOnly>");
+        secondary.ShouldContain("return (secondaryIndex0.Length <= BranchlessSearchMaxLength) ? FindIndexByBranchlessSearch(secondaryIndex0, comparable) : FindIndexByBinarySearch(secondaryIndex0, comparable);");
     }
 
     // issues 112 and 115: a place to add members of one's own, such as a query across tables

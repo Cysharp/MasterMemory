@@ -93,83 +93,24 @@ namespace MasterMemory
             return BinarySearch.FindBranchless(indexArray, comparable);
         }
 
-        // Unique
-
-        static protected TElement FindUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool throwIfNotFound = true)
+        /// <summary>
+        /// The row equal to the key, or the nearest one below (<paramref name="selectLower"/>) or above it; default
+        /// when there is no row on that side: the table is empty, the key is before every row and the lower one was
+        /// asked for, or it is after every row and the upper one was.
+        /// </summary>
+        static protected TElement? FindUniqueClosestCore<TComparable>(TElement[] indexArray, TComparable comparable, bool selectLower)
+            where TComparable : struct, IComparable<TElement>
         {
-            var index = BinarySearch.FindFirst(indexArray, key, keySelector, comparer);
-            if (index != -1)
-            {
-                return indexArray[index];
-            }
-            else
-            {
-                if (throwIfNotFound)
-                {
-                    ThrowKeyNotFound(key);
-                }
-                return default!;
-            }
+            // FindClosest answers -1 below the first row and indexArray.Length above the last
+            var index = BinarySearch.FindClosest(indexArray, comparable, selectLower);
+            return ((uint)index < (uint)indexArray.Length) ? indexArray[index] : default(TElement);
         }
 
-        // Optimize for IntKey
-        static protected TElement FindUniqueCoreInt(TElement[] indexArray, Func<TElement, int> keySelector, IComparer<int> _, int key, bool throwIfNotFound = true)
+        static protected RangeView<TElement> FindUniqueRangeCore<TComparable>(TElement[] indexArray, TComparable min, TComparable max, bool ascendant)
+            where TComparable : struct, IComparable<TElement>
         {
-            var index = BinarySearch.FindFirstIntKey(indexArray, key, keySelector);
-            if (index != -1)
-            {
-                return indexArray[index];
-            }
-            else
-            {
-                if (throwIfNotFound)
-                {
-                    ThrowKeyNotFound(key);
-                }
-                return default!;
-            }
-        }
-
-        static protected bool TryFindUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, out TElement result)
-        {
-            var index = BinarySearch.FindFirst(indexArray, key, keySelector, comparer);
-            if (index != -1)
-            {
-                result = indexArray[index];
-                return true;
-            }
-            else
-            {
-                result = default!;
-                return false;
-            }
-        }
-
-        static protected bool TryFindUniqueCoreInt(TElement[] indexArray, Func<TElement, int> keySelector, IComparer<int> _, int key, out TElement result)
-        {
-            var index = BinarySearch.FindFirstIntKey(indexArray, key, keySelector);
-            if (index != -1)
-            {
-                result = indexArray[index];
-                return true;
-            }
-            else
-            {
-                result = default!;
-                return false;
-            }
-        }
-
-        static protected TElement? FindUniqueClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
-        {
-            var index = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, key, keySelector, comparer, selectLower);
-            return (index != -1) ? indexArray[index] : default(TElement);
-        }
-
-        static protected RangeView<TElement> FindUniqueRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
-        {
-            var lo = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, min, keySelector, comparer, false);
-            var hi = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, max, keySelector, comparer, true);
+            var lo = BinarySearch.FindClosest(indexArray, min, false);
+            var hi = BinarySearch.FindClosest(indexArray, max, true);
 
             if ( lo == -1 ) lo = 0;
             if ( hi == indexArray.Length ) hi -= 1;
@@ -179,44 +120,45 @@ namespace MasterMemory
 
         // Many
 
-        static protected RangeView<TElement> FindManyCore<TKey>(TElement[] indexKeys, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key)
+        static protected RangeView<TElement> FindManyCore<TComparable>(TElement[] indexKeys, TComparable comparable)
+            where TComparable : struct, IComparable<TElement>
         {
-            var lo = BinarySearch.LowerBound(indexKeys, 0, indexKeys.Length, key, keySelector, comparer);
+            var lo = BinarySearch.LowerBound(indexKeys, comparable);
             if (lo == -1) return RangeView<TElement>.Empty;
 
-            var hi = BinarySearch.UpperBound(indexKeys, 0, indexKeys.Length, key, keySelector, comparer);
+            var hi = BinarySearch.UpperBound(indexKeys, comparable);
             if (hi == -1) return RangeView<TElement>.Empty;
 
             return new RangeView<TElement>(indexKeys, lo, hi, true);
         }
 
-        static protected RangeView<TElement> FindManyClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
+        /// <summary>
+        /// The index <see cref="FindUniqueClosestCore"/> reads its row at. For a key several rows share, the generated
+        /// code takes the key of the row found here and asks <see cref="FindManyCore"/> for all of its rows.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // a forwarding call: the search itself is not inlined
+        static protected int FindClosestIndex<TComparable>(TElement[] indexArray, TComparable comparable, bool selectLower)
+            where TComparable : struct, IComparable<TElement>
         {
-            var closest = BinarySearch.FindClosest(indexArray, 0, indexArray.Length, key, keySelector, comparer, selectLower);
-
-            if ((closest == -1) || ( closest >= indexArray.Length ))
-                return RangeView<TElement>.Empty;
-
-            return FindManyCore(indexArray, keySelector, comparer, keySelector(indexArray[closest]));
+            return BinarySearch.FindClosest(indexArray, comparable, selectLower);
         }
 
-        static protected RangeView<TElement> FindManyRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
+        /// <summary>
+        /// The rows from the first at or after <paramref name="min"/> to the last at or before <paramref name="max"/>;
+        /// empty when min is after max, since the last row at or before max then lies before the first at or after min.
+        /// </summary>
+        static protected RangeView<TElement> FindManyRangeCore<TComparable>(TElement[] indexArray, TComparable min, TComparable max, bool ascendant)
+            where TComparable : struct, IComparable<TElement>
         {
-            //... Empty set when min > max
-            //... Alternatively, could treat this as between and swap min and max.
-
-            if ( Comparer<TKey>.Default.Compare( min, max ) > 0 )
-               return RangeView<TElement>.Empty;
-
             //... want lo to be the lowest  index of the values >= than min.
             //... lo should be in the range [0,arraylength]
 
-            var lo = BinarySearch.LowerBoundClosest(indexArray, 0, indexArray.Length, min, keySelector, comparer );
+            var lo = BinarySearch.LowerBoundClosest(indexArray, min);
 
             //... want hi to be the highest index of the values <= than max
             //... hi should be in the range [-1,arraylength-1]
 
-            var hi = BinarySearch.UpperBoundClosest(indexArray, 0, indexArray.Length, max, keySelector, comparer );
+            var hi = BinarySearch.UpperBoundClosest(indexArray, max);
 
             Debug.Assert( lo >= 0 );
             Debug.Assert( hi < indexArray.Length );

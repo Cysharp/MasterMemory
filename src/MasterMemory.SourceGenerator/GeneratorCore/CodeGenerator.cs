@@ -21,7 +21,7 @@ namespace MasterMemory.GeneratorCore
             var members = classDecl.Members.OfType<PropertyDeclarationSyntax>()
                 .Select(x =>
                 {
-                    var prop = ExtractPropertyAttribute(x, GetFullTypeName(x, semanticModel), reporter);
+                    var prop = ExtractPropertyAttribute(x, GetKeyTypeInfo(x, semanticModel), reporter);
                     if (prop == null)
                     {
                         hasError = true;
@@ -59,17 +59,22 @@ namespace MasterMemory.GeneratorCore
         static readonly SymbolDisplayFormat FullyQualifiedFormat = SymbolDisplayFormat.FullyQualifiedFormat
             .AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
-        static string GetFullTypeName(PropertyDeclarationSyntax property, SemanticModel semanticModel)
+        // the type of a property as generated code writes it and, for an enum, the integer type it is compared in
+        static (string FullTypeName, string EnumUnderlyingType) GetKeyTypeInfo(PropertyDeclarationSyntax property, SemanticModel semanticModel)
         {
             var type = (semanticModel.GetDeclaredSymbol(property) as IPropertySymbol)?.Type;
             if (type == null || type.TypeKind == TypeKind.Error)
             {
-                return property.Type.ToFullStringTrim(); // unresolved: the compiler reports it at the declaration
+                return (property.Type.ToFullStringTrim(), null); // unresolved: the compiler reports it at the declaration
             }
-            return type.ToDisplayString(FullyQualifiedFormat);
+
+            var enumUnderlyingType = (type.TypeKind == TypeKind.Enum)
+                ? (type as INamedTypeSymbol)?.EnumUnderlyingType?.ToDisplayString(FullyQualifiedFormat)
+                : null;
+            return (type.ToDisplayString(FullyQualifiedFormat), enumUnderlyingType);
         }
 
-        static (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax)? ExtractPropertyAttribute(PropertyDeclarationSyntax property, string fullTypeName, DiagnosticReporter reporter)
+        static (PrimaryKey, List<SecondaryKey>, PropertyDeclarationSyntax)? ExtractPropertyAttribute(PropertyDeclarationSyntax property, (string FullTypeName, string EnumUnderlyingType) typeInfo, DiagnosticReporter reporter)
         {
             // Attribute Parterns:
             // Primarykey(keyOrder = 0)
@@ -104,7 +109,8 @@ namespace MasterMemory.GeneratorCore
                         {
                             Name = property.Identifier.ToFullStringTrim(),
                             TypeName = property.Type.ToFullStringTrim(),
-                            FullTypeName = fullTypeName
+                            FullTypeName = typeInfo.FullTypeName,
+                            EnumUnderlyingType = typeInfo.EnumUnderlyingType
                         };
 
                         foreach (var arg in attr.ArgumentList?.Arguments ?? default)
@@ -127,7 +133,8 @@ namespace MasterMemory.GeneratorCore
                         {
                             Name = property.Identifier.ToFullStringTrim(),
                             TypeName = property.Type.ToFullStringTrim(),
-                            FullTypeName = fullTypeName
+                            FullTypeName = typeInfo.FullTypeName,
+                            EnumUnderlyingType = typeInfo.EnumUnderlyingType
                         };
 
                         var args = attr.ArgumentList.Arguments;

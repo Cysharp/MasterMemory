@@ -169,34 +169,7 @@ namespace MasterMemory.GeneratorCore
             }
         }
 
-        public bool IsComparableNumberType
-        {
-            get
-            {
-                if (Properties.Length == 1)
-                {
-                    var typeName = Properties[0].TypeName;
-                    if (typeName == "int" || typeName == "Int32" || typeName == "System.Int32"
-                     || typeName == "long" || typeName == "Int64" || typeName == "System.Int64"
-                     || typeName == "uint" || typeName == "UInt32" || typeName == "System.UInt32"
-                     || typeName == "ulong" || typeName == "UInt64" || typeName == "System.UInt64"
-                     || typeName == "byte" || typeName == "Byte" || typeName == "System.Byte"
-                     || typeName == "sbyte" || typeName == "SByte" || typeName == "System.SByte"
-                     )
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
+        public bool IsComparableNumberType => Properties.Length == 1 && Properties[0].IsComparableNumberType;
 
         public bool CanInlineBinarySearch
         {
@@ -230,6 +203,23 @@ namespace MasterMemory.GeneratorCore
         public string TypeName { get; set; }
         // fully qualified, from the symbol: what generated code writes
         public string FullTypeName { get; set; }
+        // the integer type an enum is compared in ("int", "byte", ...); null for every other type
+        public string EnumUnderlyingType { get; set; }
+
+        // the integers a lookup compares with < and > directly
+        public bool IsComparableNumberType
+        {
+            get
+            {
+                var typeName = TypeName;
+                return typeName == "int" || typeName == "Int32" || typeName == "System.Int32"
+                    || typeName == "long" || typeName == "Int64" || typeName == "System.Int64"
+                    || typeName == "uint" || typeName == "UInt32" || typeName == "System.UInt32"
+                    || typeName == "ulong" || typeName == "UInt64" || typeName == "System.UInt64"
+                    || typeName == "byte" || typeName == "Byte" || typeName == "System.Byte"
+                    || typeName == "sbyte" || typeName == "SByte" || typeName == "System.SByte";
+            }
+        }
 
         public override string ToString()
         {
