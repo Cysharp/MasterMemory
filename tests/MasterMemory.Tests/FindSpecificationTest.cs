@@ -405,6 +405,84 @@ namespace MasterMemory.Tests
             failures.ShouldBeNone(output);
         }
 
+        // ---- the head of a composite key: every row whose first members equal the key, in the order of the whole key ----
+
+        static void VerifyHead<TRow, TKey>(Failures failures, string name, TRow[] index, Func<TRow, TKey> selector, IComparer<TKey> comparer, TKey[] probes, Func<TRow, string> describe,
+            Func<TKey, RangeView<TRow>> find, Func<TKey, TKey, bool, RangeView<TRow>> range)
+            where TRow : class
+        {
+            foreach (var key in probes)
+            {
+                var expected = index.Where(x => comparer.Compare(selector(x), key) == 0).ToArray();
+                Check(failures, $"{name} FindBy", Show(key), Capture<TRow>(() => find(key)), expected, describe);
+            }
+
+            VerifyRange(failures, name, index, selector, comparer, probes, describe, range);
+        }
+
+        static PrefixMaster[] PrefixRows(int count)
+        {
+            var subs = new[] { "a", "B", "b", "A", "", "c" };
+            var names = new[] { "x", "X", "y", "", "xy" };
+            return Enumerable.Range(0, count).Select(i => new PrefixMaster
+            {
+                Category = (i * 5 % 7 % 4) - 1,                 // -1 .. 2, several rows each
+                Sub = subs[i % subs.Length],
+                No = i,
+                Kind = (SmallKind)(i % 3),
+                Level = (i % 4 == 0) ? null : (i * 3 % 5),
+                Name = names[i * 2 % names.Length],
+                Serial = (i % 2 == 0) ? i * 10_000_000_000L : -i,
+            }).ToArray();
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(23)]
+        public void HeadsOfCompositeKeys(int count)
+        {
+            var failures = new Failures();
+            var rows = PrefixRows(count);
+            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), internString: false).PrefixMasterTable;
+            Func<PrefixMaster, string> describe = x => "#" + x.No;
+
+            // the primary key (Category, Sub ignoring case, No)
+            var categories = new[] { int.MinValue, -2, -1, 0, 1, 2, 3, int.MaxValue };
+            VerifyHead(failures, $"[{count}] Category", table.All.ToArray(), x => x.Category, Comparer<int>.Default, categories, describe,
+                table.FindByCategory, table.FindRangeByCategory);
+
+            var categoryAndSub = Comparer<(int, string)>.Create((x, y) =>
+            {
+                var c = x.Item1.CompareTo(y.Item1);
+                return (c != 0) ? c : StringComparer.OrdinalIgnoreCase.Compare(x.Item2, y.Item2);
+            });
+            var subProbes = (from category in new[] { -2, -1, 0, 2, 3 } from sub in new[] { "", "A", "a", "b", "C", "d" } select (category, sub)).ToArray();
+            VerifyHead(failures, $"[{count}] (Category, Sub)", table.All.ToArray(), x => (x.Category, x.Sub), categoryAndSub, subProbes, describe,
+                table.FindByCategoryAndSub, table.FindRangeByCategoryAndSub);
+
+            // the shared key (Kind, Level)
+            var kinds = new[] { SmallKind.A, SmallKind.B, SmallKind.C, (SmallKind)3, (SmallKind)255 };
+            VerifyHead(failures, $"[{count}] Kind", table.SortByKindAndLevel.ToArray(), x => x.Kind, Comparer<SmallKind>.Default, kinds, describe,
+                table.FindByKind, table.FindRangeByKind);
+
+            // the unique key (Name, Serial): its head is still several rows
+            var names = new[] { "", "X", "Xy", "x", "xy", "y", "z" };
+            VerifyHead(failures, $"[{count}] Name", table.SortByNameAndSerial.ToArray(), x => x.Name, StringComparer.Ordinal, names, describe,
+                table.FindByName, table.FindRangeByName);
+
+            failures.ShouldBeNone(output);
+
+            // what a head is for: the rows of one value, already in the order of the other members
+            if (count == 23)
+            {
+                table.FindByKind(SmallKind.B).Select(x => x.Level).ToArray().ShouldBe(table.FindByKind(SmallKind.B).Select(x => x.Level).OrderBy(x => x).ToArray());
+                table.FindByKind(SmallKind.B).Count.ShouldBe(rows.Count(x => x.Kind == SmallKind.B));
+                table.FindByCategory(1).Select(x => x.No).OrderBy(x => x).ToArray().ShouldBe(rows.Where(x => x.Category == 1).Select(x => x.No).ToArray());
+            }
+        }
+
         // ---- ImmutableBuilder: the table it leaves is a table like any other, with every index rebuilt ----
 
         [Fact]

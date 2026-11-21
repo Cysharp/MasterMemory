@@ -26,7 +26,13 @@ public class FuzzRow
     public int Group { get; set; }
 
     [SecondaryKey(3, 1)]
+    [SecondaryKey(8, 2)]
     public int Seq { get; set; }
+
+    // the first member of a unique key of three, (Bucket, Kind, Seq). Neither Bucket nor (Bucket, Kind) is a key of its
+    // own, so both are looked up as heads of this one, in its index
+    [SecondaryKey(8, 0)]
+    public int Bucket { get; set; }
 
     // shared string (ordinal), and the first member of a shared pair (compared member by member, the string ordinally)
     [SecondaryKey(2), NonUnique]
@@ -36,6 +42,7 @@ public class FuzzRow
     // shared enum, compared by its underlying value
     [SecondaryKey(5), NonUnique]
     [SecondaryKey(4, 1), NonUnique]
+    [SecondaryKey(8, 1)]
     public FuzzKind Kind { get; set; }
 
     // unique string with a comparison option

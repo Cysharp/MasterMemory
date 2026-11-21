@@ -131,6 +131,7 @@ public static class FindFuzzTargets
                 Kind = (FuzzKind)((b2 >> 4) & 3),
                 Code = (((b0 & 4) != 0) ? "C" : "c") + i.ToString("D2"),
                 Score = Scores[b3 % Scores.Length],
+                Bucket = ((b3 >> 4) % 5) - 1,
             };
         }
 
@@ -146,6 +147,9 @@ public static class FindFuzzTargets
         var kinds = new List<FuzzKind>();
         var codes = new List<string?>();
         var scores = new List<double>();
+        var buckets = new List<int>();
+        var bucketAndKinds = new List<(int Bucket, FuzzKind Kind)>();
+        var bucketAndKindAndSeqs = new List<(int Bucket, FuzzKind Kind, int Seq)>();
         do
         {
             byte p0 = input.Next(), p1 = input.Next(), p2 = input.Next(), p3 = input.Next();
@@ -157,6 +161,9 @@ public static class FindFuzzTargets
             names.Add(ProbeNames[p2 % ProbeNames.Length]);
             kinds.Add((FuzzKind)(p3 % 6)); // two values the enum does not declare
             nameAndKinds.Add((ProbeNames[p2 % ProbeNames.Length], (FuzzKind)(p3 % 6)));
+            buckets.Add((p0 % 8) - 2);
+            bucketAndKinds.Add(((p0 % 8) - 2, (FuzzKind)(p3 % 6)));
+            bucketAndKindAndSeqs.Add(((p0 % 8) - 2, (FuzzKind)(p3 % 6), (p2 % (MaxRows + 4)) - 2));
             codes.Add((p3 % 8) switch
             {
                 4 => null,
@@ -187,6 +194,34 @@ public static class FindFuzzTargets
             table.FindByCode, table.TryFindByCode, table.FindClosestByCode, table.FindRangeByCode);
         VerifyShared("Score", Rows(table.SortByScore), x => x.Score, Comparer<double>.Default, scores,
             table.FindByScore, table.FindClosestByScore, table.FindRangeByScore);
+
+        // the key of three, and its two heads, all in the one index
+        var bucketIndex = Rows(table.SortByBucketAndKindAndSeq);
+        VerifyUnique("(Bucket, Kind, Seq)", bucketIndex, x => (x.Bucket, x.Kind, x.Seq), Comparer<(int Bucket, FuzzKind Kind, int Seq)>.Default, bucketAndKindAndSeqs,
+            table.FindByBucketAndKindAndSeq, table.TryFindByBucketAndKindAndSeq, table.FindClosestByBucketAndKindAndSeq, table.FindRangeByBucketAndKindAndSeq);
+        VerifyHead("Bucket", bucketIndex, x => x.Bucket, Comparer<int>.Default, buckets,
+            table.FindByBucket, table.FindRangeByBucket);
+        VerifyHead("(Bucket, Kind)", bucketIndex, x => (x.Bucket, x.Kind), Comparer<(int Bucket, FuzzKind Kind)>.Default, bucketAndKinds,
+            table.FindByBucketAndKind, table.FindRangeByBucketAndKind);
+    }
+
+    // the head of a composite key: every row whose first members equal the key, in the order of the index of the whole key
+    static void VerifyHead<TRow, TKey>(string name, TRow[] index, Func<TRow, TKey> selector, IComparer<TKey> comparer, List<TKey> keys,
+        Func<TKey, RangeView<TRow>> find, Func<TKey, TKey, bool, RangeView<TRow>> range)
+        where TRow : class
+    {
+        for (var k = 0; k < keys.Count; k++)
+        {
+            var key = keys[k];
+            var exact = new List<TRow>();
+            foreach (var row in index)
+            {
+                if (comparer.Compare(selector(row), key) == 0) exact.Add(row);
+            }
+
+            VerifyView($"{name} FindBy({Show(key)})", find(key), exact, false, selector);
+            VerifyRange(name, index, selector, comparer, key, keys[(k + 1) % keys.Count], range);
+        }
     }
 
     // ---- unique numeric primary keys of the other widths ----

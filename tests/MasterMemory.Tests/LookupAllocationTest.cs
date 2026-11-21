@@ -60,6 +60,23 @@ namespace MasterMemory.Tests
             sum.ShouldBeGreaterThan(0);
         }
 
+        // the head of a composite key: found in the index of the whole key, with a struct of its own
+        [Fact]
+        public void HeadsOfCompositeKeys()
+        {
+            var rows = Enumerable.Range(0, 64).Select(i => new PrefixMaster { Category = i % 4, Sub = "s" + (i % 3), No = i, Kind = (SmallKind)(i % 3), Level = i % 5, Name = "n" + (i % 6), Serial = i }).ToArray();
+            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build()).PrefixMasterTable;
+            var sum = 0;
+
+            Measure(() => sum += table.FindByKind(SmallKind.B).Count).ShouldBe(0);
+            Measure(() => sum += table.FindRangeByKind(SmallKind.A, SmallKind.B).Count).ShouldBe(0);
+            Measure(() => sum += table.FindByCategory(2).Count).ShouldBe(0);
+            Measure(() => sum += table.FindByCategoryAndSub((2, "S1")).Count).ShouldBe(0);
+            Measure(() => sum += table.FindByName("n3").Count).ShouldBe(0);
+
+            sum.ShouldBeGreaterThan(0);
+        }
+
         [Fact]
         public void OtherKeys()
         {

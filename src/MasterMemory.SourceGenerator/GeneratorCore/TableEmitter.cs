@@ -102,6 +102,12 @@ static class TableEmitter
                 }
             }
 
+            foreach (var (key, length) in GetPrefixLookups(table))
+            {
+                writer.Line();
+                EmitPrefixLookups(writer, element, key, length);
+            }
+
             writer.Line();
             using (writer.Block("void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)"))
             {
@@ -241,6 +247,85 @@ static class TableEmitter
         }
     }
 
+    // The head of a composite key is a key too: an index sorted by (Gender, Age) is sorted by Gender, so it answers
+    // FindByGender without an index of its own being built and kept in memory (the leftmost prefix of a composite
+    // index, in the terms of a database). Every head gets its lookups, unless something is already named so: a key
+    // declared on exactly those members comes first, then the head of the primary key, then the heads of the
+    // secondary keys in the order of their index numbers. Which index answers decides only the order of the rows.
+    static List<(KeyBase Key, int Length)> GetPrefixLookups(GenerationContext table)
+    {
+        var names = new HashSet<string>(table.Keys.Select(x => x.BuildMethodName()));
+        var result = new List<(KeyBase Key, int Length)>();
+        var candidates = new KeyBase[] { table.PrimaryKey }.Concat(table.SecondaryKeys.ToArray().OrderBy(x => x.IndexNo));
+        foreach (var key in candidates)
+        {
+            for (var length = 1; length < key.Properties.Length; length++)
+            {
+                if (names.Add(PrefixMethodName(key, length)))
+                {
+                    result.Add((key, length));
+                }
+            }
+        }
+        return result;
+    }
+
+    static string PrefixMethodName(KeyBase key, int length)
+    {
+        return string.Join("And", key.Properties.ToArray().Take(length).Select(x => x.Name));
+    }
+
+    // Find and FindRange by the first members of a composite key. The rows that share them lie together in the index of
+    // the whole key, in the order of its other members; the result is a range of that index, whether or not the whole
+    // key is unique. The struct compares only the members it is given, with the comparisons the index is sorted by.
+    static void EmitPrefixLookups(CodeWriter writer, string element, KeyBase key, int length)
+    {
+        var properties = key.Properties.ToArray().Take(length).ToArray();
+        var methodName = PrefixMethodName(key, length);
+        var keyType = (length == 1)
+            ? properties[0].FullTypeName
+            : "(" + string.Join(", ", properties.Select(x => x.FullTypeName + " " + x.Identifier)) + ")";
+        var comparable = $"{key.IndexName}Prefix{length}Comparable";
+        var index = key.TableName;
+
+        writer.Line($"// by the first {(length == 1 ? "member" : length + " members")} of the key {key.BuildPropertyTupleName()}, through its index: the rows come in the order of that key");
+        using (writer.Block($"public RangeView<{element}> FindBy{methodName}({keyType} key)"))
+        {
+            writer.Line($"return FindManyCore({index}, new {comparable}(key));");
+        }
+
+        writer.Line();
+        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({keyType} min, {keyType} max, bool ascendant = true)"))
+        {
+            writer.Line($"return FindManyRangeCore({index}, new {comparable}(min), new {comparable}(max), ascendant);");
+        }
+
+        writer.Line();
+        using (writer.Block($"readonly struct {comparable} : IComparable<{element}>"))
+        {
+            writer.Line($"readonly {keyType} key;");
+            writer.Line();
+            using (writer.Block($"public {comparable}({keyType} key)"))
+            {
+                writer.Line("this.key = key;");
+            }
+
+            writer.Line();
+            writer.Line(AggressiveInlining);
+            using (writer.Block($"public int CompareTo({element} other)"))
+            {
+                if (length == 1)
+                {
+                    writer.Line($"return {CompareExpression(properties[0], "key", "other." + properties[0].Identifier)};");
+                }
+                else
+                {
+                    EmitMemberwiseCompare(writer, properties, "key", "other");
+                }
+            }
+        }
+    }
+
     // The key of a lookup, as the searches take it. CompareTo orders the key and a row exactly as the comparer the index
     // is sorted with orders two keys; a different order here would search a sorted array by another order.
     static void EmitComparable(CodeWriter writer, string element, KeyBase key)
@@ -323,7 +408,11 @@ static class TableEmitter
     // member by member, stopping at the first that differs
     static void EmitMemberwiseCompare(CodeWriter writer, KeyBase key, string left, string right)
     {
-        var properties = key.Properties;
+        EmitMemberwiseCompare(writer, key.Properties.ToArray(), left, right);
+    }
+
+    static void EmitMemberwiseCompare(CodeWriter writer, KeyProperty[] properties, string left, string right)
+    {
         writer.Line("int c;");
         for (var i = 0; i < properties.Length; i++)
         {

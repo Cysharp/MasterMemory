@@ -245,6 +245,30 @@ public class Sample
 db.Sample.FindByBarAndFoo((int Bar, int Foo))
 ```
 
+The head of a composite key can be looked up on its own. An index sorted by `(Gender, Age)` is sorted by `Gender` too, so it answers `FindByGender` and `FindRangeByGender` without a second index being built and kept in memory:
+
+```csharp
+[MemoryTable("person"), MessagePackObject(true)]
+public class Person
+{
+    [PrimaryKey]
+    public int PersonId { get; set; }
+    [SecondaryKey(0, keyOrder: 0), NonUnique]
+    public Gender Gender { get; set; }
+    [SecondaryKey(0, keyOrder: 1), NonUnique]
+    public int Age { get; set; }
+}
+
+RangeView<Person> a = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
+RangeView<Person> b = db.PersonTable.FindByGender(Gender.Female);                  // every Female, in order of Age
+RangeView<Person> c = db.PersonTable.FindRangeByGender(Gender.Male, Gender.Female);
+```
+
+* Every head gets these two methods: of a key `(A, B, C)`, both `FindByA(A)` and `FindByAAndB((A, B))`
+* They return `RangeView<T>` whether or not the whole key is unique, and the rows come in the order of the whole key
+* A key declared on exactly those members is what answers instead, as before (`[SecondaryKey(1)] Gender` keeps its own `FindByGender`). If you declared such a key only to look up by `Gender`, you can remove it and save its index
+* When several composite keys start with the same members, the primary key answers, and otherwise the secondary key with the lowest index number. The rows are the same whichever answers; only their order differs
+
 By default, `FindBy***` returns a single element and throws `KeyNotFoundException` if the key is not found. Keys are unique by default. To return `null` for a missing unique key instead, set `IsReturnNullIfKeyNotFound = true` in `[MasterMemoryGeneratorOptions]`. If marked with `[NonUnique]` in the same AttributeList, the return type is `RangeView<T>` (empty if not found).
 
 ```csharp
@@ -855,6 +879,7 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `RangeView<T>.CopyTo` of an empty view does nothing instead of throwing `ArgumentNullException`
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
 * Lookups are faster. Every key is searched through a struct generated for it, with no delegate and no comparer object per comparison. On top of that, a unique integer key of 32 bits or less is searched without conditional jumps in tables up to 32,768 rows, and a unique numeric primary key whose values run without a gap (1, 2, 3, ...) is not searched at all: the row is read at its position. Nothing changes in the database binary or in what a lookup returns
+* The head of a composite key has lookups of its own, `FindBy***` and `FindRangeBy***`, answered by the index of the whole key: with a key `(Gender, Age)` there is `FindByGender(Gender)`, see "DataTable configuration". If you wrote a method of that name and signature yourself in a partial table class, it now collides with the generated one: remove yours
 * An enum key, alone, nullable or as a member of a composite key, is compared by its underlying value in generated code, in lookups and in the sort of its index. Before, it went through `Comparer<TEnum>.Default`, which in Unity (Mono and IL2CPP) boxes both values on every comparison: garbage on every lookup by an enum key. The order is the same
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
 
