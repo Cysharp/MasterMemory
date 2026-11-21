@@ -216,26 +216,40 @@ namespace MasterMemory.Tests
             // unique, two integers
             var idAndAge = (from id in Ids from age in Ages select (id, age)).ToArray();
             VerifyUnique("(Id, Age)", table.SortByIdAndAge.ToArray(), x => (x.Id, x.Age), Comparer<(int Id, int Age)>.Default, idAndAge,
-                table.FindByIdAndAge, table.TryFindByIdAndAge, table.FindClosestByIdAndAge, table.FindRangeByIdAndAge);
+                k => table.FindByIdAndAge(k.Item1, k.Item2),
+                ((int, int) k, out Sample row) => table.TryFindByIdAndAge(k.Item1, k.Item2, out row),
+                (k, lower) => table.FindClosestByIdAndAge(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByIdAndAge(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             // unique, two strings: the tuple's default comparison, which is not ordinal
             var names = (from first in FirstNames from last in LastNames select (first, last)).ToArray();
             VerifyUnique("(FirstName, LastName)", table.SortByFirstNameAndLastName.ToArray(), x => (x.FirstName, x.LastName), OrdinalTupleComparer.Create<string, string>(), names,
-                table.FindByFirstNameAndLastName, table.TryFindByFirstNameAndLastName, table.FindClosestByFirstNameAndLastName, table.FindRangeByFirstNameAndLastName);
+                k => table.FindByFirstNameAndLastName(k.Item1, k.Item2),
+                ((string, string) k, out Sample row) => table.TryFindByFirstNameAndLastName(k.Item1, k.Item2, out row),
+                (k, lower) => table.FindClosestByFirstNameAndLastName(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByFirstNameAndLastName(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             // shared, a string and an integer
             var nameAndAge = (from first in FirstNames from age in Ages select (first, age)).ToArray();
             VerifyNonUnique("(FirstName, Age)", table.SortByFirstNameAndAge.ToArray(), x => (x.FirstName, x.Age), OrdinalTupleComparer.Create<string, int>(), nameAndAge,
-                table.FindByFirstNameAndAge, table.FindClosestByFirstNameAndAge, table.FindRangeByFirstNameAndAge);
+                k => table.FindByFirstNameAndAge(k.Item1, k.Item2),
+                (k, lower) => table.FindClosestByFirstNameAndAge(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByFirstNameAndAge(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             // unique, three and four members
             var three = (from id in Ids.Where((_, i) => i % 2 == 0) from age in Ages.Where((_, i) => i % 2 == 0) from first in FirstNames select (id, age, first)).ToArray();
             VerifyUnique("(Id, Age, FirstName)", table.SortByIdAndAgeAndFirstName.ToArray(), x => (x.Id, x.Age, x.FirstName), OrdinalTupleComparer.Create<int, int, string>(), three,
-                table.FindByIdAndAgeAndFirstName, table.TryFindByIdAndAgeAndFirstName, table.FindClosestByIdAndAgeAndFirstName, table.FindRangeByIdAndAgeAndFirstName);
+                k => table.FindByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3),
+                ((int, int, string) k, out Sample row) => table.TryFindByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3, out row),
+                (k, lower) => table.FindClosestByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3, lower),
+                (min, max, ascendant) => table.FindRangeByIdAndAgeAndFirstName(min.Item1, min.Item2, min.Item3, max.Item1, max.Item2, max.Item3, ascendant));
 
             var four = (from row in CreateData() from last in LastNames.Where((_, i) => i % 3 == 0).Append(row.LastName) select (row.Id, row.Age, row.FirstName, last)).ToArray();
             VerifyUnique("(Id, Age, FirstName, LastName)", table.SortByIdAndAgeAndFirstNameAndLastName.ToArray(), x => (x.Id, x.Age, x.FirstName, x.LastName), OrdinalTupleComparer.Create<int, int, string, string>(), four,
-                table.FindByIdAndAgeAndFirstNameAndLastName, table.TryFindByIdAndAgeAndFirstNameAndLastName, table.FindClosestByIdAndAgeAndFirstNameAndLastName, table.FindRangeByIdAndAgeAndFirstNameAndLastName);
+                k => table.FindByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4),
+                ((int, int, string, string) k, out Sample row) => table.TryFindByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4, out row),
+                (k, lower) => table.FindClosestByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4, lower),
+                (min, max, ascendant) => table.FindRangeByIdAndAgeAndFirstNameAndLastName(min.Item1, min.Item2, min.Item3, min.Item4, max.Item1, max.Item2, max.Item3, max.Item4, ascendant));
         }
 
         // an enum key and a string key with a comparison option, which Sample has none of

@@ -31,12 +31,20 @@ namespace MasterMemory.Tests
             }).ToArray();
         }
 
+        // The least of several rounds of 1,000 calls. A lookup that allocates does so on every call, so every round
+        // shows it. One round is not enough: once, in a full test run, a round counted bytes that no later run
+        // repeated. What allocated them was not tracked down; it was not the lookup, which would do it every time.
         static long Measure(Action action)
         {
-            for (var i = 0; i < 200; i++) action(); // past the first calls, which the runtime may allocate for
-            var before = GC.GetAllocatedBytesForCurrentThread();
-            for (var i = 0; i < 1000; i++) action();
-            return GC.GetAllocatedBytesForCurrentThread() - before;
+            for (var i = 0; i < 200; i++) action(); // past the first calls, which the runtime allocates for
+            var least = long.MaxValue;
+            for (var round = 0; round < 5 && least != 0; round++)
+            {
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                for (var i = 0; i < 1000; i++) action();
+                least = Math.Min(least, GC.GetAllocatedBytesForCurrentThread() - before);
+            }
+            return least;
         }
 
         [Fact]
@@ -50,12 +58,12 @@ namespace MasterMemory.Tests
             Measure(() => sum += table.FindRangeByKind(SmallKind.A, SmallKind.B).Count).ShouldBe(0);
 
             // the lookup of the article: a composite key that starts with an enum, by range
-            Measure(() => sum += table.FindRangeByKindAndRank((SmallKind.B, short.MinValue), (SmallKind.B, short.MaxValue)).Count).ShouldBe(0);
-            Measure(() => sum += table.FindByKindAndRank((SmallKind.C, 2)).Count).ShouldBe(0);
+            Measure(() => sum += table.FindRangeByKindAndRank(SmallKind.B, short.MinValue, SmallKind.B, short.MaxValue).Count).ShouldBe(0);
+            Measure(() => sum += table.FindByKindAndRank(SmallKind.C, 2).Count).ShouldBe(0);
 
             Measure(() => sum += table.FindByMaybeKind(null).Count).ShouldBe(0);
             Measure(() => sum += table.FindByMaybeKind(SmallKind.A).Count).ShouldBe(0);
-            Measure(() => sum += table.FindRangeByMaybeKindAndRank((null, 0), (SmallKind.C, 8)).Count).ShouldBe(0);
+            Measure(() => sum += table.FindRangeByMaybeKindAndRank(null, 0, SmallKind.C, 8).Count).ShouldBe(0);
 
             sum.ShouldBeGreaterThan(0);
         }
@@ -71,7 +79,7 @@ namespace MasterMemory.Tests
             Measure(() => sum += table.FindByKind(SmallKind.B).Count).ShouldBe(0);
             Measure(() => sum += table.FindRangeByKind(SmallKind.A, SmallKind.B).Count).ShouldBe(0);
             Measure(() => sum += table.FindByCategory(2).Count).ShouldBe(0);
-            Measure(() => sum += table.FindByCategoryAndSub((2, "S1")).Count).ShouldBe(0);
+            Measure(() => sum += table.FindByCategoryAndSub(2, "S1").Count).ShouldBe(0);
             Measure(() => sum += table.FindByName("n3").Count).ShouldBe(0);
 
             sum.ShouldBeGreaterThan(0);

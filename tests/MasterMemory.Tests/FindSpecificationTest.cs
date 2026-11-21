@@ -211,23 +211,37 @@ namespace MasterMemory.Tests
 
             var idAndAge = (from id in Ids from age in Ages select (id, age)).ToArray();
             VerifyUnique(failures, prefix + "(Id, Age)", table.SortByIdAndAge.ToArray(), x => (x.Id, x.Age), Comparer<(int, int)>.Default, idAndAge, Describe,
-                table.FindByIdAndAge, table.TryFindByIdAndAge, table.FindClosestByIdAndAge, table.FindRangeByIdAndAge);
+                k => table.FindByIdAndAge(k.Item1, k.Item2),
+                ((int, int) k, out Sample row) => table.TryFindByIdAndAge(k.Item1, k.Item2, out row),
+                (k, lower) => table.FindClosestByIdAndAge(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByIdAndAge(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             var names = (from first in FirstNames from last in LastNames select (first, last)).ToArray();
             VerifyUnique(failures, prefix + "(FirstName, LastName)", table.SortByFirstNameAndLastName.ToArray(), x => (x.FirstName, x.LastName), OrdinalTupleComparer.Create<string, string>(), names, Describe,
-                table.FindByFirstNameAndLastName, table.TryFindByFirstNameAndLastName, table.FindClosestByFirstNameAndLastName, table.FindRangeByFirstNameAndLastName);
+                k => table.FindByFirstNameAndLastName(k.Item1, k.Item2),
+                ((string, string) k, out Sample row) => table.TryFindByFirstNameAndLastName(k.Item1, k.Item2, out row),
+                (k, lower) => table.FindClosestByFirstNameAndLastName(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByFirstNameAndLastName(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             var nameAndAge = (from first in FirstNames from age in Ages select (first, age)).ToArray();
             VerifyShared(failures, prefix + "(FirstName, Age)", table.SortByFirstNameAndAge.ToArray(), x => (x.FirstName, x.Age), OrdinalTupleComparer.Create<string, int>(), nameAndAge, Describe,
-                table.FindByFirstNameAndAge, table.FindClosestByFirstNameAndAge, table.FindRangeByFirstNameAndAge);
+                k => table.FindByFirstNameAndAge(k.Item1, k.Item2),
+                (k, lower) => table.FindClosestByFirstNameAndAge(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByFirstNameAndAge(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             var three = (from id in Ids.Where((_, i) => i % 2 == 0) from age in Ages.Where((_, i) => i % 2 == 0) from first in FirstNames select (id, age, first)).ToArray();
             VerifyUnique(failures, prefix + "(Id, Age, FirstName)", table.SortByIdAndAgeAndFirstName.ToArray(), x => (x.Id, x.Age, x.FirstName), OrdinalTupleComparer.Create<int, int, string>(), three, Describe,
-                table.FindByIdAndAgeAndFirstName, table.TryFindByIdAndAgeAndFirstName, table.FindClosestByIdAndAgeAndFirstName, table.FindRangeByIdAndAgeAndFirstName);
+                k => table.FindByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3),
+                ((int, int, string) k, out Sample row) => table.TryFindByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3, out row),
+                (k, lower) => table.FindClosestByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3, lower),
+                (min, max, ascendant) => table.FindRangeByIdAndAgeAndFirstName(min.Item1, min.Item2, min.Item3, max.Item1, max.Item2, max.Item3, ascendant));
 
             var four = (from row in SampleRows() from last in LastNames.Where((_, i) => i % 3 == 0).Append(row.LastName) select (row.Id, row.Age, row.FirstName, last)).ToArray();
             VerifyUnique(failures, prefix + "(Id, Age, FirstName, LastName)", table.SortByIdAndAgeAndFirstNameAndLastName.ToArray(), x => (x.Id, x.Age, x.FirstName, x.LastName), OrdinalTupleComparer.Create<int, int, string, string>(), four, Describe,
-                table.FindByIdAndAgeAndFirstNameAndLastName, table.TryFindByIdAndAgeAndFirstNameAndLastName, table.FindClosestByIdAndAgeAndFirstNameAndLastName, table.FindRangeByIdAndAgeAndFirstNameAndLastName);
+                k => table.FindByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4),
+                ((int, int, string, string) k, out Sample row) => table.TryFindByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4, out row),
+                (k, lower) => table.FindClosestByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4, lower),
+                (min, max, ascendant) => table.FindRangeByIdAndAgeAndFirstNameAndLastName(min.Item1, min.Item2, min.Item3, min.Item4, max.Item1, max.Item2, max.Item3, max.Item4, ascendant));
         }
 
         [Fact]
@@ -392,7 +406,9 @@ namespace MasterMemory.Tests
 
             var kindAndRank = (from kind in kindProbes from rank in rankProbes select (kind, rank)).ToArray();
             VerifyShared(failures, "(enum, short)", table.SortByKindAndRank.ToArray(), x => (x.Kind, x.Rank), Comparer<(SmallKind, short)>.Default, kindAndRank, describe,
-                table.FindByKindAndRank, table.FindClosestByKindAndRank, table.FindRangeByKindAndRank);
+                k => table.FindByKindAndRank(k.Item1, k.Item2),
+                (k, lower) => table.FindClosestByKindAndRank(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByKindAndRank(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             var maybeKindProbes = new SmallKind?[] { null, SmallKind.A, SmallKind.B, SmallKind.C, (SmallKind)3, (SmallKind)255 };
             VerifyShared(failures, "enum?", table.SortByMaybeKind.ToArray(), x => x.MaybeKind, Comparer<SmallKind?>.Default, maybeKindProbes, describe,
@@ -400,7 +416,9 @@ namespace MasterMemory.Tests
 
             var maybeKindAndRank = (from kind in maybeKindProbes from rank in rankProbes select (kind, rank)).ToArray();
             VerifyShared(failures, "(enum?, short)", table.SortByMaybeKindAndRank.ToArray(), x => (x.MaybeKind, x.Rank), Comparer<(SmallKind?, short)>.Default, maybeKindAndRank, describe,
-                table.FindByMaybeKindAndRank, table.FindClosestByMaybeKindAndRank, table.FindRangeByMaybeKindAndRank);
+                k => table.FindByMaybeKindAndRank(k.Item1, k.Item2),
+                (k, lower) => table.FindClosestByMaybeKindAndRank(k.Item1, k.Item2, lower),
+                (min, max, ascendant) => table.FindRangeByMaybeKindAndRank(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             failures.ShouldBeNone(output);
         }
@@ -460,7 +478,8 @@ namespace MasterMemory.Tests
             });
             var subProbes = (from category in new[] { -2, -1, 0, 2, 3 } from sub in new[] { "", "A", "a", "b", "C", "d" } select (category, sub)).ToArray();
             VerifyHead(failures, $"[{count}] (Category, Sub)", table.All.ToArray(), x => (x.Category, x.Sub), categoryAndSub, subProbes, describe,
-                table.FindByCategoryAndSub, table.FindRangeByCategoryAndSub);
+                k => table.FindByCategoryAndSub(k.Item1, k.Item2),
+                (min, max, ascendant) => table.FindRangeByCategoryAndSub(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
 
             // the shared key (Kind, Level)
             var kinds = new[] { SmallKind.A, SmallKind.B, SmallKind.C, (SmallKind)3, (SmallKind)255 };

@@ -129,7 +129,7 @@ var db = new MemoryDatabase(data);
 Person person = db.PersonTable.FindByPersonId(5);
 
 // Multiple key is also typed(***And * **), Return value is multiple if key is marked with `NonUnique`.
-RangeView<Person> result = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
+RangeView<Person> result = db.PersonTable.FindByGenderAndAge(Gender.Female, 23);
 
 // Get nearest value(choose lower(default) or higher).
 RangeView<Person> age1 = db.PersonTable.FindClosestByAge(31);
@@ -229,7 +229,7 @@ public class Sample
     public int Bar { get; set; }
 }
 
-db.Sample.FindByFooAndBar((int Foo, int Bar))
+db.Sample.FindByFooAndBar(int Foo, int Bar)
 
 // ----
 
@@ -242,7 +242,16 @@ public class Sample
     public int Bar { get; set; }
 }
 
-db.Sample.FindByBarAndFoo((int Bar, int Foo))
+db.Sample.FindByBarAndFoo(int Bar, int Foo)
+```
+
+A composite key is passed member by member, in the order of the key. A range takes the members of `min` and then the members of `max`:
+
+```csharp
+Sample a = db.SampleTable.FindByBarAndFoo(bar, foo);
+bool found = db.SampleTable.TryFindByBarAndFoo(bar, foo, out Sample b);
+Sample? c = db.SampleTable.FindClosestByBarAndFoo(bar, foo, selectLower: true);
+RangeView<Sample> d = db.SampleTable.FindRangeByBarAndFoo(minBar, minFoo, maxBar, maxFoo);
 ```
 
 The head of a composite key can be looked up on its own. An index sorted by `(Gender, Age)` is sorted by `Gender` too, so it answers `FindByGender` and `FindRangeByGender` without a second index being built and kept in memory:
@@ -259,12 +268,12 @@ public class Person
     public int Age { get; set; }
 }
 
-RangeView<Person> a = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
+RangeView<Person> a = db.PersonTable.FindByGenderAndAge(Gender.Female, 23);
 RangeView<Person> b = db.PersonTable.FindByGender(Gender.Female);                  // every Female, in order of Age
 RangeView<Person> c = db.PersonTable.FindRangeByGender(Gender.Male, Gender.Female);
 ```
 
-* Every head gets these two methods: of a key `(A, B, C)`, both `FindByA(A)` and `FindByAAndB((A, B))`
+* Every head gets these two methods: of a key `(A, B, C)`, both `FindByA(A)` and `FindByAAndB(A, B)`
 * They return `RangeView<T>` whether or not the whole key is unique, and the rows come in the order of the whole key
 * A key declared on exactly those members is what answers instead, as before (`[SecondaryKey(1)] Gender` keeps its own `FindByGender`). If you declared such a key only to look up by `Gender`, you can remove it and save its index
 * When several composite keys start with the same members, the primary key answers, and otherwise the secondary key with the lowest index number. The rows are the same whichever answers; only their order differs
@@ -281,7 +290,7 @@ public class Sample
     public int Bar { get; set; }
 }
 
-RangeView<Sample> q = db.Sample.FindByFooAndBar((int Foo, int Bar))
+RangeView<Sample> q = db.Sample.FindByFooAndBar(int Foo, int Bar)
 ```
 
 ```csharp
@@ -297,7 +306,7 @@ public class Sample
 }
 
 db.Sample.FindByFoo(int Foo)
-db.Sample.FindByFooAndBar((int Foo, int Bar))
+db.Sample.FindByFooAndBar(int Foo, int Bar)
 db.Sample.FindByBar(int Bar)
 ```
 
@@ -879,6 +888,7 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `RangeView<T>.CopyTo` of an empty view does nothing instead of throwing `ArgumentNullException`
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
 * Lookups are faster. Every key is searched through a struct generated for it, with no delegate and no comparer object per comparison. On top of that, a unique integer key of 32 bits or less is searched without conditional jumps in tables up to 32,768 rows, and a unique numeric primary key whose values run without a gap (1, 2, 3, ...) is not searched at all: the row is read at its position. Nothing changes in the database binary or in what a lookup returns
+* **A composite key is passed member by member, not as a tuple**: `FindByGenderAndAge((Gender.Female, 23))` becomes `FindByGenderAndAge(Gender.Female, 23)`, and likewise `TryFindBy***` and `FindClosestBy***`. A range takes the members of `min` and then of `max`: `FindRangeByGenderAndAge((g1, a1), (g2, a2))` becomes `FindRangeByGenderAndAge(g1, a1, g2, a2)`. The tuple overloads are gone, so every such call has to be rewritten; the compiler points at each of them. Lookups by a key of one member are unchanged. `PrimaryKeySelector` and `ImmutableBuilder.Remove***` still use a tuple for a composite key, a key there being a value
 * The head of a composite key has lookups of its own, `FindBy***` and `FindRangeBy***`, answered by the index of the whole key: with a key `(Gender, Age)` there is `FindByGender(Gender)`, see "DataTable configuration". If you wrote a method of that name and signature yourself in a partial table class, it now collides with the generated one: remove yours
 * An enum key, alone, nullable or as a member of a composite key, is compared by its underlying value in generated code, in lookups and in the sort of its index. Before, it went through `Comparer<TEnum>.Default`, which in Unity (Mono and IL2CPP) boxes both values on every comparison: garbage on every lookup by an enum key. The order is the same
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`

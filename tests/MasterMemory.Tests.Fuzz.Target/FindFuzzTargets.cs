@@ -183,11 +183,16 @@ public static class FindFuzzTargets
         VerifyShared("Group", Rows(table.SortByGroup), x => x.Group, Comparer<int>.Default, groups,
             table.FindByGroup, table.FindClosestByGroup, table.FindRangeByGroup);
         VerifyUnique("(Group, Seq)", Rows(table.SortByGroupAndSeq), x => (x.Group, x.Seq), Comparer<(int Group, int Seq)>.Default, pairs,
-            table.FindByGroupAndSeq, table.TryFindByGroupAndSeq, table.FindClosestByGroupAndSeq, table.FindRangeByGroupAndSeq);
+            k => table.FindByGroupAndSeq(k.Group, k.Seq),
+            ((int Group, int Seq) k, out FuzzRow row) => table.TryFindByGroupAndSeq(k.Group, k.Seq, out row),
+            (k, lower) => table.FindClosestByGroupAndSeq(k.Group, k.Seq, lower),
+            (min, max, ascendant) => table.FindRangeByGroupAndSeq(min.Group, min.Seq, max.Group, max.Seq, ascendant));
         VerifyShared("Name", Rows(table.SortByName), x => x.Name, StringComparer.Ordinal, names,
             table.FindByName, table.FindClosestByName, table.FindRangeByName);
         VerifyShared("(Name, Kind)", Rows(table.SortByNameAndKind), x => (x.Name, x.Kind), OrdinalTupleComparer.Create<string?, FuzzKind>(), nameAndKinds,
-            table.FindByNameAndKind, table.FindClosestByNameAndKind, table.FindRangeByNameAndKind);
+            k => table.FindByNameAndKind(k.Item1, k.Item2),
+            (k, lower) => table.FindClosestByNameAndKind(k.Item1, k.Item2, lower),
+            (min, max, ascendant) => table.FindRangeByNameAndKind(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
         VerifyShared("Kind", Rows(table.SortByKind), x => x.Kind, Comparer<FuzzKind>.Default, kinds,
             table.FindByKind, table.FindClosestByKind, table.FindRangeByKind);
         VerifyUnique("Code", Rows(table.SortByCode), x => x.Code, StringComparer.OrdinalIgnoreCase, codes,
@@ -198,11 +203,15 @@ public static class FindFuzzTargets
         // the key of three, and its two heads, all in the one index
         var bucketIndex = Rows(table.SortByBucketAndKindAndSeq);
         VerifyUnique("(Bucket, Kind, Seq)", bucketIndex, x => (x.Bucket, x.Kind, x.Seq), Comparer<(int Bucket, FuzzKind Kind, int Seq)>.Default, bucketAndKindAndSeqs,
-            table.FindByBucketAndKindAndSeq, table.TryFindByBucketAndKindAndSeq, table.FindClosestByBucketAndKindAndSeq, table.FindRangeByBucketAndKindAndSeq);
+            k => table.FindByBucketAndKindAndSeq(k.Bucket, k.Kind, k.Seq),
+            ((int Bucket, FuzzKind Kind, int Seq) k, out FuzzRow row) => table.TryFindByBucketAndKindAndSeq(k.Bucket, k.Kind, k.Seq, out row),
+            (k, lower) => table.FindClosestByBucketAndKindAndSeq(k.Bucket, k.Kind, k.Seq, lower),
+            (min, max, ascendant) => table.FindRangeByBucketAndKindAndSeq(min.Bucket, min.Kind, min.Seq, max.Bucket, max.Kind, max.Seq, ascendant));
         VerifyHead("Bucket", bucketIndex, x => x.Bucket, Comparer<int>.Default, buckets,
             table.FindByBucket, table.FindRangeByBucket);
         VerifyHead("(Bucket, Kind)", bucketIndex, x => (x.Bucket, x.Kind), Comparer<(int Bucket, FuzzKind Kind)>.Default, bucketAndKinds,
-            table.FindByBucketAndKind, table.FindRangeByBucketAndKind);
+            k => table.FindByBucketAndKind(k.Bucket, k.Kind),
+            (min, max, ascendant) => table.FindRangeByBucketAndKind(min.Bucket, min.Kind, max.Bucket, max.Kind, ascendant));
     }
 
     // the head of a composite key: every row whose first members equal the key, in the order of the index of the whole key

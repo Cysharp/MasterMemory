@@ -21,7 +21,7 @@ namespace MasterMemory.Tests
         //    var data = builder.Build();
         //    var database = new MemoryDatabase(data);
 
-        //    var entries = database.PersonModelTable.FindClosestByFirstNameAndLastName(("real", "real"), false);
+        //    var entries = database.PersonModelTable.FindClosestByFirstNameAndLastName("real", "real", false);
         //    var firstEntry = entries.FirstOrDefault();
 
         //    var firstIs = firstEntry.FirstName;

@@ -139,33 +139,33 @@ static class TableEmitter
     static void EmitUniqueLookups(CodeWriter writer, string element, KeyBase key, bool throwIfKeyNotFound)
     {
         var methodName = key.BuildMethodName();
-        var keyType = key.BuildTypeName();
+        var parameters = new KeyParameters(key.Properties.ToArray());
         var index = key.TableName;
         var comparable = key.ComparableName;
         var nullable = throwIfKeyNotFound ? "" : "?";
-        var notFound = throwIfKeyNotFound ? "return ThrowKeyNotFound(key);" : "return default;";
+        var notFound = throwIfKeyNotFound ? $"return ThrowKeyNotFound({parameters.Value});" : "return default;";
 
         writer.Line(AggressiveInlining);
-        using (writer.Block($"public {element}{nullable} FindBy{methodName}({keyType} key)"))
+        using (writer.Block($"public {element}{nullable} FindBy{methodName}({parameters.Declaration})"))
         {
             if (key.CanInlineBinarySearch)
             {
                 EmitDirectHit(writer, key, "return row;");
             }
-            writer.Line($"var index = FindIndexBy{methodName}(key);");
+            writer.Line($"var index = FindIndexBy{methodName}({parameters.Arguments});");
             writer.Line($"if (index >= 0) {{ return {index}[index]; }}");
             writer.Line(notFound);
         }
 
         writer.Line();
         writer.Line(AggressiveInlining);
-        using (writer.Block($"public bool TryFindBy{methodName}({keyType} key, out {element} result)"))
+        using (writer.Block($"public bool TryFindBy{methodName}({parameters.Declaration}, out {element} result)"))
         {
             if (key.CanInlineBinarySearch)
             {
                 EmitDirectHit(writer, key, "result = row; return true;");
             }
-            writer.Line($"var index = FindIndexBy{methodName}(key);");
+            writer.Line($"var index = FindIndexBy{methodName}({parameters.Arguments});");
             writer.Line($"if (index >= 0) {{ result = {index}[index]; return true; }}");
             writer.Line("result = default!;");
             writer.Line("return false;");
@@ -181,22 +181,84 @@ static class TableEmitter
         writer.Line();
         writer.Line("// the index of the row with the key, negative when there is none");
         writer.Line(AggressiveInlining);
-        using (writer.Block($"int FindIndexBy{methodName}({keyType} key)"))
+        using (writer.Block($"int FindIndexBy{methodName}({parameters.Declaration})"))
         {
-            writer.Line($"var comparable = new {comparable}(key);");
+            writer.Line($"var comparable = new {comparable}({parameters.Arguments});");
             writer.Line($"return {search};");
         }
 
         writer.Line();
-        using (writer.Block($"public {element}? FindClosestBy{methodName}({keyType} key, bool selectLower = true)"))
+        using (writer.Block($"public {element}? FindClosestBy{methodName}({parameters.Declaration}, bool selectLower = true)"))
         {
-            writer.Line($"return FindUniqueClosestCore({index}, new {comparable}(key), selectLower);");
+            writer.Line($"return FindUniqueClosestCore({index}, new {comparable}({parameters.Arguments}), selectLower);");
         }
 
         writer.Line();
-        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({keyType} min, {keyType} max, bool ascendant = true)"))
+        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration}, bool ascendant = true)"))
         {
-            writer.Line($"return FindUniqueRangeCore({index}, new {comparable}(min), new {comparable}(max), ascendant);");
+            writer.Line($"return FindUniqueRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}), ascendant);");
+        }
+    }
+
+    /// <summary>
+    /// How a key is passed to a lookup. A key of one member is "key" (and "min", "max"). A composite key is one
+    /// parameter per member, named after the property: FindByGenderAndAge(Gender gender, int age), and for a range
+    /// (minGender, minAge, maxGender, maxAge). It is not a tuple: a call reads as what it asks, and there is nothing
+    /// to wrap in a second pair of parentheses.
+    /// </summary>
+    sealed class KeyParameters
+    {
+        // what the generated method bodies name their own variables, and the parameters they add
+        static readonly HashSet<string> Reserved = new HashSet<string> { "key", "min", "max", "result", "selectLower", "ascendant", "index", "row", "closest", "comparable", "offset", "data" };
+
+        public string Declaration { get; }
+        public string Arguments { get; }
+        public string MinDeclaration { get; }
+        public string MinArguments { get; }
+        public string MaxDeclaration { get; }
+        public string MaxArguments { get; }
+        // the key as one value, for a message
+        public string Value { get; }
+
+        public KeyParameters(KeyProperty[] properties)
+        {
+            if (properties.Length == 1)
+            {
+                var type = properties[0].FullTypeName;
+                (Declaration, Arguments, Value) = ($"{type} key", "key", "key");
+                (MinDeclaration, MinArguments) = ($"{type} min", "min");
+                (MaxDeclaration, MaxArguments) = ($"{type} max", "max");
+                return;
+            }
+
+            var names = new List<string>();
+            foreach (var property in properties)
+            {
+                var name = char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+                if (Reserved.Contains(name) || names.Contains(name))
+                {
+                    name += "Key" + (names.Count + 1);
+                }
+                names.Add(name);
+            }
+
+            // "class" is a parameter name only as "@class"
+            string Escape(string name) => (Microsoft.CodeAnalysis.CSharp.SyntaxFacts.GetKeywordKind(name) != Microsoft.CodeAnalysis.CSharp.SyntaxKind.None) ? "@" + name : name;
+            string Join(Func<int, string> item) => string.Join(", ", Enumerable.Range(0, properties.Length).Select(item));
+
+            Declaration = Join(i => $"{properties[i].FullTypeName} {Escape(names[i])}");
+            Arguments = Join(i => Escape(names[i]));
+            Value = "(" + Arguments + ")";
+            MinDeclaration = Join(i => $"{properties[i].FullTypeName} min{properties[i].Name}");
+            MinArguments = Join(i => "min" + properties[i].Name);
+            MaxDeclaration = Join(i => $"{properties[i].FullTypeName} max{properties[i].Name}");
+            MaxArguments = Join(i => "max" + properties[i].Name);
+        }
+
+        // the key of a row, as arguments
+        public static string ArgumentsOf(KeyProperty[] properties, string row)
+        {
+            return string.Join(", ", properties.Select(x => row + "." + x.Identifier));
         }
     }
 
@@ -220,33 +282,33 @@ static class TableEmitter
     static void EmitNonUniqueLookups(CodeWriter writer, string element, KeyBase key)
     {
         var methodName = key.BuildMethodName();
-        var keyType = key.BuildTypeName();
+        var properties = key.Properties.ToArray();
+        var parameters = new KeyParameters(properties);
         var index = key.TableName;
         var comparable = key.ComparableName;
 
-        using (writer.Block($"public RangeView<{element}> FindBy{methodName}({keyType} key)"))
+        using (writer.Block($"public RangeView<{element}> FindBy{methodName}({parameters.Declaration})"))
         {
-            writer.Line($"return FindManyCore({index}, new {comparable}(key));");
+            writer.Line($"return FindManyCore({index}, new {comparable}({parameters.Arguments}));");
         }
 
         writer.Line();
-        using (writer.Block($"public RangeView<{element}> FindClosestBy{methodName}({keyType} key, bool selectLower = true)"))
+        using (writer.Block($"public RangeView<{element}> FindClosestBy{methodName}({parameters.Declaration}, bool selectLower = true)"))
         {
-            writer.Line($"var closest = FindClosestIndex({index}, new {comparable}(key), selectLower);");
+            writer.Line($"var closest = FindClosestIndex({index}, new {comparable}({parameters.Arguments}), selectLower);");
             writer.Line($"if ((closest == -1) || (closest >= {index}.Length)) {{ return RangeView<{element}>.Empty; }}");
             writer.Line();
             writer.Line("// every row that shares the key of the nearest one");
             writer.Line($"var row = {index}[closest];");
-            writer.Line($"return FindManyCore({index}, new {comparable}({key.BuildKeyAccessor("row")}));");
+            writer.Line($"return FindManyCore({index}, new {comparable}({KeyParameters.ArgumentsOf(properties, "row")}));");
         }
 
         writer.Line();
-        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({keyType} min, {keyType} max, bool ascendant = true)"))
+        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration}, bool ascendant = true)"))
         {
-            writer.Line($"return FindManyRangeCore({index}, new {comparable}(min), new {comparable}(max), ascendant);");
+            writer.Line($"return FindManyRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}), ascendant);");
         }
     }
-
     // The head of a composite key is a key too: an index sorted by (Gender, Age) is sorted by Gender, so it answers
     // FindByGender without an index of its own being built and kept in memory (the leftmost prefix of a composite
     // index, in the terms of a database). Every head gets its lookups, unless something is already named so: a key
@@ -282,39 +344,57 @@ static class TableEmitter
     {
         var properties = key.Properties.ToArray().Take(length).ToArray();
         var methodName = PrefixMethodName(key, length);
-        var keyType = (length == 1)
-            ? properties[0].FullTypeName
-            : "(" + string.Join(", ", properties.Select(x => x.FullTypeName + " " + x.Identifier)) + ")";
+        var parameters = new KeyParameters(properties);
         var comparable = $"{key.IndexName}Prefix{length}Comparable";
         var index = key.TableName;
 
         writer.Line($"// by the first {(length == 1 ? "member" : length + " members")} of the key {key.BuildPropertyTupleName()}, through its index: the rows come in the order of that key");
-        using (writer.Block($"public RangeView<{element}> FindBy{methodName}({keyType} key)"))
+        using (writer.Block($"public RangeView<{element}> FindBy{methodName}({parameters.Declaration})"))
         {
-            writer.Line($"return FindManyCore({index}, new {comparable}(key));");
+            writer.Line($"return FindManyCore({index}, new {comparable}({parameters.Arguments}));");
         }
 
         writer.Line();
-        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({keyType} min, {keyType} max, bool ascendant = true)"))
+        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration}, bool ascendant = true)"))
         {
-            writer.Line($"return FindManyRangeCore({index}, new {comparable}(min), new {comparable}(max), ascendant);");
+            writer.Line($"return FindManyRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}), ascendant);");
         }
 
         writer.Line();
-        using (writer.Block($"readonly struct {comparable} : IComparable<{element}>"))
+        EmitComparableStruct(writer, element, comparable, properties, "IComparable", null);
+    }
+    // The key of a lookup, as the searches take it. CompareTo orders the key and a row exactly as the comparer the index
+    // is sorted with orders two keys; a different order here would search a sorted array by another order.
+    static void EmitComparable(CodeWriter writer, string element, KeyBase key)
+    {
+        var branchless = IsBranchless(key);
+        writer.Line("// the key of a lookup: negative, zero or positive as it is before, at or after a row");
+        EmitComparableStruct(writer, element, key.ComparableName, key.Properties.ToArray(), branchless ? "IBranchlessComparable" : "IComparable", branchless ? key.Properties[0] : null);
+    }
+
+    // A struct that holds a key, or the first members of one, and compares it to a row member by member. The members of
+    // a composite key arrive one by one, as the lookups take them, and are kept together.
+    static void EmitComparableStruct(CodeWriter writer, string element, string name, KeyProperty[] properties, string @interface, KeyProperty? branchless)
+    {
+        var parameters = new KeyParameters(properties);
+        var keyType = (properties.Length == 1)
+            ? properties[0].FullTypeName
+            : "(" + string.Join(", ", properties.Select(x => x.FullTypeName + " " + x.Identifier)) + ")";
+
+        using (writer.Block($"readonly struct {name} : {@interface}<{element}>"))
         {
             writer.Line($"readonly {keyType} key;");
             writer.Line();
-            using (writer.Block($"public {comparable}({keyType} key)"))
+            using (writer.Block($"public {name}({parameters.Declaration})"))
             {
-                writer.Line("this.key = key;");
+                writer.Line($"this.key = {parameters.Value};");
             }
 
             writer.Line();
             writer.Line(AggressiveInlining);
             using (writer.Block($"public int CompareTo({element} other)"))
             {
-                if (length == 1)
+                if (properties.Length == 1)
                 {
                     writer.Line($"return {CompareExpression(properties[0], "key", "other." + properties[0].Identifier)};");
                 }
@@ -323,54 +403,19 @@ static class TableEmitter
                     EmitMemberwiseCompare(writer, properties, "key", "other");
                 }
             }
-        }
-    }
 
-    // The key of a lookup, as the searches take it. CompareTo orders the key and a row exactly as the comparer the index
-    // is sorted with orders two keys; a different order here would search a sorted array by another order.
-    static void EmitComparable(CodeWriter writer, string element, KeyBase key)
-    {
-        var name = key.ComparableName;
-        var keyType = key.BuildTypeName();
-        var branchless = IsBranchless(key);
-
-        writer.Line("// the key of a lookup: negative, zero or positive as it is before, at or after a row");
-        using (writer.Block($"readonly struct {name} : {(branchless ? "IBranchlessComparable" : "IComparable")}<{element}>"))
-        {
-            writer.Line($"readonly {keyType} key;");
-            writer.Line();
-            using (writer.Block($"public {name}({keyType} key)"))
-            {
-                writer.Line("this.key = key;");
-            }
-
-            writer.Line();
-            writer.Line(AggressiveInlining);
-            using (writer.Block($"public int CompareTo({element} other)"))
-            {
-                if (key.IsComposite)
-                {
-                    EmitMemberwiseCompare(writer, key, "key", "other");
-                }
-                else
-                {
-                    writer.Line($"return {CompareExpression(key.Properties[0], "key", "other." + key.Properties[0].Identifier)};");
-                }
-            }
-
-            if (branchless)
+            if (branchless != null)
             {
                 writer.Line();
                 writer.Line("// (other - key - 1) is negative exactly when other <= key, and exact in a long; its sign, spread over the word, is the mask");
                 writer.Line(AggressiveInlining);
                 using (writer.Block($"public int AtOrAfterMask({element} other)"))
                 {
-                    writer.Line($"return unchecked((int)(((long)other.{key.Properties[0].Identifier} - key - 1) >> 63));");
+                    writer.Line($"return unchecked((int)(((long)other.{branchless.Identifier} - key - 1) >> 63));");
                 }
             }
         }
     }
-
     // The order of a composite key or of an enum key, as the sorts take it: what DatabaseBuilder sorts the rows by, what
     // a secondary index is sorted by when a table is constructed, and what MetaIndex.Comparer returns. The default
     // comparers are not used for these. That of a tuple compares strings by the current culture: the machine that

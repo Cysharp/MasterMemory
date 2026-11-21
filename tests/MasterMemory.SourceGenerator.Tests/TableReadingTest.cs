@@ -90,10 +90,10 @@ public class Item
 }
 """);
 
-        table.ShouldContain("FindByGroupAndId((int Group, int Id) key)");
+        table.ShouldContain("FindByGroupAndId(int group, int id)");
         table.ShouldContain("readonly global::Item[] secondaryIndex2;");
         table.ShouldContain("FindByName(string key)");
-        table.ShouldContain("FindByAAndB((int A, int B) key)");
+        table.ShouldContain("FindByAAndB(int a, int b)");
     }
 
     [Fact]
@@ -255,10 +255,80 @@ public class Item
 }
 """);
 
-        table.ShouldContain("FindByclassAndevent((int @class, int @event) key)");
+        table.ShouldContain("FindByclassAndevent(int @class, int @event)");
+        table.ShouldContain("FindRangeByclassAndevent(int minclass, int minevent, int maxclass, int maxevent, bool ascendant = true)");
         table.ShouldContain("x => (x.@class, x.@event)");
         table.ShouldContain("return (key < other.@int) ? -1 : (key > other.@int) ? 1 : 0;");
         table.ShouldContain("GetProperty(\"class\")");
+    }
+
+    // ---- how a key is passed ----
+
+    // A composite key is passed member by member, not as a tuple: FindByAAndB(a, b), and for a range the members of
+    // min and then of max. A key of one member is "key", "min" and "max", as it always was.
+    [Fact]
+    public void CompositeKeyParameters()
+    {
+        var table = Table("""
+public enum Gender { Male, Female }
+
+[MemoryTable("item")]
+public class Item
+{
+    [PrimaryKey(0)] public Gender Gender { get; set; }
+    [PrimaryKey(1)] public int Age { get; set; }
+    [SecondaryKey(0, 0), NonUnique] public string Name { get; set; }
+    [SecondaryKey(0, 1), NonUnique] public long? No { get; set; }
+    [SecondaryKey(1)] public int Single { get; set; }
+}
+""");
+
+        // unique
+        table.ShouldContain("public global::Item FindByGenderAndAge(global::Gender gender, int age)");
+        table.ShouldContain("public bool TryFindByGenderAndAge(global::Gender gender, int age, out global::Item result)");
+        table.ShouldContain("public global::Item? FindClosestByGenderAndAge(global::Gender gender, int age, bool selectLower = true)");
+        table.ShouldContain("public RangeView<global::Item> FindRangeByGenderAndAge(global::Gender minGender, int minAge, global::Gender maxGender, int maxAge, bool ascendant = true)");
+        table.ShouldContain("var comparable = new PrimaryIndexComparable(gender, age);");
+        table.ShouldContain("return FindUniqueRangeCore(data, new PrimaryIndexComparable(minGender, minAge), new PrimaryIndexComparable(maxGender, maxAge), ascendant);");
+        table.ShouldContain("return ThrowKeyNotFound((gender, age));");
+
+        // shared
+        table.ShouldContain("public RangeView<global::Item> FindByNameAndNo(string name, long? no)");
+        table.ShouldContain("public RangeView<global::Item> FindClosestByNameAndNo(string name, long? no, bool selectLower = true)");
+        table.ShouldContain("return FindManyCore(secondaryIndex0, new SecondaryIndex0Comparable(row.Name, row.No));");
+        table.ShouldContain("public RangeView<global::Item> FindRangeByNameAndNo(string minName, long? minNo, string maxName, long? maxNo, bool ascendant = true)");
+
+        // the struct takes the members and keeps them together
+        table.ShouldContain("public PrimaryIndexComparable(global::Gender gender, int age)");
+        table.ShouldContain("this.key = (gender, age);");
+
+        // one member: unchanged
+        table.ShouldContain("public global::Item FindBySingle(int key)");
+        table.ShouldContain("public RangeView<global::Item> FindRangeBySingle(int min, int max, bool ascendant = true)");
+
+        // no lookup takes a tuple
+        table.ShouldNotContain("FindByGenderAndAge((");
+        table.ShouldNotContain(") key)");
+        table.ShouldNotContain(") min, (");
+    }
+
+    // a member whose name would shadow a parameter or a variable of the generated method gets another name
+    [Fact]
+    public void CompositeKeyParameterNames()
+    {
+        var table = Table("""
+[MemoryTable("item")]
+public class Item
+{
+    [PrimaryKey(0)] public int Result { get; set; }
+    [PrimaryKey(1)] public int Index { get; set; }
+    [PrimaryKey(2)] public int Class { get; set; }
+    [PrimaryKey(3)] public int Key { get; set; }
+}
+""");
+
+        table.ShouldContain("public bool TryFindByResultAndIndexAndClassAndKey(int resultKey1, int indexKey2, int @class, int keyKey4, out global::Item result)");
+        table.ShouldContain("FindRangeByResultAndIndexAndClassAndKey(int minResult, int minIndex, int minClass, int minKey, int maxResult, int maxIndex, int maxClass, int maxKey, bool ascendant = true)");
     }
 
     // ---- composite keys ----

@@ -61,12 +61,13 @@ public class Person
 """);
 
         // a unique key: its heads are still several rows each
-        table.ShouldContain("public global::Person FindByCategoryAndNameAndNo((int Category, string Name, long No) key)");
+        table.ShouldContain("public global::Person FindByCategoryAndNameAndNo(int category, string name, long no)");
         table.ShouldContain("public RangeView<global::Person> FindByCategory(int key)");
         table.ShouldContain("return FindManyCore(data, new PrimaryIndexPrefix1Comparable(key));");
-        table.ShouldContain("public RangeView<global::Person> FindByCategoryAndName((int Category, string Name) key)");
-        table.ShouldContain("return FindManyCore(data, new PrimaryIndexPrefix2Comparable(key));");
-        table.ShouldContain("public RangeView<global::Person> FindRangeByCategoryAndName((int Category, string Name) min, (int Category, string Name) max, bool ascendant = true)");
+        table.ShouldContain("public RangeView<global::Person> FindByCategoryAndName(int category, string name)");
+        table.ShouldContain("return FindManyCore(data, new PrimaryIndexPrefix2Comparable(category, name));");
+        table.ShouldContain("public RangeView<global::Person> FindRangeByCategoryAndName(int minCategory, string minName, int maxCategory, string maxName, bool ascendant = true)");
+        table.ShouldContain("return FindManyRangeCore(data, new PrimaryIndexPrefix2Comparable(minCategory, minName), new PrimaryIndexPrefix2Comparable(maxCategory, maxName), ascendant);");
 
         // member by member, each as the key compares it
         table.ShouldContain("readonly struct PrimaryIndexPrefix2Comparable : IComparable<global::Person>");

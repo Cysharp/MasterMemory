@@ -34,7 +34,7 @@ var db = new MemoryDatabase(data);
 Person person = db.PersonTable.FindByPersonId(5);
 
 // Multiple key is also typed(***And * **), Return value is multiple if key is marked with `NonUnique`.
-RangeView<Person> result = db.PersonTable.FindByGenderAndAge((Gender.Female, 23));
+RangeView<Person> result = db.PersonTable.FindByGenderAndAge(Gender.Female, 23);
 
 // Get nearest value(choose lower(default) or higher).
 RangeView<Person> age1 = db.PersonTable.FindClosestByAge(31);

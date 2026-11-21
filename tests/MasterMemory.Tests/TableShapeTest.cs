@@ -70,8 +70,8 @@ namespace MasterMemory.Tests
             })).PartialMasterTable;
 
             table.All.Select(x => x.Name).ToArray().ShouldBe(new[] { "a", "b", "c" });
-            table.FindByCategoryAndNo((1, 2)).Name.ShouldBe("b");
-            table.TryFindByCategoryAndNo((2, 2), out _).ShouldBeFalse();
+            table.FindByCategoryAndNo(1, 2).Name.ShouldBe("b");
+            table.TryFindByCategoryAndNo(2, 2, out _).ShouldBeFalse();
         }
 
         [Fact]
@@ -144,15 +144,15 @@ namespace MasterMemory.Tests
 
             foreach (var item in CreateData())
             {
-                table.FindByCodeAndNo((item.Code, item.No)).Value.ShouldBe(item.Value);
+                table.FindByCodeAndNo(item.Code, item.No).Value.ShouldBe(item.Value);
             }
-            table.TryFindByCodeAndNo(("A", 3), out _).ShouldBeFalse();
-            table.TryFindByCodeAndNo(("b", 1), out _).ShouldBeFalse();
+            table.TryFindByCodeAndNo("A", 3, out _).ShouldBeFalse();
+            table.TryFindByCodeAndNo("b", 1, out _).ShouldBeFalse();
 
-            table.FindClosestByCodeAndNo(("a", 5), selectLower: true)!.Value.ShouldBe(5);
-            table.FindClosestByCodeAndNo(("a", 5), selectLower: false)!.Value.ShouldBe(4);
-            table.FindClosestByCodeAndNo(("C", 0), selectLower: true)!.Value.ShouldBe(3);   // "C" is between "B" and "a"
-            table.FindRangeByCodeAndNo(("a", 0), ("a1", 1)).Select(x => x.Value).ToArray().ShouldBe(new[] { 5, 4, 6 });
+            table.FindClosestByCodeAndNo("a", 5, selectLower: true)!.Value.ShouldBe(5);
+            table.FindClosestByCodeAndNo("a", 5, selectLower: false)!.Value.ShouldBe(4);
+            table.FindClosestByCodeAndNo("C", 0, selectLower: true)!.Value.ShouldBe(3);   // "C" is between "B" and "a"
+            table.FindRangeByCodeAndNo("a", 0, "a1", 1).Select(x => x.Value).ToArray().ShouldBe(new[] { 5, 4, 6 });
         }
 
         // [StringComparisonOption] belongs to the member it is written on, and was ignored on a composite key
@@ -161,10 +161,10 @@ namespace MasterMemory.Tests
         {
             var table = Load(x => x.Append(CreateData())).CompositeNameMasterTable;
 
-            table.FindByLabelAndRank(("ALPHA", 2)).Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
-            table.FindByLabelAndRank(("alpha", 1)).Select(x => x.Value).ToArray().ShouldBe(new[] { 4 });
-            table.FindByLabelAndRank(("Beta", 1)).Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 5 });
-            table.FindByLabelAndRank(("beta", 2)).Count.ShouldBe(0);
+            table.FindByLabelAndRank("ALPHA", 2).Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
+            table.FindByLabelAndRank("alpha", 1).Select(x => x.Value).ToArray().ShouldBe(new[] { 4 });
+            table.FindByLabelAndRank("Beta", 1).Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 5 });
+            table.FindByLabelAndRank("beta", 2).Count.ShouldBe(0);
             table.SortByLabelAndRank.Select(x => x.Label.ToLowerInvariant() + x.Rank).ToArray().ShouldBe(new[] { "alpha1", "alpha2", "alpha2", "beta1", "beta1", "gamma5" });
         }
 
@@ -187,8 +187,8 @@ namespace MasterMemory.Tests
                 table.All.Select(x => x.Code).ToArray().ShouldBe(new[] { "B", "a", "a", "a1", "a1", "a_b" });
                 foreach (var item in CreateData())
                 {
-                    table.FindByCodeAndNo((item.Code, item.No)).Value.ShouldBe(item.Value);
-                    table.FindByLabelAndRank((item.Label, item.Rank)).Select(x => x.Value).ShouldContain(item.Value);
+                    table.FindByCodeAndNo(item.Code, item.No).Value.ShouldBe(item.Value);
+                    table.FindByLabelAndRank(item.Label, item.Rank).Select(x => x.Value).ShouldContain(item.Value);
                 }
 
                 // every writer of the table sorts by the same order: the immutable builder too
@@ -196,7 +196,7 @@ namespace MasterMemory.Tests
                 builder.Diff(new[] { new CompositeNameMaster { Code = "A", No = 1, Label = "x", Rank = 0, Value = 7 } });
                 var rebuilt = builder.Build().CompositeNameMasterTable;
                 rebuilt.All.Select(x => x.Code).ToArray().ShouldBe(new[] { "A", "B", "a", "a", "a1", "a1", "a_b" });
-                rebuilt.FindByCodeAndNo(("A", 1)).Value.ShouldBe(7);
+                rebuilt.FindByCodeAndNo("A", 1).Value.ShouldBe(7);
             }
             finally
             {
