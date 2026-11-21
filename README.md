@@ -826,6 +826,7 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * Two `[MemoryTable]` classes with the same name in different namespaces are reported as error `MAM004`; before, nothing was generated at all
 * With `IsReturnNullIfKeyNotFound = true` every unique `FindBy***` returns `T?`; before, only a numeric primary key did
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
+* `FindBy***` / `TryFindBy***` of a unique numeric primary key is faster. When the keys run without a gap (1, 2, 3, ...) the row is read at its position, with no search at all; otherwise tables up to 32,768 rows are searched without conditional jumps. Nothing changes in the database binary or in what a lookup returns
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
 
 v2 -> v3 migration

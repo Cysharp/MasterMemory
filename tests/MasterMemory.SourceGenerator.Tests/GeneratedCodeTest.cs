@@ -206,6 +206,43 @@ public class Item
         code.ShouldContain("public global::Item FindByName(string key)");
     }
 
+    // which lookup a primary key gets: the direct hit and the struct comparable need a number, the jump-free search 32 bits
+    [Fact]
+    public void PrimaryKeyLookupByKeyType()
+    {
+        var codes = Helper.GenerateCode("""
+[MemoryTable("a")] public class IntKey { [PrimaryKey] public int Id { get; set; } }
+[MemoryTable("b")] public class LongKey { [PrimaryKey] public long Id { get; set; } }
+[MemoryTable("c")] public class StringKey { [PrimaryKey] public string Id { get; set; } }
+[MemoryTable("d")] public class NonUniqueKey { [PrimaryKey, NonUnique] public int Id { get; set; } }
+[MemoryTable("e")] public class SecondaryOnly { [PrimaryKey] public string Id { get; set; } [SecondaryKey(0)] public int No { get; set; } }
+""");
+
+        var intKey = codes["MasterMemory.IntKeyTable.g.cs"];
+        WriteLine(intKey);
+        intKey.ShouldContain("readonly int primaryIndexFirstKey;");
+        intKey.ShouldContain("var offset = unchecked((uint)(key - primaryIndexFirstKey));");
+        intKey.ShouldContain("return (data.Length <= BranchlessSearchMaxLength) ? FindIndexByBranchlessSearch(data, comparable) : FindIndexByBinarySearch(data, comparable);");
+        intKey.ShouldContain("readonly struct PrimaryIndexComparable : IBranchlessComparable<global::IntKey>");
+        intKey.ShouldContain("return unchecked((int)(((long)other.Id - key - 1) >> 63));");
+
+        // 64 bits: the difference of two keys does not fit a long, so an ordinary comparison and the jumping search
+        var longKey = codes["MasterMemory.LongKeyTable.g.cs"];
+        longKey.ShouldContain("readonly long primaryIndexFirstKey;");
+        longKey.ShouldContain("var offset = unchecked((ulong)(key - primaryIndexFirstKey));");
+        longKey.ShouldContain("return FindIndexByBinarySearch(data, comparable);");
+        longKey.ShouldContain("readonly struct PrimaryIndexComparable : IComparable<global::LongKey>");
+        longKey.ShouldContain("return (key < other.Id) ? -1 : (key > other.Id) ? 1 : 0;");
+        longKey.ShouldNotContain("FindIndexByBranchlessSearch");
+        longKey.ShouldNotContain("AtOrAfterMask");
+
+        foreach (var name in new[] { "StringKey", "NonUniqueKey", "SecondaryOnly" })
+        {
+            codes[$"MasterMemory.{name}Table.g.cs"].ShouldNotContain("primaryIndexFirstKey");
+            codes[$"MasterMemory.{name}Table.g.cs"].ShouldNotContain("PrimaryIndexComparable");
+        }
+    }
+
     // issues 112 and 115: a place to add members of one's own, such as a query across tables
     [Fact]
     public void MemoryDatabaseIsPartial()

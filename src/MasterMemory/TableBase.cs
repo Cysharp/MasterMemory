@@ -3,12 +3,23 @@ using MasterMemory.Validation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace MasterMemory
 {
     public abstract class TableBase<TElement>
     {
         protected readonly TElement[] data;
+
+        /// <summary>
+        /// The row count up to which the generated primary key lookup calls <see cref="FindIndexByBranchlessSearch"/>,
+        /// and above which it calls <see cref="FindIndexByBinarySearch"/>.
+        /// Measured on x64 (.NET 10): 2.8 times faster than the jumping search at 100 rows, twice at 10,000 and at
+        /// 30,000, 1.3 times at 100,000, and two to three times slower from 300,000 rows on, where the jumps let the
+        /// processor load the next row ahead of time. The switch is set well below that crossing, since a device with
+        /// smaller caches reaches it earlier.
+        /// </summary>
+        protected const int BranchlessSearchMaxLength = 32768;
 
         // Common Properties
         public int Count => data.Length;
@@ -55,6 +66,31 @@ namespace MasterMemory
         static protected TElement ThrowKeyNotFound<TKey>(TKey key)
         {
             throw new KeyNotFoundException("DataType: " + typeof(TElement).FullName + ", Key: " + key?.ToString());
+        }
+
+        // Unique, by a key that compares itself to a row (the generated code declares one struct per such key)
+
+        /// <summary>
+        /// The index of the row <paramref name="comparable"/> compares equal to, negative when there is none.
+        /// A binary search with a conditional jump per step: the better choice for a large table.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // a forwarding call: the search itself is not inlined
+        static protected int FindIndexByBinarySearch<TComparable>(TElement[] indexArray, TComparable comparable)
+            where TComparable : struct, IComparable<TElement>
+        {
+            return BinarySearch.Find(indexArray, comparable);
+        }
+
+        /// <summary>
+        /// The index of the row <paramref name="comparable"/> compares equal to, negative when there is none.
+        /// A search that halves its range without a conditional jump, at every size: the better choice up to
+        /// <see cref="BranchlessSearchMaxLength"/> rows, and the caller's to make.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // a forwarding call: the search itself is not inlined
+        static protected int FindIndexByBranchlessSearch<TComparable>(TElement[] indexArray, TComparable comparable)
+            where TComparable : struct, IBranchlessComparable<TElement>
+        {
+            return BinarySearch.FindBranchless(indexArray, comparable);
         }
 
         // Unique

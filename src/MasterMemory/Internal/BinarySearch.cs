@@ -1,10 +1,95 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace MasterMemory.Internal
 {
     internal static class BinarySearch
     {
+        // The two searches below follow SpanHelpers.BinarySearch of the BCL: the key is a struct that compares itself
+        // to an element, so the comparison is compiled into the loop for each key type (no delegate, no IComparer),
+        // and elements are read through a reference to the first one, so no read is bounds-checked. Both loops keep
+        // every index they read inside [0, array.Length).
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ref T GetReference<T>(T[] array)
+        {
+#if NET5_0_OR_GREATER
+            return ref MemoryMarshal.GetArrayDataReference(array);
+#else
+            return ref MemoryMarshal.GetReference(new Span<T>(array));
+#endif
+        }
+
+        /// <summary>
+        /// SpanHelpers.BinarySearch. Returns the index of an element <paramref name="comparable"/> compares equal to,
+        /// or the complement of the index it would be inserted at, a negative number.
+        /// </summary>
+        public static int Find<T, TComparable>(T[] array, TComparable comparable)
+            where TComparable : struct, IComparable<T>
+        {
+            ref var start = ref GetReference(array);
+
+            var lo = 0;
+            var hi = array.Length - 1;
+            // If length == 0, hi == -1, and loop will not be entered
+            while (lo <= hi)
+            {
+                // lo and hi are never negative inside the loop, so the median computed in uint cannot overflow
+                var i = (int)(((uint)hi + (uint)lo) >> 1);
+
+                var c = comparable.CompareTo(Unsafe.Add(ref start, i));
+                if (c == 0)
+                {
+                    return i;
+                }
+                else if (c > 0)
+                {
+                    lo = i + 1;
+                }
+                else
+                {
+                    hi = i - 1;
+                }
+            }
+            // If none found, then a negative number that is the bitwise complement
+            // of the index of the next element that is larger than or, if there is
+            // no larger element, the bitwise complement of `length`, which
+            // is `lo` at this point.
+            return ~lo;
+        }
+
+        /// <summary>
+        /// The same search without a conditional jump in the loop: the range halves every step, and whether the upper
+        /// half is taken is a mask the key computes, not a branch. Returns the index of the equal element, or -1.
+        /// A table small enough to stay in the processor's caches spends its lookup on the mispredicted jump of
+        /// each step, which this avoids; on a large table the jumps are the better choice, see
+        /// <see cref="TableBase{TElement}.BranchlessSearchMaxLength"/>.
+        /// </summary>
+        public static int FindBranchless<T, TComparable>(T[] array, TComparable comparable)
+            where TComparable : struct, IBranchlessComparable<T>
+        {
+            var length = array.Length;
+            if (length == 0)
+            {
+                return -1;
+            }
+
+            ref var start = ref GetReference(array);
+
+            // array[index] is the last element known to be <= the key, once any element is; index + half < array.Length
+            var index = 0;
+            while (length > 1)
+            {
+                var half = length >> 1;
+                index += comparable.AtOrAfterMask(Unsafe.Add(ref start, index + half)) & half; // move up to the probed element when it is <= the key
+                length -= half;
+            }
+
+            return (comparable.CompareTo(Unsafe.Add(ref start, index)) == 0) ? index : -1;
+        }
+
         public static int FindFirst<T, TKey>(T[] array, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
         {
             var lo = 0;

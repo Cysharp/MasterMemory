@@ -19,6 +19,13 @@ static class TableEmitter
         {
             writer.Line($"public Func<{element}, {primaryKey.BuildTypeName()}> PrimaryKeySelector => {primaryKey.SelectorName};");
             writer.Line($"readonly Func<{element}, {primaryKey.BuildTypeName()}> {primaryKey.SelectorName};");
+            if (primaryKey.CanInlineBinarySearch)
+            {
+                writer.Line("// When the primary keys run without a gap (1, 2, 3, ...), a row is at (key - first key) and needs no search:");
+                writer.Line("// primaryIndexDenseLength is then the row count, and 0 for every other table.");
+                writer.Line($"readonly {primaryKey.BuildTypeName()} primaryIndexFirstKey;");
+                writer.Line("readonly int primaryIndexDenseLength;");
+            }
             writer.Line();
             foreach (var key in table.SecondaryKeys)
             {
@@ -32,6 +39,23 @@ static class TableEmitter
             using (writer.OpenScope())
             {
                 writer.Line($"this.{primaryKey.SelectorName} = x => {primaryKey.BuildKeyAccessor("x")};");
+                if (primaryKey.CanInlineBinarySearch)
+                {
+                    // sorted rows are dense exactly when last - first == count - 1, provided the keys are unique; nothing
+                    // enforces that, which is why a lookup checks the row it lands on
+                    var member = primaryKey.Properties[0].Name;
+                    var unsigned = UnsignedDistanceType(primaryKey);
+                    writer.Lines($$"""
+                        if (sortedData.Length != 0)
+                        {
+                            this.primaryIndexFirstKey = sortedData[0].{{member}};
+                            if (unchecked(({{unsigned}})(sortedData[sortedData.Length - 1].{{member}} - sortedData[0].{{member}})) == ({{unsigned}})(sortedData.Length - 1))
+                            {
+                                this.primaryIndexDenseLength = sortedData.Length;
+                            }
+                        }
+                        """);
+                }
                 foreach (var key in table.SecondaryKeys)
                 {
                     writer.Line($"this.{key.SelectorName} = x => {key.BuildKeyAccessor("x")};");
@@ -103,48 +127,97 @@ static class TableEmitter
 
         if (key.CanInlineBinarySearch)
         {
-            // a unique numeric primary key: the search is written out, comparing with < and > instead of going through
+            // a unique numeric primary key: the lookup is written out against the member itself, instead of going through
             // a selector delegate and a comparer
             var nullable = throwIfKeyNotFound ? "" : "?";
             var notFound = throwIfKeyNotFound ? "return ThrowKeyNotFound(key);" : "return default;";
             var member = key.Properties[0].Name;
 
+            var unsigned = UnsignedDistanceType(key);
+
+            // The search itself is TableBase's, SpanHelpers.BinarySearch of the BCL in shape: it is given a struct that
+            // compares the key to a row, which compiles the comparison into the loop. For a key of 32 bits or less the
+            // struct also answers "at or after this row?" as a mask, by arithmetic alone (the difference is exact in a
+            // long); that is what lets the search halve its range without a conditional jump on small tables. A 64-bit
+            // key has no wider type to subtract in, and is searched with jumps at every size.
+            var branchless = unsigned == "uint";
+            var comparable = branchless ? "IBranchlessComparable" : "IComparable";
+            var search = branchless
+                ? "(data.Length <= BranchlessSearchMaxLength) ? FindIndexByBranchlessSearch(data, comparable) : FindIndexByBinarySearch(data, comparable)"
+                : "FindIndexByBinarySearch(data, comparable)";
+
+            // the direct hit of a gapless table first, then the search
             writer.Lines($$"""
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 public {{returnType}}{{nullable}} FindBy{{methodName}}({{keyType}} key)
                 {
-                    var lo = 0;
-                    var hi = data.Length - 1;
-                    while (lo <= hi)
+                    var offset = unchecked(({{unsigned}})(key - primaryIndexFirstKey));
+                    if (offset < ({{unsigned}})primaryIndexDenseLength)
                     {
-                        var mid = (int)(((uint)hi + (uint)lo) >> 1);
-                        var selected = data[mid].{{member}};
-                        var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
-                        if (found == 0) { return data[mid]; }
-                        if (found < 0) { lo = mid + 1; }
-                        else { hi = mid - 1; }
+                        var row = data[(int)offset];
+                        if (row.{{member}} == key) { return row; }
                     }
+
+                    var index = FindIndexBy{{methodName}}(key);
+                    if (index >= 0) { return data[index]; }
                     {{notFound}}
                 }
 
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 public bool TryFindBy{{methodName}}({{keyType}} key, out {{returnType}} result)
                 {
-                    var lo = 0;
-                    var hi = data.Length - 1;
-                    while (lo <= hi)
+                    var offset = unchecked(({{unsigned}})(key - primaryIndexFirstKey));
+                    if (offset < ({{unsigned}})primaryIndexDenseLength)
                     {
-                        var mid = (int)(((uint)hi + (uint)lo) >> 1);
-                        var selected = data[mid].{{member}};
-                        var found = (selected < key) ? -1 : (selected > key) ? 1 : 0;
-                        if (found == 0) { result = data[mid]; return true; }
-                        if (found < 0) { lo = mid + 1; }
-                        else { hi = mid - 1; }
+                        var row = data[(int)offset];
+                        if (row.{{member}} == key) { result = row; return true; }
                     }
+
+                    var index = FindIndexBy{{methodName}}(key);
+                    if (index >= 0) { result = data[index]; return true; }
                     result = default!;
                     return false;
                 }
+
+                // the index of the row with the key, negative when there is none
+                [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+                int FindIndexBy{{methodName}}({{keyType}} key)
+                {
+                    var comparable = new PrimaryIndexComparable(key);
+                    return {{search}};
+                }
+
+                // the primary key of a lookup, as the search wants it: negative, zero or positive as the key is before, at or after a row
+                readonly struct PrimaryIndexComparable : {{comparable}}<{{element}}>
+                {
+                    readonly {{keyType}} key;
+
+                    public PrimaryIndexComparable({{keyType}} key)
+                    {
+                        this.key = key;
+                    }
+
+                    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+                    public int CompareTo({{element}} other)
+                    {
+                        return (key < other.{{member}}) ? -1 : (key > other.{{member}}) ? 1 : 0;
+                    }
                 """);
+            if (branchless)
+            {
+                writer.Indent();
+                writer.Line();
+                writer.Lines($$"""
+                    // (other - key - 1) is negative exactly when other <= key; its sign, spread over the word, is the mask
+                    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+                    public int AtOrAfterMask({{element}} other)
+                    {
+                        return unchecked((int)(((long)other.{{member}} - key - 1) >> 63));
+                    }
+                    """);
+                writer.Unindent();
+            }
+            writer.Line("}");
             return;
         }
 
@@ -171,6 +244,17 @@ static class TableEmitter
         {
             writer.Line($"return Try{core}({arguments}, key, out result);");
         }
+    }
+
+    // The type the distance between two keys is computed in. A difference of sorted keys never exceeds the unsigned
+    // range of their width, so unchecked subtraction followed by this cast is exact even across the sign.
+    static string UnsignedDistanceType(KeyBase key)
+    {
+        return key.Properties[0].TypeName switch
+        {
+            "long" or "Int64" or "System.Int64" or "ulong" or "UInt64" or "System.UInt64" => "ulong",
+            _ => "uint",
+        };
     }
 
     static void EmitCreateMetaTable(CodeWriter writer, GenerationContext table)
