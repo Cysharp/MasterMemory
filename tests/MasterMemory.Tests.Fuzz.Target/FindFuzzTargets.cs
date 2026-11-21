@@ -44,6 +44,22 @@ public static class FindFuzzTargets
             var table = new SByteKeyRowTable(rows);
             return new(table.FindById, table.TryFindById, table.FindClosestById, table.FindRangeById);
         })),
+        // added after the first campaign, at the end: the seeds of an existing corpus (selector = index) keep their target
+        ("pk/short", data => NumericPrimaryKey<short, ShortKeyRow>("short", data, (id, no) => new ShortKeyRow { Id = id, No = no }, x => x.Id, rows =>
+        {
+            var table = new ShortKeyRowTable(rows);
+            return new(table.FindById, table.TryFindById, table.FindClosestById, table.FindRangeById);
+        })),
+        ("pk/ushort", data => NumericPrimaryKey<ushort, UShortKeyRow>("ushort", data, (id, no) => new UShortKeyRow { Id = id, No = no }, x => x.Id, rows =>
+        {
+            var table = new UShortKeyRowTable(rows);
+            return new(table.FindById, table.TryFindById, table.FindClosestById, table.FindRangeById);
+        })),
+        ("pk/char", data => NumericPrimaryKey<char, CharKeyRow>("char", data, (id, no) => new CharKeyRow { Id = id, No = no }, x => x.Id, rows =>
+        {
+            var table = new CharKeyRowTable(rows);
+            return new(table.FindById, table.TryFindById, table.FindClosestById, table.FindRangeById);
+        })),
     ];
 
     /// <summary>Inputs to start a campaign from: tables of several sizes, with and without gaps in their ids, and a few keys each.</summary>
@@ -163,7 +179,7 @@ public static class FindFuzzTargets
             table.FindByGroupAndSeq, table.TryFindByGroupAndSeq, table.FindClosestByGroupAndSeq, table.FindRangeByGroupAndSeq);
         VerifyShared("Name", Rows(table.SortByName), x => x.Name, StringComparer.Ordinal, names,
             table.FindByName, table.FindClosestByName, table.FindRangeByName);
-        VerifyShared("(Name, Kind)", Rows(table.SortByNameAndKind), x => (x.Name, x.Kind), Comparer<(string? Name, FuzzKind Kind)>.Default, nameAndKinds,
+        VerifyShared("(Name, Kind)", Rows(table.SortByNameAndKind), x => (x.Name, x.Kind), OrdinalTupleComparer.Create<string?, FuzzKind>(), nameAndKinds,
             table.FindByNameAndKind, table.FindClosestByNameAndKind, table.FindRangeByNameAndKind);
         VerifyShared("Kind", Rows(table.SortByKind), x => x.Kind, Comparer<FuzzKind>.Default, kinds,
             table.FindByKind, table.FindClosestByKind, table.FindRangeByKind);

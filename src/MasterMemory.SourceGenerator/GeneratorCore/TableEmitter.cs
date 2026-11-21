@@ -10,7 +10,8 @@ namespace MasterMemory.GeneratorCore;
 /// Every lookup goes through a struct declared per key that compares the key to a row. The searches are TableBase's and
 /// take that struct as a type argument (the shape of SpanHelpers.BinarySearch in the BCL), so the comparison of each key
 /// is compiled into the search: no selector delegate, no IComparer, no tuple built per probe. What the struct compares
-/// with is exactly what the index was sorted with (KeyBase.BuildComparer), member by member.
+/// with is exactly what the index was sorted with (KeyBase.BuildComparer), member by member: for a composite key both
+/// are written here from the same expression (CompareExpression), so they cannot drift apart.
 /// </remarks>
 static class TableEmitter
 {
@@ -21,9 +22,10 @@ static class TableEmitter
         var writer = CodeWriter.Rent();
         var element = table.FullTypeName;
         var primaryKey = table.PrimaryKey;
+        var keys = table.Keys;
 
         using (DatabaseModel.BeginFile(writer, DatabaseModel.CommonUsings, @namespace + ".Tables"))
-        using (writer.Block($"public sealed partial class {table.ClassName}Table : TableBase<{element}>, ITableUniqueValidate"))
+        using (writer.Block($"{table.Accessibility} sealed partial class {table.ClassName}Table : TableBase<{element}>, ITableUniqueValidate"))
         {
             writer.Line($"public Func<{element}, {primaryKey.BuildTypeName()}> PrimaryKeySelector => {primaryKey.SelectorName};");
             writer.Line($"readonly Func<{element}, {primaryKey.BuildTypeName()}> {primaryKey.SelectorName};");
@@ -51,7 +53,7 @@ static class TableEmitter
                 {
                     // sorted rows are dense exactly when last - first == count - 1, provided the keys are unique; nothing
                     // enforces that, which is why a lookup checks the row it lands on
-                    var member = primaryKey.Properties[0].Name;
+                    var member = primaryKey.Properties[0].Identifier;
                     var unsigned = UnsignedDistanceType(primaryKey);
                     writer.Lines($$"""
                         if (sortedData.Length != 0)
@@ -67,7 +69,7 @@ static class TableEmitter
                 foreach (var key in table.SecondaryKeys)
                 {
                     writer.Line($"this.{key.SelectorName} = x => {key.BuildKeyAccessor("x")};");
-                    writer.Line($"this.{key.TableName} = CloneAndSortBy(this.{key.SelectorName}, {key.BuildComparer()});");
+                    writer.Line($"this.{key.TableName} = CloneAndSortBy(this.{key.SelectorName}, {key.BuildComparer("")});");
                 }
                 writer.Line("OnAfterConstruct();");
             }
@@ -80,7 +82,7 @@ static class TableEmitter
                 writer.Line($"public RangeView<{element}> SortBy{key.BuildMethodName()} => new RangeView<{element}>({key.TableName}, 0, {key.TableName}.Length - 1, true);");
             }
 
-            foreach (var key in table.Keys)
+            foreach (var key in keys)
             {
                 writer.Line();
                 if (key.IsNonUnique)
@@ -93,6 +95,11 @@ static class TableEmitter
                 }
                 writer.Line();
                 EmitComparable(writer, element, key);
+                if (key.HasGeneratedComparer)
+                {
+                    writer.Line();
+                    EmitKeyComparer(writer, key);
+                }
             }
 
             writer.Line();
@@ -100,7 +107,7 @@ static class TableEmitter
             {
                 writer.Directive("#if !DISABLE_MASTERMEMORY_VALIDATOR");
                 writer.Line();
-                foreach (var key in table.Keys)
+                foreach (var key in keys)
                 {
                     if (!key.IsNonUnique)
                     {
@@ -128,7 +135,7 @@ static class TableEmitter
         var methodName = key.BuildMethodName();
         var keyType = key.BuildTypeName();
         var index = key.TableName;
-        var comparable = ComparableName(key);
+        var comparable = key.ComparableName;
         var nullable = throwIfKeyNotFound ? "" : "?";
         var notFound = throwIfKeyNotFound ? "return ThrowKeyNotFound(key);" : "return default;";
 
@@ -197,7 +204,7 @@ static class TableEmitter
             if (offset < ({{unsigned}})primaryIndexDenseLength)
             {
                 var row = data[(int)offset];
-                if (row.{{key.Properties[0].Name}} == key) { {{onHit}} }
+                if (row.{{key.Properties[0].Identifier}} == key) { {{onHit}} }
             }
 
             """);
@@ -209,7 +216,7 @@ static class TableEmitter
         var methodName = key.BuildMethodName();
         var keyType = key.BuildTypeName();
         var index = key.TableName;
-        var comparable = ComparableName(key);
+        var comparable = key.ComparableName;
 
         using (writer.Block($"public RangeView<{element}> FindBy{methodName}({keyType} key)"))
         {
@@ -238,7 +245,7 @@ static class TableEmitter
     // is sorted with orders two keys; a different order here would search a sorted array by another order.
     static void EmitComparable(CodeWriter writer, string element, KeyBase key)
     {
-        var name = ComparableName(key);
+        var name = key.ComparableName;
         var keyType = key.BuildTypeName();
         var branchless = IsBranchless(key);
 
@@ -256,23 +263,13 @@ static class TableEmitter
             writer.Line(AggressiveInlining);
             using (writer.Block($"public int CompareTo({element} other)"))
             {
-                var properties = key.Properties;
-                if (properties.Length == 1)
+                if (key.IsComposite)
                 {
-                    writer.Line($"return {CompareExpression(key, properties[0], "key", "other." + properties[0].Name)};");
+                    EmitMemberwiseCompare(writer, key, "key", "other");
                 }
                 else
                 {
-                    // member by member, stopping at the first that differs: what the tuple's own comparison does
-                    writer.Line("int c;");
-                    for (var i = 0; i < properties.Length; i++)
-                    {
-                        var member = properties[i].Name;
-                        var expression = CompareExpression(key, properties[i], "key." + member, "other." + member);
-                        writer.Line((i == properties.Length - 1)
-                            ? $"return {expression};"
-                            : $"c = {expression}; if (c != 0) {{ return c; }}");
-                    }
+                    writer.Line($"return {CompareExpression(key.Properties[0], "key", "other." + key.Properties[0].Identifier)};");
                 }
             }
 
@@ -283,19 +280,63 @@ static class TableEmitter
                 writer.Line(AggressiveInlining);
                 using (writer.Block($"public int AtOrAfterMask({element} other)"))
                 {
-                    writer.Line($"return unchecked((int)(((long)other.{key.Properties[0].Name} - key - 1) >> 63));");
+                    writer.Line($"return unchecked((int)(((long)other.{key.Properties[0].Identifier} - key - 1) >> 63));");
                 }
             }
         }
     }
 
-    static string ComparableName(KeyBase key)
+    // The order of a composite key or of an enum key, as the sorts take it: what DatabaseBuilder sorts the rows by, what
+    // a secondary index is sorted by when a table is constructed, and what MetaIndex.Comparer returns. The default
+    // comparers are not used for these. That of a tuple compares strings by the current culture: the machine that
+    // builds the database and the device that loads it could then disagree on the order of the same rows. That of an
+    // enum boxes both values on every comparison under Mono and IL2CPP, which is garbage on every load of a table.
+    static void EmitKeyComparer(CodeWriter writer, KeyBase key)
     {
-        return (key is SecondaryKey secondary) ? $"SecondaryIndex{secondary.IndexNo}Comparable" : "PrimaryIndexComparable";
+        var name = key.KeyComparerName;
+        var keyType = key.BuildTypeName();
+
+        writer.Line("// the order of the index: the same comparisons a lookup makes");
+        using (writer.Block($"internal sealed class {name} : System.Collections.Generic.IComparer<{keyType}>, System.Collections.IComparer"))
+        {
+            writer.Line($"public static readonly {name} Instance = new {name}();");
+            writer.Line();
+            using (writer.Block($"public int Compare({keyType} x, {keyType} y)"))
+            {
+                if (key.IsComposite)
+                {
+                    EmitMemberwiseCompare(writer, key, "x", "y");
+                }
+                else
+                {
+                    writer.Line($"return {CompareExpression(key.Properties[0], "x", "y")};");
+                }
+            }
+            writer.Line();
+            using (writer.Block("int System.Collections.IComparer.Compare(object? x, object? y)"))
+            {
+                writer.Line($"return Compare(({keyType})x!, ({keyType})y!);");
+            }
+        }
+    }
+
+    // member by member, stopping at the first that differs
+    static void EmitMemberwiseCompare(CodeWriter writer, KeyBase key, string left, string right)
+    {
+        var properties = key.Properties;
+        writer.Line("int c;");
+        for (var i = 0; i < properties.Length; i++)
+        {
+            var member = properties[i].Identifier;
+            var expression = CompareExpression(properties[i], left + "." + member, right + "." + member);
+            writer.Line((i == properties.Length - 1)
+                ? $"return {expression};"
+                : $"c = {expression}; if (c != 0) {{ return c; }}");
+        }
     }
 
     // "negative, zero or positive as left is before, at or after right", in the order the index is sorted by
-    static string CompareExpression(KeyBase key, KeyProperty property, string left, string right)
+    static string CompareExpression(KeyProperty property, string left, string right)
     {
         if (property.IsComparableNumberType)
         {
@@ -304,40 +345,42 @@ static class TableEmitter
 
         if (property.EnumUnderlyingType != null)
         {
-            // Comparer<TEnum>.Default orders by the underlying value; comparing that value says the same without the call
+            // Comparer<TEnum>.Default orders by the underlying value. Comparing that value says the same, and does not
+            // box: under Mono and IL2CPP the default comparer of an enum allocates on every comparison.
             var type = property.EnumUnderlyingType;
-            return $"(({type}){left} < ({type}){right}) ? -1 : (({type}){left} > ({type}){right}) ? 1 : 0";
+            if (!property.IsNullableEnum)
+            {
+                return $"(({type}){left} < ({type}){right}) ? -1 : (({type}){left} > ({type}){right}) ? 1 : 0";
+            }
+
+            // TEnum?: null before every value, as Comparer<TEnum?>.Default has it
+            var (l, r) = ($"({type}){left}.GetValueOrDefault()", $"({type}){right}.GetValueOrDefault()");
+            return $"{left}.HasValue ? ({right}.HasValue ? (({l} < {r}) ? -1 : ({l} > {r}) ? 1 : 0) : 1) : ({right}.HasValue ? -1 : 0)";
         }
 
-        if (key.IsStringType)
+        if (property.Kind == KeyTypeKind.String)
         {
-            // a key that is one string is sorted with a StringComparer: ordinal unless [StringComparisonOption] says otherwise
-            var option = key.StringComparisonOption?.Split('.').Last();
+            // ordinal unless [StringComparisonOption] says otherwise, alone or as a member of a composite key
+            var option = property.StringComparison;
             return (option == null || option == "Ordinal")
                 ? $"string.CompareOrdinal({left}, {right})"
                 : $"string.Compare({left}, {right}, System.StringComparison.{option})";
         }
 
-        // Every other type, and every member of a composite key that is not an integer or an enum (a string included: a
-        // composite key is sorted with the tuple's default comparer, which compares its strings by Comparer<string>.Default).
         return $"System.Collections.Generic.Comparer<{property.FullTypeName}>.Default.Compare({left}, {right})";
     }
 
     // keys a search can halve its range for without a jump: unique, one integer of 32 bits or less
     static bool IsBranchless(KeyBase key)
     {
-        return !key.IsNonUnique && key.IsComparableNumberType && UnsignedDistanceType(key) == "uint";
+        return !key.IsNonUnique && !key.IsComposite && key.Properties[0].Kind == KeyTypeKind.Integer32;
     }
 
     // The type the distance between two keys is computed in. A difference of sorted keys never exceeds the unsigned
     // range of their width, so unchecked subtraction followed by this cast is exact even across the sign.
     static string UnsignedDistanceType(KeyBase key)
     {
-        return key.Properties[0].TypeName switch
-        {
-            "long" or "Int64" or "System.Int64" or "ulong" or "UInt64" or "System.UInt64" => "ulong",
-            _ => "uint",
-        };
+        return (key.Properties[0].Kind == KeyTypeKind.Integer64) ? "ulong" : "uint";
     }
 
     static void EmitCreateMetaTable(CodeWriter writer, GenerationContext table)
@@ -346,7 +389,7 @@ static class TableEmitter
 
         using (writer.Block("public static MasterMemory.Meta.MetaTable CreateMetaTable()"))
         {
-            writer.Line($"return new MasterMemory.Meta.MetaTable(typeof({element}), typeof({table.ClassName}Table), \"{table.MemoryTableName}\",");
+            writer.Line($"return new MasterMemory.Meta.MetaTable(typeof({element}), typeof({table.ClassName}Table), {table.MemoryTableNameLiteral},");
             writer.Indent();
 
             writer.Line("new MasterMemory.Meta.MetaProperty[]");
@@ -366,7 +409,7 @@ static class TableEmitter
                     writer.Line("new MasterMemory.Meta.MetaIndex(new System.Reflection.PropertyInfo[]");
                     var isPrimary = key.IsPrimary ? "true" : "false";
                     var isUnique = key.IsNonUnique ? "false" : "true";
-                    using (writer.OpenScope($", {isPrimary}, {isUnique}, {key.BuildComparer()}),"))
+                    using (writer.OpenScope($", {isPrimary}, {isUnique}, {key.BuildComparer("")}),"))
                     {
                         foreach (var keyProperty in key.Properties)
                         {

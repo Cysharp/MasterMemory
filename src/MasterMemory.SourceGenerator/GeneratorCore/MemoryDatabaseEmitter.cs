@@ -21,12 +21,14 @@ static class MemoryDatabaseEmitter
         {
             foreach (var table in tables)
             {
-                writer.Line($"public {table.ClassName}Table {table.ClassName}Table {{ get; private set; }} = default!;");
+                writer.Line($"{table.Accessibility} {table.ClassName}Table {table.ClassName}Table {{ get; private set; }} = default!;");
             }
 
-            // from tables that already exist: what ImmutableBuilder calls
+            // from tables that already exist: what ImmutableBuilder calls. It names every table, so it is internal as
+            // soon as one of them is.
+            var allTablesAccessibility = tables.Any(x => x.Accessibility != "public") ? "internal" : "public";
             writer.Line();
-            writer.Line($"public {name}(");
+            writer.Line($"{allTablesAccessibility} {name}(");
             writer.Indent();
             for (var i = 0; i < tables.Length; i++)
             {
@@ -150,7 +152,7 @@ static class MemoryDatabaseEmitter
             {
                 foreach (var table in tables)
                 {
-                    writer.Line($"case \"{table.MemoryTableName}\":");
+                    writer.Line($"case {table.MemoryTableNameLiteral}:");
                     writer.Indent().Line($"return db.{table.ClassName}Table;").Unindent();
                 }
                 writer.Line("default:");
@@ -167,7 +169,7 @@ static class MemoryDatabaseEmitter
                 writer.Line("var dict = new Dictionary<string, MasterMemory.Meta.MetaTable>();");
                 foreach (var table in tables)
                 {
-                    writer.Line($"dict.Add(\"{table.MemoryTableName}\", {model.Namespace}.Tables.{table.ClassName}Table.CreateMetaTable());");
+                    writer.Line($"dict.Add({table.MemoryTableNameLiteral}, {model.Namespace}.Tables.{table.ClassName}Table.CreateMetaTable());");
                 }
                 writer.Line();
                 writer.Line("metaTable = new MasterMemory.Meta.MetaDatabase(dict);");

@@ -35,9 +35,9 @@ Input format: `input[0]` selects the target, the rest is what the target builds 
 
 | Target | What it builds | What it checks |
 |---|---|---|
-| `table/all-keys` | up to 32 `FuzzRow`s: ids with or without gaps starting at one of several values (the ends of `int` among them), and a group, a name, a kind, a code and a score per row | every lookup of all nine keys: unique `int` (primary), unique `long`, shared `int`, unique `(int, int)`, shared ordinal string, shared `(string, enum)`, shared enum, unique string ignoring case, shared `double` |
+| `table/all-keys` | up to 32 `FuzzRow`s: ids with or without gaps starting at one of several values (the ends of `int` among them), and a group, a name, a kind, a code and a score per row | every lookup of all nine keys: unique `int` (primary), unique `long`, shared `int`, unique `(int, int)`, shared ordinal string, shared `(string, enum)` (through the comparer generated for a composite key), shared enum, unique string ignoring case, shared `double` |
 | `search/int` | a sorted `int[]` of up to 40 elements with repeated values | `Find`, `FindBranchless`, `FindClosest`, `LowerBound`, `UpperBound`, `LowerBoundClosest`, `UpperBoundClosest` of `Internal.BinarySearch` |
-| `pk/long`, `pk/uint`, `pk/byte`, `pk/sbyte` | a table whose unique primary key is of that type, ids going up by 1 to 4 from the minimum, zero, near the maximum, or 10 | every lookup of the primary key, which reads a table without gaps at `key - first key` |
+| `pk/long`, `pk/uint`, `pk/byte`, `pk/sbyte`, `pk/short`, `pk/ushort`, `pk/char` | a table whose unique primary key is of that type, ids going up by 1 to 4 from the minimum, zero, near the maximum, or 10 | every lookup of the primary key, which reads a table without gaps at `key - first key` |
 
 ## Findings
 
@@ -56,3 +56,4 @@ Use the same `FUZZ_TARGET` environment value the campaign ran with (the selector
 | Date | HEAD | Duration | Targets | Executions | Findings |
 |---|---|---|---|---|---|
 | 2026-11-21 | the commit that adds this project | 181 s bounded (`-MaxTotalTimeSec 180`), Windows x64, .NET 9 | all | 498,116 (about 2.7k exec/s), corpus grew to 653 inputs | none. To see that a finding looks like one, `LowerBound` was then broken on purpose (`c < 0` for `c <= 0`): libFuzzer reported it on the first seed as `Group FindClosestBy(-2, upper) -> 0 rows [], expected 1 rows [-1]`, and by four of the `FindFuzzTest` cases. |
+| 2026-11-21 | the commit that reads tables from symbols | 151 s bounded (`-MaxTotalTimeSec 150`), Windows x64, .NET 9, on the corpus of the campaign above | all, with `pk/short`, `pk/ushort` and `pk/char` added and the composite key of `table/all-keys` going through its generated comparer | 636,002 (about 4.2k exec/s), corpus grew to 1,528 inputs | none |

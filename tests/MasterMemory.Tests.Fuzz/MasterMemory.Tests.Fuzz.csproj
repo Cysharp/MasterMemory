@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<!-- The uninstrumented side of the SharpFuzz split: this exe hosts Fuzzer.LibFuzzer.Run and is excluded from IL
 	     instrumentation (instrumenting the assembly that drives the fuzzing loop corrupts the coverage protocol).
@@ -11,8 +11,6 @@
 		<!-- for parking SharpFuzz.Common.Trace.SharedMem on a dummy map (see Program.cs) -->
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<IsPackable>false</IsPackable>
-		<!-- the composite keys compare their strings by the current culture: one order on every machine -->
-		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
 
 	<ItemGroup>

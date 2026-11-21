@@ -1,4 +1,5 @@
 ﻿using MasterMemory.Internal;
+using MasterMemory.Tests.Fuzz.Target;
 using MasterMemory.Tests.Legacy;
 using MasterMemory.Tests.Tables;
 using System;
@@ -219,21 +220,21 @@ namespace MasterMemory.Tests
 
             // unique, two strings: the tuple's default comparison, which is not ordinal
             var names = (from first in FirstNames from last in LastNames select (first, last)).ToArray();
-            VerifyUnique("(FirstName, LastName)", table.SortByFirstNameAndLastName.ToArray(), x => (x.FirstName, x.LastName), Comparer<(string FirstName, string LastName)>.Default, names,
+            VerifyUnique("(FirstName, LastName)", table.SortByFirstNameAndLastName.ToArray(), x => (x.FirstName, x.LastName), OrdinalTupleComparer.Create<string, string>(), names,
                 table.FindByFirstNameAndLastName, table.TryFindByFirstNameAndLastName, table.FindClosestByFirstNameAndLastName, table.FindRangeByFirstNameAndLastName);
 
             // shared, a string and an integer
             var nameAndAge = (from first in FirstNames from age in Ages select (first, age)).ToArray();
-            VerifyNonUnique("(FirstName, Age)", table.SortByFirstNameAndAge.ToArray(), x => (x.FirstName, x.Age), Comparer<(string FirstName, int Age)>.Default, nameAndAge,
+            VerifyNonUnique("(FirstName, Age)", table.SortByFirstNameAndAge.ToArray(), x => (x.FirstName, x.Age), OrdinalTupleComparer.Create<string, int>(), nameAndAge,
                 table.FindByFirstNameAndAge, table.FindClosestByFirstNameAndAge, table.FindRangeByFirstNameAndAge);
 
             // unique, three and four members
             var three = (from id in Ids.Where((_, i) => i % 2 == 0) from age in Ages.Where((_, i) => i % 2 == 0) from first in FirstNames select (id, age, first)).ToArray();
-            VerifyUnique("(Id, Age, FirstName)", table.SortByIdAndAgeAndFirstName.ToArray(), x => (x.Id, x.Age, x.FirstName), Comparer<(int Id, int Age, string FirstName)>.Default, three,
+            VerifyUnique("(Id, Age, FirstName)", table.SortByIdAndAgeAndFirstName.ToArray(), x => (x.Id, x.Age, x.FirstName), OrdinalTupleComparer.Create<int, int, string>(), three,
                 table.FindByIdAndAgeAndFirstName, table.TryFindByIdAndAgeAndFirstName, table.FindClosestByIdAndAgeAndFirstName, table.FindRangeByIdAndAgeAndFirstName);
 
             var four = (from row in CreateData() from last in LastNames.Where((_, i) => i % 3 == 0).Append(row.LastName) select (row.Id, row.Age, row.FirstName, last)).ToArray();
-            VerifyUnique("(Id, Age, FirstName, LastName)", table.SortByIdAndAgeAndFirstNameAndLastName.ToArray(), x => (x.Id, x.Age, x.FirstName, x.LastName), Comparer<(int Id, int Age, string FirstName, string LastName)>.Default, four,
+            VerifyUnique("(Id, Age, FirstName, LastName)", table.SortByIdAndAgeAndFirstNameAndLastName.ToArray(), x => (x.Id, x.Age, x.FirstName, x.LastName), OrdinalTupleComparer.Create<int, int, string, string>(), four,
                 table.FindByIdAndAgeAndFirstNameAndLastName, table.TryFindByIdAndAgeAndFirstNameAndLastName, table.FindClosestByIdAndAgeAndFirstNameAndLastName, table.FindRangeByIdAndAgeAndFirstNameAndLastName);
         }
 

@@ -1,4 +1,5 @@
 ﻿using MasterMemory.Tests.FileScoped;
+using MasterMemory.Tests.Fuzz.Target;
 using MasterMemory.Tests.TestStructures;
 using System;
 using System.Collections.Generic;
@@ -213,19 +214,19 @@ namespace MasterMemory.Tests
                 table.FindByIdAndAge, table.TryFindByIdAndAge, table.FindClosestByIdAndAge, table.FindRangeByIdAndAge);
 
             var names = (from first in FirstNames from last in LastNames select (first, last)).ToArray();
-            VerifyUnique(failures, prefix + "(FirstName, LastName)", table.SortByFirstNameAndLastName.ToArray(), x => (x.FirstName, x.LastName), Comparer<(string, string)>.Default, names, Describe,
+            VerifyUnique(failures, prefix + "(FirstName, LastName)", table.SortByFirstNameAndLastName.ToArray(), x => (x.FirstName, x.LastName), OrdinalTupleComparer.Create<string, string>(), names, Describe,
                 table.FindByFirstNameAndLastName, table.TryFindByFirstNameAndLastName, table.FindClosestByFirstNameAndLastName, table.FindRangeByFirstNameAndLastName);
 
             var nameAndAge = (from first in FirstNames from age in Ages select (first, age)).ToArray();
-            VerifyShared(failures, prefix + "(FirstName, Age)", table.SortByFirstNameAndAge.ToArray(), x => (x.FirstName, x.Age), Comparer<(string, int)>.Default, nameAndAge, Describe,
+            VerifyShared(failures, prefix + "(FirstName, Age)", table.SortByFirstNameAndAge.ToArray(), x => (x.FirstName, x.Age), OrdinalTupleComparer.Create<string, int>(), nameAndAge, Describe,
                 table.FindByFirstNameAndAge, table.FindClosestByFirstNameAndAge, table.FindRangeByFirstNameAndAge);
 
             var three = (from id in Ids.Where((_, i) => i % 2 == 0) from age in Ages.Where((_, i) => i % 2 == 0) from first in FirstNames select (id, age, first)).ToArray();
-            VerifyUnique(failures, prefix + "(Id, Age, FirstName)", table.SortByIdAndAgeAndFirstName.ToArray(), x => (x.Id, x.Age, x.FirstName), Comparer<(int, int, string)>.Default, three, Describe,
+            VerifyUnique(failures, prefix + "(Id, Age, FirstName)", table.SortByIdAndAgeAndFirstName.ToArray(), x => (x.Id, x.Age, x.FirstName), OrdinalTupleComparer.Create<int, int, string>(), three, Describe,
                 table.FindByIdAndAgeAndFirstName, table.TryFindByIdAndAgeAndFirstName, table.FindClosestByIdAndAgeAndFirstName, table.FindRangeByIdAndAgeAndFirstName);
 
             var four = (from row in SampleRows() from last in LastNames.Where((_, i) => i % 3 == 0).Append(row.LastName) select (row.Id, row.Age, row.FirstName, last)).ToArray();
-            VerifyUnique(failures, prefix + "(Id, Age, FirstName, LastName)", table.SortByIdAndAgeAndFirstNameAndLastName.ToArray(), x => (x.Id, x.Age, x.FirstName, x.LastName), Comparer<(int, int, string, string)>.Default, four, Describe,
+            VerifyUnique(failures, prefix + "(Id, Age, FirstName, LastName)", table.SortByIdAndAgeAndFirstNameAndLastName.ToArray(), x => (x.Id, x.Age, x.FirstName, x.LastName), OrdinalTupleComparer.Create<int, int, string, string>(), four, Describe,
                 table.FindByIdAndAgeAndFirstNameAndLastName, table.TryFindByIdAndAgeAndFirstNameAndLastName, table.FindClosestByIdAndAgeAndFirstNameAndLastName, table.FindRangeByIdAndAgeAndFirstNameAndLastName);
         }
 
@@ -347,6 +348,7 @@ namespace MasterMemory.Tests
                 Letter = letters[i],
                 Price = prices[i],
                 Kind = kinds[i],
+                MaybeKind = (i % 3 == 1) ? null : kinds[(i + 3) % 8],
                 No = i,
             }).ToArray();
 
@@ -391,6 +393,14 @@ namespace MasterMemory.Tests
             var kindAndRank = (from kind in kindProbes from rank in rankProbes select (kind, rank)).ToArray();
             VerifyShared(failures, "(enum, short)", table.SortByKindAndRank.ToArray(), x => (x.Kind, x.Rank), Comparer<(SmallKind, short)>.Default, kindAndRank, describe,
                 table.FindByKindAndRank, table.FindClosestByKindAndRank, table.FindRangeByKindAndRank);
+
+            var maybeKindProbes = new SmallKind?[] { null, SmallKind.A, SmallKind.B, SmallKind.C, (SmallKind)3, (SmallKind)255 };
+            VerifyShared(failures, "enum?", table.SortByMaybeKind.ToArray(), x => x.MaybeKind, Comparer<SmallKind?>.Default, maybeKindProbes, describe,
+                table.FindByMaybeKind, table.FindClosestByMaybeKind, table.FindRangeByMaybeKind);
+
+            var maybeKindAndRank = (from kind in maybeKindProbes from rank in rankProbes select (kind, rank)).ToArray();
+            VerifyShared(failures, "(enum?, short)", table.SortByMaybeKindAndRank.ToArray(), x => (x.MaybeKind, x.Rank), Comparer<(SmallKind?, short)>.Default, maybeKindAndRank, describe,
+                table.FindByMaybeKindAndRank, table.FindClosestByMaybeKindAndRank, table.FindRangeByMaybeKindAndRank);
 
             failures.ShouldBeNone(output);
         }

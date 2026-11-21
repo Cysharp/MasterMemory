@@ -26,6 +26,7 @@ namespace MasterMemory.Tests.TestStructures
 
         [SecondaryKey(3), NonUnique]
         [SecondaryKey(8, 1), NonUnique]
+        [SecondaryKey(10, 1), NonUnique]
         public short Rank { get; set; }
 
         [SecondaryKey(4), NonUnique]
@@ -40,6 +41,11 @@ namespace MasterMemory.Tests.TestStructures
         [SecondaryKey(7), NonUnique]
         [SecondaryKey(8, 0), NonUnique]
         public SmallKind Kind { get; set; }
+
+        // a nullable enum: null first, then by the underlying value
+        [SecondaryKey(9), NonUnique]
+        [SecondaryKey(10, 0), NonUnique]
+        public SmallKind? MaybeKind { get; set; }
 
         public int No { get; set; }
     }

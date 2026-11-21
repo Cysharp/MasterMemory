@@ -34,10 +34,10 @@ static class ImmutableBuilderEmitter
                 var table = model.Tables[i];
                 var key = table.PrimaryKey;
                 var keyAccessor = key.BuildKeyAccessor("x");
-                var comparer = key.BuildComparer();
+                var comparer = key.BuildComparer(table.ClassName + "Table.");
 
                 writer.Line();
-                using (writer.Block($"public void ReplaceAll(System.Collections.Generic.IList<{table.FullTypeName}> data)"))
+                using (writer.Block($"{table.Accessibility} void ReplaceAll(System.Collections.Generic.IList<{table.FullTypeName}> data)"))
                 {
                     writer.Line($"var newData = CloneAndSortBy(data, x => {keyAccessor}, {comparer});");
                     EmitReplaceTable(writer, model, i);
@@ -49,7 +49,7 @@ static class ImmutableBuilderEmitter
                 }
 
                 writer.Line();
-                using (writer.Block($"public void Remove{table.ClassName}({key.BuildTypeName()}[] keys)"))
+                using (writer.Block($"{table.Accessibility} void Remove{table.ClassName}({key.BuildTypeName()}[] keys)"))
                 {
                     writer.Line($"var data = RemoveCore(memory.{table.ClassName}Table.GetRawDataUnsafe(), keys, x => {keyAccessor}, {comparer});");
                     writer.Line($"var newData = CloneAndSortBy(data, x => {keyAccessor}, {comparer});");
@@ -57,7 +57,7 @@ static class ImmutableBuilderEmitter
                 }
 
                 writer.Line();
-                using (writer.Block($"public void Diff({table.FullTypeName}[] addOrReplaceData)"))
+                using (writer.Block($"{table.Accessibility} void Diff({table.FullTypeName}[] addOrReplaceData)"))
                 {
                     writer.Line($"var data = DiffCore(memory.{table.ClassName}Table.GetRawDataUnsafe(), addOrReplaceData, x => {keyAccessor}, {comparer});");
                     writer.Line($"var newData = CloneAndSortBy(data, x => {keyAccessor}, {comparer});");

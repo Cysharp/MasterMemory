@@ -217,6 +217,8 @@ Element type of datatable must be marked by `[MemoryTable(tableName)]`, datatabl
 
 Both `PrimaryKey` and `SecondaryKey` can add to multiple properties, it will be generated `***And***And***...`. `keyOrder` is order of column names, default is zero(sequential in which they appear).
 
+A key can be declared wherever the property is: in the class itself, in a base class, in another part of a `partial` class, or on a parameter of a positional record as `[property: PrimaryKey]`. Properties of one key that are declared in different files of a partial class have no "order in which they appear", so they need an explicit `keyOrder` (error `MAM006` otherwise). A table class may be `internal`; the generated members that have it in their signature are then `internal` as well.
+
 ```csharp
 [MemoryTable("sample"), MessagePackObject(true)]
 public class Sample
@@ -286,6 +288,21 @@ public class Sample
     public string Foo { get; set; }
 }
 ```
+
+The option belongs to the property: it holds in every key the property is a member of, a composite key included, and it may be written in any attribute list of the property. A composite key is compared member by member, each string by its own option:
+
+```csharp
+[MemoryTable("sample"), MessagePackObject(true)]
+public class Sample
+{
+    [PrimaryKey(0), StringComparisonOption(StringComparison.OrdinalIgnoreCase)]
+    public string Foo { get; set; }   // ignoring case
+    [PrimaryKey(1)]
+    public string Bar { get; set; }   // ordinal
+}
+```
+
+A table is stored in the database binary in the order of its primary key, and the same order is used to search it when it is loaded. `Ordinal` and `OrdinalIgnoreCase` are the same on every machine; the culture options depend on the culture and its data on the machine that builds and on the device that loads, so prefer the ordinal ones for a primary key.
 
 If computation property exists, add `[IgnoreMember]` of MessagePack should mark.
 
@@ -812,7 +829,7 @@ The Source Generator settings are configured using the assembly attribute `[Mast
 
 v3 -> v4 migration
 ---
-MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-CSharp/MessagePack-CSharp). The database binary format is unchanged: v4 reads a database built by v3, and v3 reads a database built by v4. The one exception is a table whose primary key is declared `string?`, see below.
+MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-CSharp/MessagePack-CSharp). The database binary format is unchanged: v4 reads a database built by v3, and v3 reads a database built by v4. The exceptions are the tables whose primary key was not compared the way it was declared (a `string?`, a string in a composite key, a `[StringComparisonOption]` that was not applied): they are stored in another order now and have to be rebuilt, see below.
 
 * `IFormatterResolver` parameters became `MessagePackFormatterFactory`: `new MemoryDatabase(bin, formatterFactory: factory)`, `new DatabaseBuilder(factory)`, `ToDatabaseBuilder(factory)`
 * The generated `MasterMemoryResolver` is gone, and so is its registration (`StaticCompositeResolver`, `MessagePackSerializer.DefaultOptions`). The table formatters are composed by `MemoryDatabase` and `DatabaseBuilder` themselves; the generated `MasterMemoryFormatterFactory.Instance` exists if you serialize a table array on your own
@@ -821,6 +838,14 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * LZ4 comes from the `MessagePack.LZ4` package (native, [NativeCompressions](https://github.com/Cysharp/NativeCompressions)); see its supported platforms
 * The table types follow MessagePack for C# v4's rules, see [Migrating from v3](https://github.com/MessagePack-CSharp/MessagePack-CSharp/tree/v4#migrating-from-v3). The ones master data meets most: in a `#nullable enable` context a `null` in a member declared non-nullable is refused on both build and load (declare it `string?`), and constructor parameters bind to members by name
 * A key declared `string?` is compared like a `string` key: `StringComparer.Ordinal`, or what `[StringComparisonOption]` says. Before, it was compared by the current culture and the attribute was ignored. A table is stored in the order of its primary key, so **a database containing a table whose primary key is `string?` has to be rebuilt**; secondary keys are sorted on load and need nothing
+* A string in a composite key is compared ordinally, like a key of one string. Before, a composite key was compared by the default comparer of its tuple, which compares strings by the current culture: the machine that built a database and the device that loaded it could disagree on the order of the same rows. **A database containing a table whose composite primary key has a string member has to be rebuilt**
+* `[StringComparisonOption]` is applied wherever it is written on the property, and to a string member of a composite key. Before, it was applied only when it came after the key attribute in the same attribute list; before it, or in a list of its own as this README shows it, it was ignored and the key stayed ordinal. **A database containing a table whose primary key gets its option only now has to be rebuilt**
+* Keys are read wherever the property is declared: a base class, another part of a `partial` class, a parameter of a positional record (`[property: PrimaryKey]`). Before, only the properties written in the class body that carries `[MemoryTable]` were seen
+* A table class may be `internal`. The table class generated for it, and the members of `MemoryDatabase`, `DatabaseBuilder` and `ImmutableBuilder` that have it in their signature, are `internal` too
+* Attributes are recognized however they are written (`[PrimaryKeyAttribute]`, `[MasterMemory.SecondaryKey(0)]`, through an alias), and their arguments may be any constant (`[SecondaryKey(Indexes.Name)]`). Key types are recognized through an alias as well, and `short`, `ushort` and `char` keys are compared directly like the other integers
+* The generator no longer fails on code that does not compile yet. An attribute that is still being typed (`[SecondaryKey]` before its argument) used to take every generated type of the project with it
+* New errors, for what used to be accepted and then did nothing or failed in generated code: `MAM005` two tables with one `[MemoryTable]` name, `MAM006` properties of a key in different files of a partial class without `keyOrder`, `MAM007` `[NonUnique]` in an attribute list without a key, `MAM008` `[StringComparisonOption]` on a property that is not a string key, `MAM009` a generic table class, `MAM010` a table class that is `private` or `protected`, `MAM011` a key that is static, or not readable from generated code
+* `MetaTable.Properties` lists the public instance properties, those of base classes included. Before, a non-public or static property without attributes was written into the list too
 * The generated `MemoryDatabase` is `partial`: members of your own, such as a query across several tables, can be added to it
 * Generated code names table and key types in full (`global::MyGame.Master.Item`), so a table may be declared in a file-scoped namespace, inside another type, or in a file whose `using` directives sit inside `#if`
 * Two `[MemoryTable]` classes with the same name in different namespaces are reported as error `MAM004`; before, nothing was generated at all
@@ -830,6 +855,7 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `RangeView<T>.CopyTo` of an empty view does nothing instead of throwing `ArgumentNullException`
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
 * Lookups are faster. Every key is searched through a struct generated for it, with no delegate and no comparer object per comparison. On top of that, a unique integer key of 32 bits or less is searched without conditional jumps in tables up to 32,768 rows, and a unique numeric primary key whose values run without a gap (1, 2, 3, ...) is not searched at all: the row is read at its position. Nothing changes in the database binary or in what a lookup returns
+* An enum key, alone, nullable or as a member of a composite key, is compared by its underlying value in generated code, in lookups and in the sort of its index. Before, it went through `Comparer<TEnum>.Default`, which in Unity (Mono and IL2CPP) boxes both values on every comparison: garbage on every lookup by an enum key. The order is the same
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
 
 v2 -> v3 migration

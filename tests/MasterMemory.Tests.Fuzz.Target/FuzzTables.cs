@@ -28,7 +28,7 @@ public class FuzzRow
     [SecondaryKey(3, 1)]
     public int Seq { get; set; }
 
-    // shared string (ordinal), and the first member of a shared pair (whose strings compare by the default comparer)
+    // shared string (ordinal), and the first member of a shared pair (compared member by member, the string ordinally)
     [SecondaryKey(2), NonUnique]
     [SecondaryKey(4, 0), NonUnique]
     public string? Name { get; set; }
@@ -74,5 +74,26 @@ public class ByteKeyRow
 public class SByteKeyRow
 {
     [PrimaryKey] public sbyte Id { get; set; }
+    public int No { get; set; }
+}
+
+[MemoryTable("fuzz_short"), MessagePackObject(true)]
+public class ShortKeyRow
+{
+    [PrimaryKey] public short Id { get; set; }
+    public int No { get; set; }
+}
+
+[MemoryTable("fuzz_ushort"), MessagePackObject(true)]
+public class UShortKeyRow
+{
+    [PrimaryKey] public ushort Id { get; set; }
+    public int No { get; set; }
+}
+
+[MemoryTable("fuzz_char"), MessagePackObject(true)]
+public class CharKeyRow
+{
+    [PrimaryKey] public char Id { get; set; }
     public int No { get; set; }
 }

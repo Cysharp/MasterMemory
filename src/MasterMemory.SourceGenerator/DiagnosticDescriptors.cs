@@ -1,58 +1,46 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MasterMemory;
 
-internal sealed class DiagnosticReporter : IEquatable<DiagnosticReporter>
+/// <summary>
+/// A diagnostic as the incremental pipeline carries it: compared by value, and holding no syntax tree. It becomes a
+/// <see cref="Diagnostic"/> only where it is reported.
+/// </summary>
+internal sealed record DiagnosticInfo(DiagnosticDescriptor Descriptor, LocationInfo? Location, EquatableArray<string> MessageArguments)
 {
-    List<Diagnostic>? diagnostics;
-
-    public bool HasDiagnostics => diagnostics != null && diagnostics.Count != 0;
-
-    public void ReportDiagnostic(DiagnosticDescriptor diagnosticDescriptor, Location location, params object?[]? messageArgs)
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, LocationInfo? location, params string[] messageArguments)
     {
-        var diagnostic = Diagnostic.Create(diagnosticDescriptor, location, messageArgs);
-        if (diagnostics == null)
-        {
-            diagnostics = new();
-        }
-        diagnostics.Add(diagnostic);
+        return new DiagnosticInfo(descriptor, location, new EquatableArray<string>(messageArguments));
     }
 
-    public void ReportToContext(SourceProductionContext context)
+    public Diagnostic ToDiagnostic()
     {
-        if (diagnostics != null)
-        {
-            foreach (var item in diagnostics)
-            {
-                context.ReportDiagnostic(item);
-            }
-        }
+        return Diagnostic.Create(Descriptor, Location?.ToLocation() ?? Microsoft.CodeAnalysis.Location.None, MessageArguments.ToArray());
+    }
+}
+
+/// <summary>Where a diagnostic points, without the syntax tree a <see cref="Location"/> holds on to.</summary>
+internal readonly record struct LocationInfo(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
+{
+    public Location ToLocation()
+    {
+        return Location.Create(FilePath, TextSpan, LineSpan);
     }
 
-    public bool Equals(DiagnosticReporter other)
+    public static LocationInfo? From(Location? location)
     {
-        // if error, always false and otherwise ignore
-        if (diagnostics == null && other.diagnostics == null)
+        if (location?.SourceTree == null)
         {
-            return true;
+            return null;
         }
-
-        return false;
+        return new LocationInfo(location.SourceTree.FilePath, location.SourceSpan, location.GetLineSpan().Span);
     }
 }
 
 internal static class DiagnosticDescriptors
 {
     const string Category = "GenerateMasterMemory";
-
-    public static void ReportDiagnostic(this SourceProductionContext context, DiagnosticDescriptor diagnosticDescriptor, Location location, params object?[]? messageArgs)
-    {
-        var diagnostic = Diagnostic.Create(diagnosticDescriptor, location, messageArgs);
-        context.ReportDiagnostic(diagnostic);
-    }
 
     public static DiagnosticDescriptor Create(int id, string message)
     {
@@ -74,9 +62,7 @@ internal static class DiagnosticDescriptors
         1,
         "MemoryTable does not found PrimaryKey property, Type:{0}.");
 
-    public static DiagnosticDescriptor DuplicatePrimaryKey { get; } = Create(
-        2,
-        "Duplicate PrimaryKey:{0}.{1}");
+    // MAM002 (a second [PrimaryKey] on one property) is retired: the attribute does not allow it, so the compiler says so.
 
     public static DiagnosticDescriptor DuplicateSecondaryKey { get; } = Create(
         3,
@@ -85,4 +71,32 @@ internal static class DiagnosticDescriptors
     public static DiagnosticDescriptor DuplicateClassName { get; } = Create(
         4,
         "MemoryTable class name must be unique, generated code is named after it: {0}Table. Rename one of: {1}.");
+
+    public static DiagnosticDescriptor DuplicateTableName { get; } = Create(
+        5,
+        "MemoryTable name must be unique, it is the name of the table in the database binary: \"{0}\" is the name of {1}.");
+
+    public static DiagnosticDescriptor DuplicateKeyOrder { get; } = Create(
+        6,
+        "Properties of a key that are declared in different files of a partial class need different keyOrder, the order they are compared in is otherwise not defined: {0} of {1} has {2} at keyOrder {3}.");
+
+    public static DiagnosticDescriptor NonUniqueWithoutKey { get; } = Create(
+        7,
+        "[NonUnique] applies to the [PrimaryKey] or [SecondaryKey] in the same attribute list, and the list it is in has none: {0}.{1}. Write them in one list, as in [SecondaryKey(0), NonUnique].");
+
+    public static DiagnosticDescriptor StringComparisonOptionOnNonStringKey { get; } = Create(
+        8,
+        "[StringComparisonOption] is for a key of type string: {0}.{1} is {2}.");
+
+    public static DiagnosticDescriptor GenericTable { get; } = Create(
+        9,
+        "MemoryTable cannot be a generic type, or nested in one: {0}.");
+
+    public static DiagnosticDescriptor InaccessibleTable { get; } = Create(
+        10,
+        "MemoryTable must be public or internal, and so must every type it is nested in, generated code refers to it from another class: {0}.");
+
+    public static DiagnosticDescriptor InvalidKeyProperty { get; } = Create(
+        11,
+        "A key must be an instance property with a getter that is public or internal, generated code reads it from another class: {0}.{1}.");
 }

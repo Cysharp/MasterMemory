@@ -113,7 +113,12 @@ public class Item
         WriteLine(code);
 
         // sorting: the comparer an index is built with
-        code.ShouldContain("System.Collections.Generic.Comparer<(int Level, global::System.DateTime CreatedAt)>.Default");
+        // a composite key has its own, which compares the members as the lookups do (and not the tuple's default one)
+        code.ShouldContain("CloneAndSortBy(this.secondaryIndex2Selector, SecondaryIndex2KeyComparer.Instance)");
+        code.ShouldContain("internal sealed class SecondaryIndex2KeyComparer : System.Collections.Generic.IComparer<(int Level, global::System.DateTime CreatedAt)>, System.Collections.IComparer");
+        code.ShouldContain("c = (x.Level < y.Level) ? -1 : (x.Level > y.Level) ? 1 : 0; if (c != 0) { return c; }");
+        code.ShouldContain("return System.Collections.Generic.Comparer<global::System.DateTime>.Default.Compare(x.CreatedAt, y.CreatedAt);");
+        code.ShouldNotContain("Comparer<(int Level, global::System.DateTime CreatedAt)>.Default");
 
         // searching: what the struct of each key compares with, which has to be the same order
         code.ShouldContain("return string.CompareOrdinal(key, other.Name);");
