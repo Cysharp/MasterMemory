@@ -13,6 +13,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
+		<!-- the fuzz targets of the lookups, which FindFuzzTest runs on fixed inputs -->
+		<ProjectReference Include="..\MasterMemory.Tests.Fuzz.Target\MasterMemory.Tests.Fuzz.Target.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>

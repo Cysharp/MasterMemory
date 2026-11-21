@@ -133,3 +133,10 @@ src/MasterMemory.Unity/*.sln
 src/MasterMemory.Unity/*.csproj
 src/MasterMemory.Unity/*.unitypackage
 !src/MasterMemory.Unity/Packages/
+
+# fuzzing (tests/MasterMemory.Tests.Fuzz/fuzz.ps1): the published and instrumented harness, the corpus that grows per machine,
+# what a campaign found, and the downloaded libFuzzer bridge
+tests/MasterMemory.Tests.Fuzz/publish/
+tests/MasterMemory.Tests.Fuzz/corpus/
+tests/MasterMemory.Tests.Fuzz/findings/
+tests/MasterMemory.Tests.Fuzz/libfuzzer-dotnet-windows.exe

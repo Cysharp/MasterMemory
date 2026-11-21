@@ -12,6 +12,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/MasterMemory.SourceGenerator.Tests/MasterMemory.SourceGenerator.Tests.csproj" />
+    <Project Path="tests/MasterMemory.Tests.Fuzz.Target/MasterMemory.Tests.Fuzz.Target.csproj" />
+    <Project Path="tests/MasterMemory.Tests.Fuzz/MasterMemory.Tests.Fuzz.csproj" />
     <Project Path="tests/MasterMemory.Tests/MasterMemory.Tests.csproj" />
   </Folder>
 </Solution>
