@@ -78,33 +78,16 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
         var prefixClassName = generatorOptions.PrefixClassName ?? "";
         var throwIfKeyNotFound = !generatorOptions.IsReturnNullIfKeyNotFound; // becareful, reverse!
 
-        var usingStrings = string.Join(Environment.NewLine, memoryTables.SelectMany(x => x.UsingStrings).Distinct().OrderBy(x => x, StringComparer.Ordinal));
+        var model = new DatabaseModel(usingNamespace, prefixClassName, memoryTables.ToArray());
 
-        var builderTemplate = new DatabaseBuilderTemplate();
-        var databaseTemplate = new MemoryDatabaseTemplate();
-        var immutableBuilderTemplate = new ImmutableBuilderTemplate();
-        var resolverTemplate = new FormatterFactoryTemplate();
-        builderTemplate.Namespace = databaseTemplate.Namespace = immutableBuilderTemplate.Namespace = resolverTemplate.Namespace = usingNamespace;
-        builderTemplate.PrefixClassName = databaseTemplate.PrefixClassName = immutableBuilderTemplate.PrefixClassName = resolverTemplate.PrefixClassName = prefixClassName;
-        builderTemplate.Using = databaseTemplate.Using = immutableBuilderTemplate.Using = resolverTemplate.Using = (usingStrings + Environment.NewLine + ("using " + usingNamespace + ".Tables;"));
-        builderTemplate.GenerationContexts = databaseTemplate.GenerationContexts = immutableBuilderTemplate.GenerationContexts = resolverTemplate.GenerationContexts = memoryTables.ToArray();
+        Log(AddSource(context, model.DatabaseBuilderName, DatabaseBuilderEmitter.Emit(model)));
+        Log(AddSource(context, model.ImmutableBuilderName, ImmutableBuilderEmitter.Emit(model)));
+        Log(AddSource(context, model.MemoryDatabaseName, MemoryDatabaseEmitter.Emit(model)));
+        Log(AddSource(context, model.FormatterFactoryName, FormatterFactoryEmitter.Emit(model)));
 
-        Log(AddSource(context, builderTemplate.ClassName, builderTemplate.TransformText()));
-        Log(AddSource(context, immutableBuilderTemplate.ClassName, immutableBuilderTemplate.TransformText()));
-        Log(AddSource(context, databaseTemplate.ClassName, databaseTemplate.TransformText()));
-        Log(AddSource(context, resolverTemplate.ClassName, resolverTemplate.TransformText()));
-
-        foreach (var generationContext in memoryTables)
+        foreach (var table in model.Tables)
         {
-            var template = new TableTemplate()
-            {
-                Namespace = usingNamespace,
-                GenerationContext = generationContext,
-                Using = string.Join(Environment.NewLine, generationContext.UsingStrings),
-                ThrowKeyIfNotFound = throwIfKeyNotFound
-            };
-
-            Log(AddSource(context, generationContext.ClassName + "Table", template.TransformText()));
+            Log(AddSource(context, table.ClassName + "Table", TableEmitter.Emit(usingNamespace, table, throwIfKeyNotFound)));
         }
     }
 
@@ -112,15 +95,7 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
 
     static string AddSource(SourceProductionContext context, string fileName, string content)
     {
-        var contentString = NormalizeNewLines(content);
-        context.AddSource($"MasterMemory.{fileName}.g.cs", contentString);
+        context.AddSource($"MasterMemory.{fileName}.g.cs", content);
         return $"Generate {fileName}.";
-
-        static string NormalizeNewLines(string content)
-        {
-            // The T4 generated code may be text with mixed line ending types. (CR + CRLF)
-            // We need to normalize the line ending type in each Operating Systems. (e.g. Windows=CRLF, Linux/macOS=LF)
-            return content.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
-        }
     }
 }
