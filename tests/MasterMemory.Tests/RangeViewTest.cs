@@ -13,7 +13,7 @@ namespace MasterMemory.Tests
         {
             // 4 -> 8
             {
-                var range = new RangeView<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 4, 8, true);
+                var range = new RangeView<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 4, 5);
 
                 range.Count.ShouldBe(5);
                 range[0].ShouldBe(4);
@@ -49,7 +49,7 @@ namespace MasterMemory.Tests
             }
             {
                 // 7 -> 2
-                var range = new RangeView<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 2, 7, false);
+                var range = new RangeView<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 2, 6).Reverse;
 
                 range.Count.ShouldBe(6);
                 range[0].ShouldBe(7);
@@ -84,10 +84,10 @@ namespace MasterMemory.Tests
                 range.Contains(9).ShouldBeFalse();
             }
 
-            var empty = new RangeView<int>(Enumerable.Empty<int>().ToArray(), 0, 0, true);
+            var empty = new RangeView<int>(Enumerable.Empty<int>().ToArray(), 0, 0);
             empty.Count.ShouldBe(0);
 
-            var same = new RangeView<int>(Enumerable.Range(1, 1000).ToArray(), 100, 100, true);
+            var same = new RangeView<int>(Enumerable.Range(1, 1000).ToArray(), 100, 1);
             same.Count.ShouldBe(1);
             same[0].ShouldBe(101);
         }

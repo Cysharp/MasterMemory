@@ -194,13 +194,13 @@ public static class FindFuzzTargets
             k => table.FindByGroupAndSeq(k.Group, k.Seq),
             ((int Group, int Seq) k, out FuzzRow row) => table.TryFindByGroupAndSeq(k.Group, k.Seq, out row),
             (k, lower) => table.FindClosestByGroupAndSeq(k.Group, k.Seq, lower),
-            (min, max, ascendant) => table.FindRangeByGroupAndSeq(min.Group, min.Seq, max.Group, max.Seq, ascendant));
+            (min, max) => table.FindRangeByGroupAndSeq(min.Group, min.Seq, max.Group, max.Seq));
         VerifyShared("Name", Rows(table.SortByName), x => x.Name, StringComparer.Ordinal, names,
             table.FindByName, table.FindClosestByName, table.FindRangeByName);
         VerifyShared("(Name, Kind)", Rows(table.SortByNameAndKind), x => (x.Name, x.Kind), OrdinalTupleComparer.Create<string?, FuzzKind>(), nameAndKinds,
             k => table.FindByNameAndKind(k.Item1, k.Item2),
             (k, lower) => table.FindClosestByNameAndKind(k.Item1, k.Item2, lower),
-            (min, max, ascendant) => table.FindRangeByNameAndKind(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
+            (min, max) => table.FindRangeByNameAndKind(min.Item1, min.Item2, max.Item1, max.Item2));
         VerifyShared("Kind", Rows(table.SortByKind), x => x.Kind, Comparer<FuzzKind>.Default, kinds,
             table.FindByKind, table.FindClosestByKind, table.FindRangeByKind);
         VerifyUnique("Code", Rows(table.SortByCode), x => x.Code, StringComparer.OrdinalIgnoreCase, codes,
@@ -214,17 +214,17 @@ public static class FindFuzzTargets
             k => table.FindByBucketAndKindAndSeq(k.Bucket, k.Kind, k.Seq),
             ((int Bucket, FuzzKind Kind, int Seq) k, out FuzzRow row) => table.TryFindByBucketAndKindAndSeq(k.Bucket, k.Kind, k.Seq, out row),
             (k, lower) => table.FindClosestByBucketAndKindAndSeq(k.Bucket, k.Kind, k.Seq, lower),
-            (min, max, ascendant) => table.FindRangeByBucketAndKindAndSeq(min.Bucket, min.Kind, min.Seq, max.Bucket, max.Kind, max.Seq, ascendant));
+            (min, max) => table.FindRangeByBucketAndKindAndSeq(min.Bucket, min.Kind, min.Seq, max.Bucket, max.Kind, max.Seq));
         VerifyHead("Bucket", bucketIndex, x => x.Bucket, Comparer<int>.Default, buckets,
             table.FindByBucket, table.FindRangeByBucket);
         VerifyHead("(Bucket, Kind)", bucketIndex, x => (x.Bucket, x.Kind), Comparer<(int Bucket, FuzzKind Kind)>.Default, bucketAndKinds,
             k => table.FindByBucketAndKind(k.Bucket, k.Kind),
-            (min, max, ascendant) => table.FindRangeByBucketAndKind(min.Bucket, min.Kind, max.Bucket, max.Kind, ascendant));
+            (min, max) => table.FindRangeByBucketAndKind(min.Bucket, min.Kind, max.Bucket, max.Kind));
     }
 
     // the head of a composite key: every row whose first members equal the key, in the order of the index of the whole key
     static void VerifyHead<TRow, TKey>(string name, TRow[] index, Func<TRow, TKey> selector, IComparer<TKey> comparer, List<TKey> keys,
-        Func<TKey, RangeView<TRow>> find, Func<TKey, TKey, bool, RangeView<TRow>> range)
+        Func<TKey, RangeView<TRow>> find, Func<TKey, TKey, RangeView<TRow>> range)
         where TRow : class
     {
         for (var k = 0; k < keys.Count; k++)
@@ -236,14 +236,14 @@ public static class FindFuzzTargets
                 if (comparer.Compare(selector(row), key) == 0) exact.Add(row);
             }
 
-            VerifyView($"{name} FindBy({Show(key)})", find(key), exact, false, selector);
+            VerifyView($"{name} FindBy({Show(key)})", find(key), exact, selector);
             VerifyRange(name, index, selector, comparer, key, keys[(k + 1) % keys.Count], range);
         }
     }
 
     // ---- unique numeric primary keys of the other widths ----
 
-    readonly record struct Lookups<TKey, TRow>(Func<TKey, TRow> Find, TryFind<TKey, TRow> TryFind, Func<TKey, bool, TRow?> Closest, Func<TKey, TKey, bool, RangeView<TRow>> Range);
+    readonly record struct Lookups<TKey, TRow>(Func<TKey, TRow> Find, TryFind<TKey, TRow> TryFind, Func<TKey, bool, TRow?> Closest, Func<TKey, TKey, RangeView<TRow>> Range);
 
     static void NumericPrimaryKey<TKey, TRow>(string name, byte[] data, Func<TKey, int, TRow> create, Func<TRow, TKey> key, Func<TRow[], Lookups<TKey, TRow>> build)
         where TKey : struct, INumber<TKey>, IMinMaxValue<TKey>
@@ -377,7 +377,7 @@ public static class FindFuzzTargets
 
     // one row per key
     static void VerifyUnique<TRow, TKey>(string name, TRow[] index, Func<TRow, TKey> selector, IComparer<TKey> comparer, List<TKey> keys,
-        Func<TKey, TRow> find, TryFind<TKey, TRow> tryFind, Func<TKey, bool, TRow?> closest, Func<TKey, TKey, bool, RangeView<TRow>> range)
+        Func<TKey, TRow> find, TryFind<TKey, TRow> tryFind, Func<TKey, bool, TRow?> closest, Func<TKey, TKey, RangeView<TRow>> range)
         where TRow : class
     {
         for (var k = 0; k < keys.Count; k++)
@@ -438,7 +438,7 @@ public static class FindFuzzTargets
 
     // several rows per key
     static void VerifyShared<TRow, TKey>(string name, TRow[] index, Func<TRow, TKey> selector, IComparer<TKey> comparer, List<TKey> keys,
-        Func<TKey, RangeView<TRow>> find, Func<TKey, bool, RangeView<TRow>> closest, Func<TKey, TKey, bool, RangeView<TRow>> range)
+        Func<TKey, RangeView<TRow>> find, Func<TKey, bool, RangeView<TRow>> closest, Func<TKey, TKey, RangeView<TRow>> range)
         where TRow : class
     {
         List<TRow> RowsOf(TKey key)
@@ -464,20 +464,20 @@ public static class FindFuzzTargets
             }
 
             var exact = RowsOf(key);
-            VerifyView($"{name} FindBy({Show(key)})", find(key), exact, false, selector);
+            VerifyView($"{name} FindBy({Show(key)})", find(key), exact, selector);
 
             // the rows of the key itself, else all the rows of the nearest key on the side asked for
             var below = (exact.Count != 0) ? exact : (lower == null) ? [] : RowsOf(selector(lower));
             var above = (exact.Count != 0) ? exact : (upper == null) ? [] : RowsOf(selector(upper));
-            VerifyView($"{name} FindClosestBy({Show(key)}, lower)", closest(key, true), below, false, selector);
-            VerifyView($"{name} FindClosestBy({Show(key)}, upper)", closest(key, false), above, false, selector);
+            VerifyView($"{name} FindClosestBy({Show(key)}, lower)", closest(key, true), below, selector);
+            VerifyView($"{name} FindClosestBy({Show(key)}, upper)", closest(key, false), above, selector);
 
             VerifyRange(name, index, selector, comparer, key, keys[(k + 1) % keys.Count], range);
         }
     }
 
-    // every row from min to max, both included, in index order or reversed; empty when min is after max
-    static void VerifyRange<TRow, TKey>(string name, TRow[] index, Func<TRow, TKey> selector, IComparer<TKey> comparer, TKey min, TKey max, Func<TKey, TKey, bool, RangeView<TRow>> range)
+    // every row from min to max, both included, in index order, and reversed by Reverse; empty when min is after max
+    static void VerifyRange<TRow, TKey>(string name, TRow[] index, Func<TRow, TKey> selector, IComparer<TKey> comparer, TKey min, TKey max, Func<TKey, TKey, RangeView<TRow>> range)
         where TRow : class
     {
         var expected = new List<TRow>();
@@ -487,44 +487,82 @@ public static class FindFuzzTargets
             if (comparer.Compare(rowKey, min) >= 0 && comparer.Compare(rowKey, max) <= 0) expected.Add(row);
         }
 
-        VerifyView($"{name} FindRangeBy({Show(min)}, {Show(max)}, ascendant)", range(min, max, true), expected, false, selector);
-        VerifyView($"{name} FindRangeBy({Show(min)}, {Show(max)}, descendant)", range(min, max, false), expected, true, selector);
+        VerifyView($"{name} FindRangeBy({Show(min)}, {Show(max)})", range(min, max), expected, selector);
     }
 
-    // a RangeView against the rows it should hold, through each way of reading it
-    static void VerifyView<TRow, TKey>(string question, RangeView<TRow> view, List<TRow> expected, bool reversed, Func<TRow, TKey> selector)
+    // a RangeView against the rows it should hold, through each way of reading it, and its Reverse against the same
+    // rows from the last to the first
+    static void VerifyView<TRow, TKey>(string question, RangeView<TRow> view, List<TRow> expected, Func<TRow, TKey> selector)
         where TRow : class
     {
         string Keys(IEnumerable<TRow> rows) => "[" + string.Join(" ", rows.Select(x => Show(selector(x)))) + "]";
 
         var count = expected.Count;
-        TRow Expected(int i) => expected[reversed ? count - 1 - i : i];
-
-        if (view.Count != count) Fail(question, $"{view.Count} rows {Keys(view)}", $"{count} rows {Keys(reversed ? Enumerable.Reverse(expected) : expected)}");
+        if (view.Count != count) Fail(question, $"{view.Count} rows {Keys(view)}", $"{count} rows {Keys(expected)}");
 
         var position = 0;
         foreach (var row in view)
         {
-            if (position >= count || !ReferenceEquals(row, Expected(position))) Fail(question, Keys(view), Keys(reversed ? Enumerable.Reverse(expected) : expected));
+            if (position >= count || !ReferenceEquals(row, expected[position])) Fail(question, Keys(view), Keys(expected));
             position++;
         }
         if (position != count) Fail(question + " (enumeration)", position + " rows", count + " rows");
 
         var copied = new TRow[count];
         view.CopyTo(copied, 0);
-        var backwards = view.Reverse;
-        if (backwards.Count != count) Fail(question + " (Reverse)", backwards.Count + " rows", count + " rows");
+        var array = view.ToArray();
+        var span = view.AsSpan();
+        if (array.Length != count) Fail(question + " (ToArray)", array.Length + " rows", count + " rows");
+        if (span.Length != count) Fail(question + " (AsSpan)", span.Length + " rows", count + " rows");
         for (var i = 0; i < count; i++)
         {
-            if (!ReferenceEquals(view[i], Expected(i))) Fail(question + $" (indexer {i})", Show(selector(view[i])), Show(selector(Expected(i))));
-            if (!ReferenceEquals(copied[i], Expected(i))) Fail(question + $" (CopyTo {i})", Show(selector(copied[i])), Show(selector(Expected(i))));
-            if (!ReferenceEquals(backwards[i], Expected(count - 1 - i))) Fail(question + $" (Reverse {i})", Show(selector(backwards[i])), Show(selector(Expected(count - 1 - i))));
+            if (!ReferenceEquals(view[i], expected[i])) Fail(question + $" (indexer {i})", Show(selector(view[i])), Show(selector(expected[i])));
+            if (!ReferenceEquals(copied[i], expected[i])) Fail(question + $" (CopyTo {i})", Show(selector(copied[i])), Show(selector(expected[i])));
+            if (!ReferenceEquals(array[i], expected[i])) Fail(question + $" (ToArray {i})", Show(selector(array[i])), Show(selector(expected[i])));
+            if (!ReferenceEquals(span[i], expected[i])) Fail(question + $" (AsSpan {i})", Show(selector(span[i])), Show(selector(expected[i])));
         }
 
+        var first = (count == 0) ? null : expected[0];
+        var last = (count == 0) ? null : expected[count - 1];
+        if (!ReferenceEquals(view.FirstOrDefault(), first)) Fail(question + " (FirstOrDefault)", Show(view.FirstOrDefault(), selector), Show(first, selector));
+        if (!ReferenceEquals(view.LastOrDefault(), last)) Fail(question + " (LastOrDefault)", Show(view.LastOrDefault(), selector), Show(last, selector));
         if (count != 0)
         {
-            if (!ReferenceEquals(view.First, Expected(0))) Fail(question + " (First)", Show(selector(view.First)), Show(selector(Expected(0))));
-            if (!ReferenceEquals(view.Last, Expected(count - 1))) Fail(question + " (Last)", Show(selector(view.Last)), Show(selector(Expected(count - 1))));
+            if (!ReferenceEquals(view.First, first)) Fail(question + " (First)", Show(selector(view.First)), Show(first, selector));
+            if (!ReferenceEquals(view.Last, last)) Fail(question + " (Last)", Show(selector(view.Last)), Show(last, selector));
+        }
+
+        // the other way
+        var reverse = view.Reverse;
+        question += ", Reverse";
+        if (reverse.Count != count) Fail(question, reverse.Count + " rows", count + " rows");
+        if (reverse.Reverse.Count != count) Fail(question + " (and back)", reverse.Reverse.Count + " rows", count + " rows");
+
+        position = 0;
+        foreach (var row in reverse)
+        {
+            if (position >= count || !ReferenceEquals(row, expected[count - 1 - position])) Fail(question, Keys(reverse), Keys(Enumerable.Reverse(expected)));
+            position++;
+        }
+        if (position != count) Fail(question + " (enumeration)", position + " rows", count + " rows");
+
+        reverse.CopyTo(copied, 0);
+        array = reverse.ToArray();
+        if (array.Length != count) Fail(question + " (ToArray)", array.Length + " rows", count + " rows");
+        for (var i = 0; i < count; i++)
+        {
+            var row = expected[count - 1 - i];
+            if (!ReferenceEquals(reverse[i], row)) Fail(question + $" (indexer {i})", Show(selector(reverse[i])), Show(selector(row)));
+            if (!ReferenceEquals(copied[i], row)) Fail(question + $" (CopyTo {i})", Show(selector(copied[i])), Show(selector(row)));
+            if (!ReferenceEquals(array[i], row)) Fail(question + $" (ToArray {i})", Show(selector(array[i])), Show(selector(row)));
+        }
+
+        if (!ReferenceEquals(reverse.FirstOrDefault(), last)) Fail(question + " (FirstOrDefault)", Show(reverse.FirstOrDefault(), selector), Show(last, selector));
+        if (!ReferenceEquals(reverse.LastOrDefault(), first)) Fail(question + " (LastOrDefault)", Show(reverse.LastOrDefault(), selector), Show(first, selector));
+        if (count != 0)
+        {
+            if (!ReferenceEquals(reverse.First, last)) Fail(question + " (First)", Show(selector(reverse.First)), Show(last, selector));
+            if (!ReferenceEquals(reverse.Last, first)) Fail(question + " (Last)", Show(selector(reverse.Last)), Show(first, selector));
         }
     }
 }

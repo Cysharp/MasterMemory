@@ -369,7 +369,7 @@ MemoryDatabase has three(or four) query methods.
 * `T|RangeView<T>` FindBy***(TKey key)
 * bool TryFindBy***(TKey key, out T result)
 * `T|RangeView<T>` FindClosestBy***(TKey key, bool selectLower = true)
-* `RangeView<T>` FindRangeBy***(TKey min, TKey max, bool ascendant = true)
+* `RangeView<T>` FindRangeBy***(TKey min, TKey max)
 
 If index key is unique, generates `FindBy***` and `TryFindBy***` methods and then `FindBy***` throws `KeyNotFoundException` when key is not found.
 
@@ -379,18 +379,34 @@ And has some utility properties.
 
 * `int` Count
 * `RangeView<T>` All
-* `RangeView<T>` AllReverse
+* `ReverseRangeView<T>` AllReverse
 * `RangeView<T>` SortBy***
 * `T[] GetRawDataUnsafe()`
 
-`struct RangeView<T> : IEnumerable<T>` is the view of database elements. It has following property/method.
+`struct RangeView<T> : IReadOnlyList<T>` is the view of database elements: rows that lie together in an index, in the order of that index. It is a window on the array of the index and copies nothing. It has following property/method.
 
 * `T` [int index]
 * `int` Count
 * `T` First
 * `T` Last
-* `RangeView<T>` Reverse
-* `IEnumerator<T>` GetEnumerator()
+* `T?` FirstOrDefault()
+* `T?` LastOrDefault()
+* `bool` Any()
+* `ReadOnlySpan<T>` AsSpan()
+* `T[]` ToArray()
+* `ReverseRangeView<T>` Reverse
+* `Enumerator` GetEnumerator()
+
+`Reverse` is the same rows from the last to the first. It is a type of its own, `struct ReverseRangeView<T> : IReadOnlyList<T>`, with the same members except `AsSpan()` (a span runs one way only), and its `Reverse` is the `RangeView<T>` again. `AllReverse` of a table is one, too.
+
+```csharp
+RangeView<Person> twenties = db.PersonTable.FindRangeByAge(20, 29);   // in order of Age
+ReverseRangeView<Person> oldestFirst = twenties.Reverse;              // the same rows, the other way
+ReadOnlySpan<Person> span = twenties.AsSpan();                        // the rows as a span of the index
+Person? youngest = twenties.FirstOrDefault();                         // null when there is none
+```
+
+`foreach`, the indexer and the members above do not allocate (`ToArray()` allocates its array). LINQ works on both views, at the cost of boxing the view once per query.
 
 Extend Table
 ---
@@ -908,6 +924,9 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `FindRangeBy***` of a `[NonUnique]` string key no longer returns an empty range for a valid one: whether `min` is after `max` was decided by the culture, not by the ordinal order the index is in (`FindRangeByName("B", "a")`)
 * `RangeView<T>.CopyTo` of an empty view does nothing instead of throwing `ArgumentNullException`
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
+* **A view runs one way, and its reverse is a type of its own**: `RangeView<T>` is always in the order of its index, and `Reverse` and `AllReverse` return a `ReverseRangeView<T>`. `FindRangeBy***` no longer takes `ascendant`: `FindRangeByAge(20, 29, ascendant: false)` becomes `FindRangeByAge(20, 29).Reverse`. A variable or parameter declared `RangeView<T>` that was given a reversed view becomes a `ReverseRangeView<T>` (or an `IReadOnlyList<T>`, which both are). The compiler points at each of these. In return a `RangeView<T>` can always be read as a span, and reading a view costs less: it no longer asks which way it runs for every row
+* `RangeView<T>.AsSpan()` is new, and so are `FirstOrDefault()`, `LastOrDefault()` and `ToArray()` on both views. The methods of LINQ with these names were what a call bound to before, and they boxed the view; after a recompile the same call binds to the view's own method, which does not
+* The constructor of `RangeView<T>` is `(array)` or `(array, offset, count)` and checks its arguments; it was `(array, left, right, ascendant)`
 * Lookups are faster. Every key is searched through a struct generated for it, with no delegate and no comparer object per comparison. On top of that, a unique integer key of 32 bits or less is searched without conditional jumps in tables up to 32,768 rows, and a unique numeric primary key whose values run without a gap (1, 2, 3, ...) is not searched at all: the row is read at its position. Nothing changes in the database binary or in what a lookup returns
 * **A composite key is passed member by member, not as a tuple**: `FindByGenderAndAge((Gender.Female, 23))` becomes `FindByGenderAndAge(Gender.Female, 23)`, and likewise `TryFindBy***` and `FindClosestBy***`. A range takes the members of `min` and then of `max`: `FindRangeByGenderAndAge((g1, a1), (g2, a2))` becomes `FindRangeByGenderAndAge(g1, a1, g2, a2)`. The tuple overloads are gone, so every such call has to be rewritten; the compiler points at each of them. Lookups by a key of one member are unchanged. `PrimaryKeySelector` and `DatabaseBuilder.Remove***` still use a tuple for a composite key, a key there being a value
 * A database binary that is cut short or damaged is turned away with an `InvalidOperationException` that says what is wrong (a table the header places outside the data, nil where rows should be, a table listed twice), or with the `MessagePackSerializationException` of the table that cannot be read. Before, some of these surfaced as `ArgumentOutOfRangeException`, `NullReferenceException` or `ArgumentException` from inside

@@ -84,7 +84,7 @@ public static class DatabaseFuzzTargets
         rows.TryFindById(int.MinValue, out _);
         rows.TryFindById(int.MaxValue, out _);
         rows.TryFindByCode("", out _);
-        foreach (var found in rows.FindRangeById(int.MinValue, int.MaxValue, ascendant: false)) count += found.Id & 1;
+        foreach (var found in rows.FindRangeById(int.MinValue, int.MaxValue).Reverse) count += found.Id & 1;
         foreach (var found in rows.FindRangeByName(null, "~")) count += found.Id & 1;
         count += rows.FindRangeByGroupAndSeq(int.MinValue, int.MinValue, int.MaxValue, int.MaxValue).Count;
         count += rows.FindRangeByBucket(-1, 3).Count;

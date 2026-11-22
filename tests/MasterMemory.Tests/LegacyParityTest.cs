@@ -100,7 +100,9 @@ namespace MasterMemory.Tests
             try
             {
                 var result = lookup();
-                return (result is RangeView<Sample> range) ? range.ToArray() : result;
+                return (result is RangeView<Sample> range) ? range.ToArray()
+                    : (result is ReverseRangeView<Sample> reverse) ? reverse.ToArray()
+                    : result;
             }
             catch (Exception ex)
             {
@@ -126,7 +128,7 @@ namespace MasterMemory.Tests
         }
 
         static void VerifyUnique<TKey>(string name, Sample[] index, Func<Sample, TKey> selector, IComparer<TKey> comparer, TKey[] probes,
-            Func<TKey, Sample> find, TryFind<TKey> tryFind, Func<TKey, bool, Sample> closest, Func<TKey, TKey, bool, RangeView<Sample>> range)
+            Func<TKey, Sample> find, TryFind<TKey> tryFind, Func<TKey, bool, Sample> closest, Func<TKey, TKey, RangeView<Sample>> range)
         {
             foreach (var key in probes)
             {
@@ -152,7 +154,7 @@ namespace MasterMemory.Tests
         }
 
         static void VerifyNonUnique<TKey>(string name, Sample[] index, Func<Sample, TKey> selector, IComparer<TKey> comparer, TKey[] probes,
-            Func<TKey, RangeView<Sample>> find, Func<TKey, bool, RangeView<Sample>> closest, Func<TKey, TKey, bool, RangeView<Sample>> range)
+            Func<TKey, RangeView<Sample>> find, Func<TKey, bool, RangeView<Sample>> closest, Func<TKey, TKey, RangeView<Sample>> range)
         {
             foreach (var key in probes)
             {
@@ -174,7 +176,8 @@ namespace MasterMemory.Tests
                 skip: (min, max) => (Comparer<TKey>.Default.Compare(min, max) > 0) != (comparer.Compare(min, max) > 0));
         }
 
-        static void VerifyRanges<TKey>(string name, TKey[] probes, Func<TKey, TKey, bool, RangeView<Sample>> range, Func<TKey, TKey, bool, RangeView<Sample>> expected, Func<TKey, TKey, bool> skip = null)
+        // v3 took the direction as an argument (ascendant); it is the Reverse of the range now
+        static void VerifyRanges<TKey>(string name, TKey[] probes, Func<TKey, TKey, RangeView<Sample>> range, Func<TKey, TKey, bool, Sample[]> expected, Func<TKey, TKey, bool> skip = null)
         {
             // every pair of a spread of the probes, both ways round, so that min after max is asked too
             var step = Math.Max(1, probes.Length / 40);
@@ -188,7 +191,7 @@ namespace MasterMemory.Tests
                     foreach (var ascendant in new[] { true, false })
                     {
                         ShouldAnswerTheSame(
-                            Capture(() => range(min, max, ascendant)),
+                            Capture(() => ascendant ? (object)range(min, max) : range(min, max).Reverse),
                             Capture(() => expected(min, max, ascendant)),
                             $"FindRange {name} {min} .. {max} ascendant:{ascendant}");
                     }
@@ -219,7 +222,7 @@ namespace MasterMemory.Tests
                 k => table.FindByIdAndAge(k.Item1, k.Item2),
                 ((int, int) k, out Sample row) => table.TryFindByIdAndAge(k.Item1, k.Item2, out row),
                 (k, lower) => table.FindClosestByIdAndAge(k.Item1, k.Item2, lower),
-                (min, max, ascendant) => table.FindRangeByIdAndAge(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
+                (min, max) => table.FindRangeByIdAndAge(min.Item1, min.Item2, max.Item1, max.Item2));
 
             // unique, two strings: the tuple's default comparison, which is not ordinal
             var names = (from first in FirstNames from last in LastNames select (first, last)).ToArray();
@@ -227,14 +230,14 @@ namespace MasterMemory.Tests
                 k => table.FindByFirstNameAndLastName(k.Item1, k.Item2),
                 ((string, string) k, out Sample row) => table.TryFindByFirstNameAndLastName(k.Item1, k.Item2, out row),
                 (k, lower) => table.FindClosestByFirstNameAndLastName(k.Item1, k.Item2, lower),
-                (min, max, ascendant) => table.FindRangeByFirstNameAndLastName(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
+                (min, max) => table.FindRangeByFirstNameAndLastName(min.Item1, min.Item2, max.Item1, max.Item2));
 
             // shared, a string and an integer
             var nameAndAge = (from first in FirstNames from age in Ages select (first, age)).ToArray();
             VerifyNonUnique("(FirstName, Age)", table.SortByFirstNameAndAge.ToArray(), x => (x.FirstName, x.Age), OrdinalTupleComparer.Create<string, int>(), nameAndAge,
                 k => table.FindByFirstNameAndAge(k.Item1, k.Item2),
                 (k, lower) => table.FindClosestByFirstNameAndAge(k.Item1, k.Item2, lower),
-                (min, max, ascendant) => table.FindRangeByFirstNameAndAge(min.Item1, min.Item2, max.Item1, max.Item2, ascendant));
+                (min, max) => table.FindRangeByFirstNameAndAge(min.Item1, min.Item2, max.Item1, max.Item2));
 
             // unique, three and four members
             var three = (from id in Ids.Where((_, i) => i % 2 == 0) from age in Ages.Where((_, i) => i % 2 == 0) from first in FirstNames select (id, age, first)).ToArray();
@@ -242,14 +245,14 @@ namespace MasterMemory.Tests
                 k => table.FindByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3),
                 ((int, int, string) k, out Sample row) => table.TryFindByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3, out row),
                 (k, lower) => table.FindClosestByIdAndAgeAndFirstName(k.Item1, k.Item2, k.Item3, lower),
-                (min, max, ascendant) => table.FindRangeByIdAndAgeAndFirstName(min.Item1, min.Item2, min.Item3, max.Item1, max.Item2, max.Item3, ascendant));
+                (min, max) => table.FindRangeByIdAndAgeAndFirstName(min.Item1, min.Item2, min.Item3, max.Item1, max.Item2, max.Item3));
 
             var four = (from row in CreateData() from last in LastNames.Where((_, i) => i % 3 == 0).Append(row.LastName) select (row.Id, row.Age, row.FirstName, last)).ToArray();
             VerifyUnique("(Id, Age, FirstName, LastName)", table.SortByIdAndAgeAndFirstNameAndLastName.ToArray(), x => (x.Id, x.Age, x.FirstName, x.LastName), OrdinalTupleComparer.Create<int, int, string, string>(), four,
                 k => table.FindByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4),
                 ((int, int, string, string) k, out Sample row) => table.TryFindByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4, out row),
                 (k, lower) => table.FindClosestByIdAndAgeAndFirstNameAndLastName(k.Item1, k.Item2, k.Item3, k.Item4, lower),
-                (min, max, ascendant) => table.FindRangeByIdAndAgeAndFirstNameAndLastName(min.Item1, min.Item2, min.Item3, min.Item4, max.Item1, max.Item2, max.Item3, max.Item4, ascendant));
+                (min, max) => table.FindRangeByIdAndAgeAndFirstNameAndLastName(min.Item1, min.Item2, min.Item3, min.Item4, max.Item1, max.Item2, max.Item3, max.Item4));
         }
 
         // an enum key and a string key with a comparison option, which Sample has none of

@@ -33,8 +33,8 @@ public class Person
         // through the index of the whole key: nothing more is sorted or stored
         table.ShouldContain("public RangeView<global::Person> FindByGender(global::Gender key)");
         table.ShouldContain("return FindManyCore(secondaryIndex0, new SecondaryIndex0Prefix1Comparable(key));");
-        table.ShouldContain("public RangeView<global::Person> FindRangeByGender(global::Gender min, global::Gender max, bool ascendant = true)");
-        table.ShouldContain("return FindManyRangeCore(secondaryIndex0, new SecondaryIndex0Prefix1Comparable(min), new SecondaryIndex0Prefix1Comparable(max), ascendant);");
+        table.ShouldContain("public RangeView<global::Person> FindRangeByGender(global::Gender min, global::Gender max)");
+        table.ShouldContain("return FindManyRangeCore(secondaryIndex0, new SecondaryIndex0Prefix1Comparable(min), new SecondaryIndex0Prefix1Comparable(max));");
         Count(table, "CloneAndSortBy(").ShouldBe(1);
         Count(table, "readonly global::Person[] secondaryIndex").ShouldBe(1);
 
@@ -66,8 +66,8 @@ public class Person
         table.ShouldContain("return FindManyCore(data, new PrimaryIndexPrefix1Comparable(key));");
         table.ShouldContain("public RangeView<global::Person> FindByCategoryAndName(int category, string name)");
         table.ShouldContain("return FindManyCore(data, new PrimaryIndexPrefix2Comparable(category, name));");
-        table.ShouldContain("public RangeView<global::Person> FindRangeByCategoryAndName(int minCategory, string minName, int maxCategory, string maxName, bool ascendant = true)");
-        table.ShouldContain("return FindManyRangeCore(data, new PrimaryIndexPrefix2Comparable(minCategory, minName), new PrimaryIndexPrefix2Comparable(maxCategory, maxName), ascendant);");
+        table.ShouldContain("public RangeView<global::Person> FindRangeByCategoryAndName(int minCategory, string minName, int maxCategory, string maxName)");
+        table.ShouldContain("return FindManyRangeCore(data, new PrimaryIndexPrefix2Comparable(minCategory, minName), new PrimaryIndexPrefix2Comparable(maxCategory, maxName));");
 
         // member by member, each as the key compares it
         table.ShouldContain("readonly struct PrimaryIndexPrefix2Comparable : IComparable<global::Person>");

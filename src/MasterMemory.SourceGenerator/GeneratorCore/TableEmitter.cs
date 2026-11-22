@@ -86,7 +86,7 @@ static class TableEmitter
 
             foreach (var key in table.SecondaryKeys)
             {
-                writer.Line($"public RangeView<{element}> SortBy{key.BuildMethodName()} => new RangeView<{element}>({key.TableName}, 0, {key.TableName}.Length - 1, true);");
+                writer.Line($"public RangeView<{element}> SortBy{key.BuildMethodName()} => new RangeView<{element}>({key.TableName});");
             }
 
             foreach (var key in keys)
@@ -242,9 +242,9 @@ static class TableEmitter
         }
 
         writer.Line();
-        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration}, bool ascendant = true)"))
+        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration})"))
         {
-            writer.Line($"return FindUniqueRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}), ascendant);");
+            writer.Line($"return FindUniqueRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}));");
         }
     }
 
@@ -257,7 +257,7 @@ static class TableEmitter
     sealed class KeyParameters
     {
         // what the generated method bodies name their own variables, and the parameters they add
-        static readonly HashSet<string> Reserved = new HashSet<string> { "key", "min", "max", "result", "selectLower", "ascendant", "index", "row", "closest", "comparable", "offset", "data" };
+        static readonly HashSet<string> Reserved = new HashSet<string> { "key", "min", "max", "result", "selectLower", "index", "row", "closest", "comparable", "offset", "data" };
 
         public string Declaration { get; }
         public string Arguments { get; }
@@ -352,9 +352,9 @@ static class TableEmitter
         }
 
         writer.Line();
-        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration}, bool ascendant = true)"))
+        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration})"))
         {
-            writer.Line($"return FindManyRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}), ascendant);");
+            writer.Line($"return FindManyRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}));");
         }
     }
     // The head of a composite key is a key too: an index sorted by (Gender, Age) is sorted by Gender, so it answers
@@ -403,9 +403,9 @@ static class TableEmitter
         }
 
         writer.Line();
-        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration}, bool ascendant = true)"))
+        using (writer.Block($"public RangeView<{element}> FindRangeBy{methodName}({parameters.MinDeclaration}, {parameters.MaxDeclaration})"))
         {
-            writer.Line($"return FindManyRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}), ascendant);");
+            writer.Line($"return FindManyRangeCore({index}, new {comparable}({parameters.MinArguments}), new {comparable}({parameters.MaxArguments}));");
         }
 
         writer.Line();

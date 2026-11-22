@@ -257,7 +257,7 @@ public class Item
 """);
 
         table.ShouldContain("FindByclassAndevent(int @class, int @event)");
-        table.ShouldContain("FindRangeByclassAndevent(int minclass, int minevent, int maxclass, int maxevent, bool ascendant = true)");
+        table.ShouldContain("FindRangeByclassAndevent(int minclass, int minevent, int maxclass, int maxevent)");
         table.ShouldContain("x => (x.@class, x.@event)");
         table.ShouldContain("return (key < other.@int) ? -1 : (key > other.@int) ? 1 : 0;");
         table.ShouldContain("GetProperty(\"class\")");
@@ -337,16 +337,16 @@ public class Item
         table.ShouldContain("public global::Item FindByGenderAndAge(global::Gender gender, int age)");
         table.ShouldContain("public bool TryFindByGenderAndAge(global::Gender gender, int age, out global::Item result)");
         table.ShouldContain("public global::Item? FindClosestByGenderAndAge(global::Gender gender, int age, bool selectLower = true)");
-        table.ShouldContain("public RangeView<global::Item> FindRangeByGenderAndAge(global::Gender minGender, int minAge, global::Gender maxGender, int maxAge, bool ascendant = true)");
+        table.ShouldContain("public RangeView<global::Item> FindRangeByGenderAndAge(global::Gender minGender, int minAge, global::Gender maxGender, int maxAge)");
         table.ShouldContain("var comparable = new PrimaryIndexComparable(gender, age);");
-        table.ShouldContain("return FindUniqueRangeCore(data, new PrimaryIndexComparable(minGender, minAge), new PrimaryIndexComparable(maxGender, maxAge), ascendant);");
+        table.ShouldContain("return FindUniqueRangeCore(data, new PrimaryIndexComparable(minGender, minAge), new PrimaryIndexComparable(maxGender, maxAge));");
         table.ShouldContain("return ThrowKeyNotFound((gender, age));");
 
         // shared
         table.ShouldContain("public RangeView<global::Item> FindByNameAndNo(string name, long? no)");
         table.ShouldContain("public RangeView<global::Item> FindClosestByNameAndNo(string name, long? no, bool selectLower = true)");
         table.ShouldContain("return FindManyCore(secondaryIndex0, new SecondaryIndex0Comparable(row.Name, row.No));");
-        table.ShouldContain("public RangeView<global::Item> FindRangeByNameAndNo(string minName, long? minNo, string maxName, long? maxNo, bool ascendant = true)");
+        table.ShouldContain("public RangeView<global::Item> FindRangeByNameAndNo(string minName, long? minNo, string maxName, long? maxNo)");
 
         // the struct takes the members and keeps them together
         table.ShouldContain("public PrimaryIndexComparable(global::Gender gender, int age)");
@@ -354,7 +354,7 @@ public class Item
 
         // one member: unchanged
         table.ShouldContain("public global::Item FindBySingle(int key)");
-        table.ShouldContain("public RangeView<global::Item> FindRangeBySingle(int min, int max, bool ascendant = true)");
+        table.ShouldContain("public RangeView<global::Item> FindRangeBySingle(int min, int max)");
 
         // no lookup takes a tuple
         table.ShouldNotContain("FindByGenderAndAge((");
@@ -378,7 +378,7 @@ public class Item
 """);
 
         table.ShouldContain("public bool TryFindByResultAndIndexAndClassAndKey(int resultKey1, int indexKey2, int @class, int keyKey4, out global::Item result)");
-        table.ShouldContain("FindRangeByResultAndIndexAndClassAndKey(int minResult, int minIndex, int minClass, int minKey, int maxResult, int maxIndex, int maxClass, int maxKey, bool ascendant = true)");
+        table.ShouldContain("FindRangeByResultAndIndexAndClassAndKey(int minResult, int minIndex, int minClass, int minKey, int maxResult, int maxIndex, int maxClass, int maxKey)");
     }
 
     // ---- composite keys ----

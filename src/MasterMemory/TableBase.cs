@@ -23,8 +23,8 @@ namespace MasterMemory
 
         // Common Properties
         public int Count => data.Length;
-        public RangeView<TElement> All => new RangeView<TElement>(data, 0, data.Length - 1, true);
-        public RangeView<TElement> AllReverse => new RangeView<TElement>(data, 0, data.Length - 1, false);
+        public RangeView<TElement> All => new RangeView<TElement>(data);
+        public ReverseRangeView<TElement> AllReverse => new RangeView<TElement>(data).Reverse;
         public TElement[] GetRawDataUnsafe() => data;
 
         public TableBase(TElement[] sortedData)
@@ -106,7 +106,11 @@ namespace MasterMemory
             return ((uint)index < (uint)indexArray.Length) ? indexArray[index] : default(TElement);
         }
 
-        static protected RangeView<TElement> FindUniqueRangeCore<TComparable>(TElement[] indexArray, TComparable min, TComparable max, bool ascendant)
+        /// <summary>
+        /// The rows from the first at or after <paramref name="min"/> to the last at or before <paramref name="max"/>,
+        /// in the order of the index; its Reverse is the same rows the other way.
+        /// </summary>
+        static protected RangeView<TElement> FindUniqueRangeCore<TComparable>(TElement[] indexArray, TComparable min, TComparable max)
             where TComparable : struct, IComparable<TElement>
         {
             var lo = BinarySearch.FindClosest(indexArray, min, false);
@@ -115,7 +119,7 @@ namespace MasterMemory
             if ( lo == -1 ) lo = 0;
             if ( hi == indexArray.Length ) hi -= 1;
 
-            return new RangeView<TElement>(indexArray, lo, hi, ascendant);
+            return RangeView<TElement>.FromBounds(indexArray, lo, hi);
         }
 
         // Many
@@ -129,7 +133,7 @@ namespace MasterMemory
             var hi = BinarySearch.UpperBound(indexKeys, comparable);
             if (hi == -1) return RangeView<TElement>.Empty;
 
-            return new RangeView<TElement>(indexKeys, lo, hi, true);
+            return RangeView<TElement>.FromBounds(indexKeys, lo, hi);
         }
 
         /// <summary>
@@ -147,7 +151,7 @@ namespace MasterMemory
         /// The rows from the first at or after <paramref name="min"/> to the last at or before <paramref name="max"/>;
         /// empty when min is after max, since the last row at or before max then lies before the first at or after min.
         /// </summary>
-        static protected RangeView<TElement> FindManyRangeCore<TComparable>(TElement[] indexArray, TComparable min, TComparable max, bool ascendant)
+        static protected RangeView<TElement> FindManyRangeCore<TComparable>(TElement[] indexArray, TComparable min, TComparable max)
             where TComparable : struct, IComparable<TElement>
         {
             //... want lo to be the lowest  index of the values >= than min.
@@ -166,7 +170,7 @@ namespace MasterMemory
             if ( hi < lo )
                return RangeView<TElement>.Empty;
 
-            return new RangeView<TElement>(indexArray, lo, hi, ascendant);
+            return RangeView<TElement>.FromBounds(indexArray, lo, hi);
         }
     }
 }

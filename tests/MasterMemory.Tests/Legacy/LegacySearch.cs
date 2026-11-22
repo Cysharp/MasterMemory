@@ -301,7 +301,7 @@ namespace MasterMemory.Tests.Legacy
             return (index != -1) ? indexArray[index] : default(TElement);
         }
 
-        public static RangeView<TElement> FindUniqueRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
+        public static TElement[] FindUniqueRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
         {
             var lo = LegacyBinarySearch.FindClosest(indexArray, 0, indexArray.Length, min, keySelector, comparer, false);
             var hi = LegacyBinarySearch.FindClosest(indexArray, 0, indexArray.Length, max, keySelector, comparer, true);
@@ -309,39 +309,51 @@ namespace MasterMemory.Tests.Legacy
             if ( lo == -1 ) lo = 0;
             if ( hi == indexArray.Length ) hi -= 1;
 
-            return new RangeView<TElement>(indexArray, lo, hi, ascendant);
+            return Rows(indexArray, lo, hi, ascendant);
+        }
+
+        // The rows the RangeView of v3 held for (orderedData, left, right, ascendant): none when the array is empty
+        // or left is after right. That type took the direction with it; the one of today does not.
+        static TElement[] Rows(TElement[] orderedData, int left, int right, bool ascendant)
+        {
+            if (orderedData.Length == 0 || left > right) return Array.Empty<TElement>();
+
+            var rows = new TElement[right - left + 1];
+            Array.Copy(orderedData, left, rows, 0, rows.Length);
+            if (!ascendant) Array.Reverse(rows);
+            return rows;
         }
 
         // Many
 
-        public static RangeView<TElement> FindManyCore<TKey>(TElement[] indexKeys, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key)
+        public static TElement[] FindManyCore<TKey>(TElement[] indexKeys, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key)
         {
             var lo = LegacyBinarySearch.LowerBound(indexKeys, 0, indexKeys.Length, key, keySelector, comparer);
-            if (lo == -1) return RangeView<TElement>.Empty;
+            if (lo == -1) return Array.Empty<TElement>();
 
             var hi = LegacyBinarySearch.UpperBound(indexKeys, 0, indexKeys.Length, key, keySelector, comparer);
-            if (hi == -1) return RangeView<TElement>.Empty;
+            if (hi == -1) return Array.Empty<TElement>();
 
-            return new RangeView<TElement>(indexKeys, lo, hi, true);
+            return Rows(indexKeys, lo, hi, true);
         }
 
-        public static RangeView<TElement> FindManyClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
+        public static TElement[] FindManyClosestCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key, bool selectLower)
         {
             var closest = LegacyBinarySearch.FindClosest(indexArray, 0, indexArray.Length, key, keySelector, comparer, selectLower);
 
             if ((closest == -1) || ( closest >= indexArray.Length ))
-                return RangeView<TElement>.Empty;
+                return Array.Empty<TElement>();
 
             return FindManyCore(indexArray, keySelector, comparer, keySelector(indexArray[closest]));
         }
 
-        public static RangeView<TElement> FindManyRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
+        public static TElement[] FindManyRangeCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max, bool ascendant)
         {
             //... Empty set when min > max
             //... Alternatively, could treat this as between and swap min and max.
 
             if ( Comparer<TKey>.Default.Compare( min, max ) > 0 )
-               return RangeView<TElement>.Empty;
+               return Array.Empty<TElement>();
 
             //... want lo to be the lowest  index of the values >= than min.
             //... lo should be in the range [0,arraylength]
@@ -357,9 +369,9 @@ namespace MasterMemory.Tests.Legacy
             Debug.Assert( hi < indexArray.Length );
 
             if ( hi < lo )
-               return RangeView<TElement>.Empty;
+               return Array.Empty<TElement>();
 
-            return new RangeView<TElement>(indexArray, lo, hi, ascendant);
+            return Rows(indexArray, lo, hi, ascendant);
         }
     }
 }
