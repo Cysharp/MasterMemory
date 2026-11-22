@@ -135,7 +135,8 @@ public class Item
     [StringComparisonOption(System.StringComparison.OrdinalIgnoreCase), PrimaryKey] public string Id { get; set; }
 }
 """)["MasterMemory.DatabaseBuilder.g.cs"];
-        builder.ShouldContain("AppendCore(dataSource, x => x.Id, System.StringComparer.OrdinalIgnoreCase);");
+        builder.ShouldContain("AppendCore(ref entryItem, \"item\", dataSource, KeyOfItem, System.StringComparer.OrdinalIgnoreCase);");
+        builder.ShouldContain("RemoveCore(ref entryItem, keys, KeyOfItem, System.StringComparer.OrdinalIgnoreCase);");
     }
 
     // ---- where a key is declared ----
@@ -417,9 +418,14 @@ public class Item
 
         // everything that sorts by the key uses that comparer
         table.ShouldNotContain(">.Default)");
-        codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("AppendCore(dataSource, x => (x.Name, x.Kind), ItemTable.PrimaryIndexKeyComparer.Instance);");
-        codes["MasterMemory.ImmutableBuilder.g.cs"].ShouldContain("CloneAndSortBy(data, x => (x.Name, x.Kind), ItemTable.PrimaryIndexKeyComparer.Instance);");
-        codes["MasterMemory.ImmutableBuilder.g.cs"].ShouldNotContain("Comparer<(");
+        var builder = codes["MasterMemory.DatabaseBuilder.g.cs"];
+        builder.ShouldContain("KeyOfItem(global::Item x) => (x.Name, x.Kind);");
+        foreach (var method in new[] { "AppendCore", "ReplaceAllCore", "AddOrReplaceCore" })
+        {
+            builder.ShouldContain(method + "(ref entryItem, \"item\", dataSource, KeyOfItem, ItemTable.PrimaryIndexKeyComparer.Instance);");
+        }
+        builder.ShouldContain("RemoveCore(ref entryItem, keys, KeyOfItem, ItemTable.PrimaryIndexKeyComparer.Instance);");
+        builder.ShouldNotContain("Comparer<(");
     }
 
     // ---- enum keys ----
@@ -466,7 +472,8 @@ public class Person
         {
             code.ShouldNotContain(">.Default");
         }
-        codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("AppendCore(dataSource, x => x.Rank, PersonTable.PrimaryIndexKeyComparer.Instance);");
+        codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("AppendCore(ref entryPerson, \"person\", dataSource, KeyOfPerson, PersonTable.PrimaryIndexKeyComparer.Instance);");
+        codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("KeyOfPerson(global::Person x) => x.Rank;");
     }
 
     // ---- accessibility ----
@@ -515,11 +522,13 @@ internal static class Outer
         builder.ShouldContain("internal DatabaseBuilder Append(System.Collections.Generic.IEnumerable<global::Item> dataSource)");
         builder.ShouldContain("public DatabaseBuilder Append(System.Collections.Generic.IEnumerable<global::Open> dataSource)");
 
-        var immutable = codes["MasterMemory.ImmutableBuilder.g.cs"];
-        immutable.ShouldContain("internal void ReplaceAll(System.Collections.Generic.IList<global::Item> data)");
-        immutable.ShouldContain("internal void RemoveItem(int[] keys)");
-        immutable.ShouldContain("internal void Diff(global::Item[] addOrReplaceData)");
-        immutable.ShouldContain("public void ReplaceAll(System.Collections.Generic.IList<global::Open> data)");
+        builder.ShouldContain("internal DatabaseBuilder ReplaceAll(System.Collections.Generic.IEnumerable<global::Item> dataSource)");
+        builder.ShouldContain("internal DatabaseBuilder AddOrReplace(System.Collections.Generic.IEnumerable<global::Item> dataSource)");
+        builder.ShouldContain("internal DatabaseBuilder RemoveItem(params int[] keys)");
+        builder.ShouldContain("public DatabaseBuilder ReplaceAll(System.Collections.Generic.IEnumerable<global::Open> dataSource)");
+
+        // making a database names no table in its signature
+        builder.ShouldContain("public MemoryDatabase ToMemoryDatabase()");
     }
 
     [Fact]

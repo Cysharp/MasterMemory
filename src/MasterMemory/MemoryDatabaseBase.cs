@@ -2,7 +2,6 @@
 using MessagePack;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
 using System.Buffers;
 using MasterMemory.Validation;
@@ -33,27 +32,25 @@ namespace MasterMemory
             Init(header, databaseBinary.AsMemory(headerLength), options, maxDegreeOfParallelism);
         }
 
-        protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, Func<T[], TView> createView)
+        // tableName is the name the table has in the header: what its [MemoryTable] says, which the generated code knows
+        protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, string tableName, Func<T[], TView> createView)
         {
-            var tableName = typeof(T).GetCustomAttribute<MemoryTableAttribute>();
-            if (tableName == null) throw new InvalidOperationException("Type is not annotated MemoryTableAttribute. Type:" + typeof(T).FullName);
-
-            if (header.TryGetValue(tableName.TableName, out var segment))
+            if (header.TryGetValue(tableName, out var segment))
             {
-                DatabaseHeader.ThrowIfOutside(tableName.TableName, segment.offset, segment.count, databaseBinary.Length);
+                DatabaseHeader.ThrowIfOutside(tableName, segment.offset, segment.count, databaseBinary.Length);
                 var data = MessagePackSerializer.Deserialize<T[]>(databaseBinary.Span.Slice(segment.offset, segment.count), options);
 
                 // A table is an array of rows. Nil in place of the array or of a row is well-formed MessagePack and so
                 // gets this far, where a table would fail on it with a NullReferenceException somewhere inside.
                 if (data == null)
                 {
-                    throw new InvalidOperationException($"Invalid database, the table '{tableName.TableName}' is nil where its rows should be. The binary may be damaged.");
+                    throw new InvalidOperationException($"Invalid database, the table '{tableName}' is nil where its rows should be. The binary may be damaged.");
                 }
                 for (int i = 0; i < data.Length; i++)
                 {
                     if (data[i] == null)
                     {
-                        throw new InvalidOperationException($"Invalid database, the table '{tableName.TableName}' has nil where its row {i} should be. The binary may be damaged.");
+                        throw new InvalidOperationException($"Invalid database, the table '{tableName}' has nil where its row {i} should be. The binary may be damaged.");
                     }
                 }
                 return createView(data);

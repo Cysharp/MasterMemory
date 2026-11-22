@@ -90,29 +90,6 @@ namespace MasterMemory.Internal
             return (comparable.CompareTo(Unsafe.Add(ref start, index)) == 0) ? index : -1;
         }
 
-        public static int FindFirst<T, TKey>(T[] array, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
-        {
-            var lo = 0;
-            var hi = array.Length - 1;
-
-            while (lo <= hi)
-            {
-                var mid = (int)(((uint)hi + (uint)lo) >> 1);
-                var found = comparer.Compare(selector(array[mid]), key);
-
-                if (found == 0) return mid;
-                if (found < 0)
-                {
-                    lo = mid + 1;
-                }
-                else
-                {
-                    hi = mid - 1;
-                }
-            }
-
-            return -1;
-        }
 
         // The searches below are the ones a table answers its non-unique, closest and range lookups with. Each reads
         // only indexes inside [0, array.Length): mid lies strictly between its bounds, and the index looked at after a

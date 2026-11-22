@@ -502,20 +502,20 @@ namespace MasterMemory.Tests
             }
         }
 
-        // ---- ImmutableBuilder: the table it leaves is a table like any other, with every index rebuilt ----
+        // ---- a builder made from a database: the table it leaves is a table like any other, with every index rebuilt ----
 
         [Fact]
-        public void TablesBuiltByImmutableBuilder()
+        public void TablesChangedThroughTheBuilder()
         {
             var failures = new Failures();
             var original = new MemoryDatabase(new DatabaseBuilder().Append(SampleRows()).Append(new[] { new UserLevel(1, 100), new UserLevel(2, 200) }).Build(), internString: false);
             var originalIds = original.SampleTable.All.Select(x => x.Id).ToArray();
 
-            MemoryDatabase Apply(Action<ImmutableBuilder> change)
+            MemoryDatabase Apply(Action<DatabaseBuilder> change)
             {
-                var builder = original.ToImmutableBuilder();
+                var builder = original.ToDatabaseBuilder();
                 change(builder);
-                return builder.Build();
+                return builder.ToMemoryDatabase();
             }
 
             void ShouldHoldIds(MemoryDatabase database, string name, IEnumerable<int> expectedIds)
@@ -536,28 +536,28 @@ namespace MasterMemory.Tests
             ShouldHoldIds(Apply(x => x.RemoveSample(Array.Empty<int>())), "remove nothing", originalIds);
             ShouldHoldIds(Apply(x => x.RemoveSample(originalIds)), "remove everything", Array.Empty<int>());
 
-            // Diff: a new row, a replaced row, both, none
+            // AddOrReplace: a new row, a replaced row, both, none
             var added = new Sample { Id = 11, Age = 49, FirstName = "new", LastName = "row" };
             var replaced = new Sample { Id = 7, Age = 1, FirstName = "zzz", LastName = "changed" };
 
-            var afterAdd = Apply(x => x.Diff(new[] { added }));
-            ShouldHoldIds(afterAdd, "diff: add", originalIds.Append(11));
+            var afterAdd = Apply(x => x.AddOrReplace(new[] { added }));
+            ShouldHoldIds(afterAdd, "add or replace: add", originalIds.Append(11));
             afterAdd.SampleTable.FindById(11).FirstName.ShouldBe("new");
 
-            var afterReplace = Apply(x => x.Diff(new[] { replaced }));
-            ShouldHoldIds(afterReplace, "diff: replace", originalIds);
+            var afterReplace = Apply(x => x.AddOrReplace(new[] { replaced }));
+            ShouldHoldIds(afterReplace, "add or replace: replace", originalIds);
             afterReplace.SampleTable.FindById(7).LastName.ShouldBe("changed");
             afterReplace.SampleTable.FindByAge(39).Select(x => x.Id).ToArray().ShouldBe(new[] { 14 }); // 7 left its old age
             afterReplace.SampleTable.FindByAge(1).Select(x => x.Id).ToArray().ShouldBe(new[] { 7 });
             original.SampleTable.FindById(7).LastName.ShouldBe("foo");
 
-            ShouldHoldIds(Apply(x => x.Diff(new[] { replaced, added })), "diff: replace and add", originalIds.Append(11));
-            ShouldHoldIds(Apply(x => x.Diff(Array.Empty<Sample>())), "diff: nothing", originalIds);
+            ShouldHoldIds(Apply(x => x.AddOrReplace(new[] { replaced, added })), "add or replace: replace and add", originalIds.Append(11));
+            ShouldHoldIds(Apply(x => x.AddOrReplace(Array.Empty<Sample>())), "add or replace: nothing", originalIds);
 
             // ReplaceAll, and several changes on one builder
             ShouldHoldIds(Apply(x => x.ReplaceAll(new List<Sample> { added, replaced })), "replace all", new[] { 7, 11 });
             ShouldHoldIds(Apply(x => x.ReplaceAll(new List<Sample>())), "replace all with nothing", Array.Empty<int>());
-            ShouldHoldIds(Apply(x => { x.RemoveSample(new[] { 1, 2, 3 }); x.Diff(new[] { added }); x.RemoveSample(new[] { 11, 4 }); x.Diff(new[] { replaced }); }),
+            ShouldHoldIds(Apply(x => { x.RemoveSample(new[] { 1, 2, 3 }); x.AddOrReplace(new[] { added }); x.RemoveSample(new[] { 11, 4 }); x.AddOrReplace(new[] { replaced }); }),
                 "remove, add, remove, replace", originalIds.Except(new[] { 1, 2, 3, 4 }));
 
             failures.ShouldBeNone(output);

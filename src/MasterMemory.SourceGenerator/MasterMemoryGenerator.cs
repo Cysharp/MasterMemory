@@ -7,7 +7,7 @@ namespace MasterMemory.SourceGenerator;
 
 /// <summary>
 /// The pipeline: each [MemoryTable] class is read into a model, the models are checked against each other, and three
-/// outputs are produced from the result: the diagnostics, one file per table, and the four database-wide files.
+/// outputs are produced from the result: the diagnostics, one file per table, and the three database-wide files.
 /// </summary>
 /// <remarks>
 /// Every value handed from one step to the next is compared by value and holds no symbol, syntax node or compilation.
@@ -102,7 +102,7 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
 
             var model = new DatabaseModel(settings.Namespace, settings.PrefixClassName, tables.ToArray());
             AddSource(context, model.DatabaseBuilderName, DatabaseBuilderEmitter.Emit(model));
-            AddSource(context, model.ImmutableBuilderName, ImmutableBuilderEmitter.Emit(model));
+
             AddSource(context, model.MemoryDatabaseName, MemoryDatabaseEmitter.Emit(model));
             AddSource(context, model.FormatterFactoryName, FormatterFactoryEmitter.Emit(model));
         });

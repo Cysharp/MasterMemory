@@ -26,7 +26,7 @@ This ensures both optimal performance and excellent usability.
 - [DataTable configuration](#datatable-configuration)
 - [MemoryDatabase/RangeView](#memorydatabaserangeview)
 - [Extend Table](#extend-table)
-- [ImmutableBuilder](#immutablebuilder)
+- [DatabaseBuilder](#databasebuilder)
 - [Validator](#validator)
 - [Metadata](#metadata)
 - [Inheritance](#inheritance)
@@ -424,30 +424,50 @@ public sealed partial class MonsterTable
 }
 ```
 
-ImmutableBuilder
+DatabaseBuilder
 ---
-If you want to add/modify data to loaded database, you can use `ToImmutableBuilder` method.
+`DatabaseBuilder` holds tables as rows. Rows go in with `Append`, and what comes out is the database binary (`Build`, `WriteToStream`) or the database itself (`ToMemoryDatabase`).
 
 ```csharp
-// Create ImmutableBuilder from original database.
-var builder = db.ToImmutableBuilder();
+var builder = new DatabaseBuilder()
+    .Append(persons)
+    .Append(items);
+
+// the database binary, to save and to ship
+byte[] bin = builder.Build();
+
+// or the database, with no binary in between
+MemoryDatabase db = builder.ToMemoryDatabase();
+```
+
+`ToMemoryDatabase` serializes nothing, which makes it the short way for tests, tools and editor code, for example to `Validate()` rows before their binary is written. Its rows are the objects that were appended: strings are not interned, and what the serializer checks when it reads a row is not checked. An application should load the binary it ships.
+
+If you want to add/modify data to loaded database, make a builder from it with `ToDatabaseBuilder`. The builder starts with every table of the database, and the database itself is never changed.
+
+```csharp
+// Create DatabaseBuilder from original database.
+var builder = db.ToDatabaseBuilder();
 
 // Add Or Replace compare with PrimaryKey
-builder.Diff(addOrReplaceData);
+builder.AddOrReplace(addOrReplaceData);
 
 // Remove by PrimaryKey
-builder.RemovePerson(new[] { 1, 10, 100 });
+builder.RemovePerson(1, 10, 100);
 
 // Replace all data
 builder.ReplaceAll(newData);
 
-// Finally create new database
-MemoryDatabase newDatabase = builder.Build();
+// Finally create new database, tables that were not changed are shared with the original
+MemoryDatabase newDatabase = builder.ToMemoryDatabase();
 
-// If you want to save new database, you can convert to MemoryDatabase->DatabaseBuilder
-var newBuilder = newDatabase.ToDatabaseBuilder();
-var newBinary = newBuilder.Build(); // or use WriteToStream
+// If you want to save new database, the same builder writes it
+var newBinary = builder.Build(); // or use WriteToStream
 ```
+
+* `Append` is for a table the builder does not have yet and throws for one it has, so that two sources of one table do not go unnoticed. A builder from `ToDatabaseBuilder` has every table: use `ReplaceAll` there.
+* `AddOrReplace` and `Remove***` are generated for tables whose primary key is unique. `AddOrReplace` takes its rows in order: of two rows with one key, the later one stays.
+* `Remove***` takes a composite key as a tuple: `builder.RemoveSkill((1, 2), (3, 1))`.
+* A change is one pass over the rows of its table. The indexes of a changed table are built when a database is made from the builder, once, however many changes there were.
 
 MemoryDatabase's reference can use as snapshot.
 
@@ -875,7 +895,7 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `[StringComparisonOption]` is applied wherever it is written on the property, and to a string member of a composite key. Before, it was applied only when it came after the key attribute in the same attribute list; before it, or in a list of its own as this README shows it, it was ignored and the key stayed ordinal. A primary key that gets its option only now is stored in another order, see below
 * **The order of a primary key with a string member.** In the three cases above a table from a database built by v3 is not in the order v4 searches by. v4 handles it: the generated table checks the order of its rows when it is constructed (one comparison a row, and only for a primary key with a string member) and, if they are out of order, sorts a copy of them. So a database built by v3 keeps working, at the cost of that sort on every load until it is rebuilt with v4, which is still worth doing. The other direction is not covered: v3 loads a database built by v4 without an error and then misses rows of such a table in its lookups, so do not ship a database built by v4 to a client that still runs v3 if it has such a table
 * Keys are read wherever the property is declared: a base class, another part of a `partial` class, a parameter of a positional record (`[property: PrimaryKey]`). Before, only the properties written in the class body that carries `[MemoryTable]` were seen
-* A table class may be `internal`. The table class generated for it, and the members of `MemoryDatabase`, `DatabaseBuilder` and `ImmutableBuilder` that have it in their signature, are `internal` too
+* A table class may be `internal`. The table class generated for it, and the members of `MemoryDatabase` and `DatabaseBuilder` that have it in their signature, are `internal` too
 * Attributes are recognized however they are written (`[PrimaryKeyAttribute]`, `[MasterMemory.SecondaryKey(0)]`, through an alias), and their arguments may be any constant (`[SecondaryKey(Indexes.Name)]`). Key types are recognized through an alias as well, and `short`, `ushort` and `char` keys are compared directly like the other integers
 * The generator no longer fails on code that does not compile yet. An attribute that is still being typed (`[SecondaryKey]` before its argument) used to take every generated type of the project with it
 * New errors, for what used to be accepted and then did nothing or failed in generated code: `MAM005` two tables with one `[MemoryTable]` name, `MAM006` properties of a key in different files of a partial class without `keyOrder`, `MAM007` `[NonUnique]` in an attribute list without a key, `MAM008` `[StringComparisonOption]` on a property that is not a string key, `MAM009` a generic table class, `MAM010` a table class that is `private` or `protected`, `MAM011` a key that is static, or not readable from generated code
@@ -889,10 +909,17 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `RangeView<T>.CopyTo` of an empty view does nothing instead of throwing `ArgumentNullException`
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
 * Lookups are faster. Every key is searched through a struct generated for it, with no delegate and no comparer object per comparison. On top of that, a unique integer key of 32 bits or less is searched without conditional jumps in tables up to 32,768 rows, and a unique numeric primary key whose values run without a gap (1, 2, 3, ...) is not searched at all: the row is read at its position. Nothing changes in the database binary or in what a lookup returns
-* **A composite key is passed member by member, not as a tuple**: `FindByGenderAndAge((Gender.Female, 23))` becomes `FindByGenderAndAge(Gender.Female, 23)`, and likewise `TryFindBy***` and `FindClosestBy***`. A range takes the members of `min` and then of `max`: `FindRangeByGenderAndAge((g1, a1), (g2, a2))` becomes `FindRangeByGenderAndAge(g1, a1, g2, a2)`. The tuple overloads are gone, so every such call has to be rewritten; the compiler points at each of them. Lookups by a key of one member are unchanged. `PrimaryKeySelector` and `ImmutableBuilder.Remove***` still use a tuple for a composite key, a key there being a value
+* **A composite key is passed member by member, not as a tuple**: `FindByGenderAndAge((Gender.Female, 23))` becomes `FindByGenderAndAge(Gender.Female, 23)`, and likewise `TryFindBy***` and `FindClosestBy***`. A range takes the members of `min` and then of `max`: `FindRangeByGenderAndAge((g1, a1), (g2, a2))` becomes `FindRangeByGenderAndAge(g1, a1, g2, a2)`. The tuple overloads are gone, so every such call has to be rewritten; the compiler points at each of them. Lookups by a key of one member are unchanged. `PrimaryKeySelector` and `DatabaseBuilder.Remove***` still use a tuple for a composite key, a key there being a value
 * A database binary that is cut short or damaged is turned away with an `InvalidOperationException` that says what is wrong (a table the header places outside the data, nil where rows should be, a table listed twice), or with the `MessagePackSerializationException` of the table that cannot be read. Before, some of these surfaced as `ArgumentOutOfRangeException`, `NullReferenceException` or `ArgumentException` from inside
 * The head of a composite key has lookups of its own, `FindBy***` and `FindRangeBy***`, answered by the index of the whole key: with a key `(Gender, Age)` there is `FindByGender(Gender)`, see "DataTable configuration". If you wrote a method of that name and signature yourself in a partial table class, it now collides with the generated one: remove yours
 * An enum key, alone, nullable or as a member of a composite key, is compared by its underlying value in generated code, in lookups and in the sort of its index. Before, it went through `Comparer<TEnum>.Default`, which in Unity (Mono and IL2CPP) boxes both values on every comparison: garbage on every lookup by an enum key. The order is the same
+* **`ImmutableBuilder` is gone, `DatabaseBuilder` does its work**: `db.ToImmutableBuilder()` becomes `db.ToDatabaseBuilder()`, `Diff(rows)` becomes `AddOrReplace(rows)`, and the `Build()` that returned a database becomes `ToMemoryDatabase()`; `Build()` of a `DatabaseBuilder` is the binary, as it was. `ReplaceAll` and `Remove***` keep their names, take any sequence (`Remove***` its keys as `params`), and like `Append` return the builder. The compiler points at every call that has to change. Saving the changed database no longer needs a second builder (`newDatabase.ToDatabaseBuilder().Build()`): the builder that made it writes it. See "DatabaseBuilder"
+* `AddOrReplace` given two rows with one key keeps the later one. `Diff` threw an `ArgumentException` from inside when a row of that key was in the table, and added both rows, to a unique key, when none was
+* Changing a loaded database costs less: a change used to copy and sort its table, sort every index of it and construct a database, each time; now it is one pass over the rows, and the indexes are built once when the database is made. The generated code for it no longer grows with the square of the number of tables (every method of every table named all tables)
+* `DatabaseBuilder.ToMemoryDatabase()` is new: a database from rows without building and reading a binary
+* `DatabaseBuilder` writes the tables in `Build` and `WriteToStream`, not in `Append`: a row the serializer cannot write is reported there, and the rows are held by the builder until then. The binary is the same. `db.ToDatabaseBuilder()` therefore serializes nothing by itself
+* A null row given to `Append` is an `ArgumentException` that says which table and which index, instead of a `NullReferenceException`
+* The name of a table is no longer read from its `[MemoryTable]` attribute by reflection when a database is loaded or a table is appended; the generated code passes it
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
 
 v2 -> v3 migration

@@ -282,4 +282,39 @@ public class Item
 
         codes["MasterMemory.MemoryDatabase.g.cs"].ShouldContain("public sealed partial class MemoryDatabase : MemoryDatabaseBase");
     }
+
+    // What is generated for the database as a whole grows with the number of tables, and no faster. The class that
+    // changed the tables of a loaded database used to construct the database, naming every table, in three methods
+    // of every table: 168 KB of source for some thirty tables.
+    [Fact]
+    public void DatabaseWideCodeGrowsWithTheNumberOfTables()
+    {
+        Dictionary<string, string> Generate(int tables)
+        {
+            return Helper.GenerateCode(string.Join("\n", Enumerable.Range(0, tables).Select(i => $$"""
+[MemoryTable("t{{i:D3}}")]
+public class T{{i:D3}}
+{
+    [PrimaryKey] public int Id { get; set; }
+}
+""")));
+        }
+
+        var ten = Generate(10);
+        var eighty = Generate(80);
+        ShouldHaveNoSyntaxError(eighty);
+
+        // eight times the tables: eight times the code, not sixty-four times
+        foreach (var file in new[] { "MasterMemory.DatabaseBuilder.g.cs", "MasterMemory.MemoryDatabase.g.cs", "MasterMemory.MasterMemoryFormatterFactory.g.cs" })
+        {
+            ((double)eighty[file].Length / ten[file].Length).ShouldBeLessThan(8.5, file);
+        }
+
+        // the one place that names every table is there once
+        var builder = eighty["MasterMemory.DatabaseBuilder.g.cs"];
+        (builder.Split("new MemoryDatabase(").Length - 1).ShouldBe(1);
+        (builder.Split("T079Table").Length - 1).ShouldBeLessThan(12);
+
+        eighty.Keys.ShouldNotContain("MasterMemory.ImmutableBuilder.g.cs");
+    }
 }

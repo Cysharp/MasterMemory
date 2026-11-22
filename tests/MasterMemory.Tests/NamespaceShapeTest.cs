@@ -43,11 +43,11 @@ namespace MasterMemory.Tests
             var db = new MemoryDatabase(bin);
             db.NestedMasterTable.All.Select(x => x.Name).ToArray().ShouldBe(new[] { "five", "ten" });
 
-            // through the immutable builder as well: it names the row type in its method signatures
-            var builder = db.ToImmutableBuilder();
-            builder.Diff(new[] { new NestedOwner.NestedMaster { Id = 7, Name = "seven" } });
-            builder.RemoveNestedMaster(new[] { 5 });
-            builder.Build().NestedMasterTable.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 7, 10 });
+            // through the methods that change a table as well: they name the row type in their signatures
+            var builder = db.ToDatabaseBuilder();
+            builder.AddOrReplace(new[] { new NestedOwner.NestedMaster { Id = 7, Name = "seven" } });
+            builder.RemoveNestedMaster(5);
+            builder.ToMemoryDatabase().NestedMasterTable.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 7, 10 });
         }
     }
 }

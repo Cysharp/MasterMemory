@@ -169,6 +169,14 @@ namespace MasterMemory.Tests
             ShouldBeGoldenData(new MemoryDatabase(GoldenData.CreateBuilder(MessagePackFormatterFactory.Default).Build(), formatterFactory: MessagePackFormatterFactory.Default));
         }
 
+        // the same rows as a database with no binary in between, and the tables of a database through a builder
+        [Fact]
+        public void StraightFromRows()
+        {
+            ShouldBeGoldenData(GoldenData.CreateBuilder().ToMemoryDatabase());
+            ShouldBeGoldenData(new MemoryDatabase(GoldenData.ReadV3Binary()).ToDatabaseBuilder().ToMemoryDatabase());
+        }
+
         // What v3 reads is decided by the header and by the MessagePack bytes inside each envelope. Both must be what
         // v3 wrote; the compressed bytes themselves may differ, since the LZ4 implementation is another one.
         [Fact]

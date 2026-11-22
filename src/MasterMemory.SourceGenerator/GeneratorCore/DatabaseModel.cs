@@ -3,7 +3,7 @@
 namespace MasterMemory.GeneratorCore;
 
 /// <summary>
-/// What the database-wide files are emitted from: the builder, the database, the immutable builder and the formatter factory.
+/// What the database-wide files are emitted from: the builder, the database and the formatter factory.
 /// </summary>
 sealed class DatabaseModel
 {
@@ -28,7 +28,7 @@ sealed class DatabaseModel
 
     public string DatabaseBuilderName => PrefixClassName + "DatabaseBuilder";
     public string MemoryDatabaseName => PrefixClassName + "MemoryDatabase";
-    public string ImmutableBuilderName => PrefixClassName + "ImmutableBuilder";
+
     public string FormatterFactoryName => PrefixClassName + "MasterMemoryFormatterFactory";
 
     public DatabaseModel(string @namespace, string prefixClassName, GenerationContext[] tables)

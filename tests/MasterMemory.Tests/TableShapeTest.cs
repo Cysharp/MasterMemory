@@ -93,10 +93,10 @@ namespace MasterMemory.Tests
             typeof(MemoryDatabase).GetProperty("SampleTable").ShouldNotBeNull();
             typeof(DatabaseBuilder).GetMethods().Count(x => x.Name == "Append" && x.GetParameters()[0].ParameterType == typeof(IEnumerable<InternalMaster>)).ShouldBe(0);
 
-            // and it goes through the builders like any other table
-            var builder = db.ToImmutableBuilder();
-            builder.Diff(new[] { new InternalMaster { Id = 3, Group = "y" } });
-            builder.Build().InternalMasterTable.Count.ShouldBe(3);
+            // and it is changed through the builder like any other table
+            var builder = db.ToDatabaseBuilder();
+            builder.AddOrReplace(new[] { new InternalMaster { Id = 3, Group = "y" } });
+            builder.ToMemoryDatabase().InternalMasterTable.Count.ShouldBe(3);
         }
 
         [Fact]
@@ -191,10 +191,10 @@ namespace MasterMemory.Tests
                     table.FindByLabelAndRank(item.Label, item.Rank).Select(x => x.Value).ShouldContain(item.Value);
                 }
 
-                // every writer of the table sorts by the same order: the immutable builder too
-                var builder = new MemoryDatabase(bin).ToImmutableBuilder();
-                builder.Diff(new[] { new CompositeNameMaster { Code = "A", No = 1, Label = "x", Rank = 0, Value = 7 } });
-                var rebuilt = builder.Build().CompositeNameMasterTable;
+                // every writer of the table sorts by the same order: a change to a table that is there too
+                var builder = new MemoryDatabase(bin).ToDatabaseBuilder();
+                builder.AddOrReplace(new[] { new CompositeNameMaster { Code = "A", No = 1, Label = "x", Rank = 0, Value = 7 } });
+                var rebuilt = builder.ToMemoryDatabase().CompositeNameMasterTable;
                 rebuilt.All.Select(x => x.Code).ToArray().ShouldBe(new[] { "A", "B", "a", "a", "a1", "a1", "a_b" });
                 rebuilt.FindByCodeAndNo("A", 1).Value.ShouldBe(7);
             }

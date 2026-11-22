@@ -3,8 +3,8 @@
 namespace MasterMemory.GeneratorCore;
 
 /// <summary>
-/// Emits MemoryDatabase: a property per table, loading (one table after another, or in parallel), the conversions back
-/// to the builders, validation and the metadata entry points.
+/// Emits MemoryDatabase: a property per table, loading (one table after another, or in parallel), the conversion back
+/// to the builder, validation and the metadata entry points.
 /// </summary>
 static class MemoryDatabaseEmitter
 {
@@ -24,8 +24,8 @@ static class MemoryDatabaseEmitter
                 writer.Line($"{table.Accessibility} {table.ClassName}Table {table.ClassName}Table {{ get; private set; }} = default!;");
             }
 
-            // from tables that already exist: what ImmutableBuilder calls. It names every table, so it is internal as
-            // soon as one of them is.
+            // from tables that already exist: what DatabaseBuilder.ToMemoryDatabase calls. It names every table, so it
+            // is internal as soon as one of them is.
             var allTablesAccessibility = tables.Any(x => x.Accessibility != "public") ? "internal" : "public";
             writer.Line();
             writer.Line($"{allTablesAccessibility} {name}(");
@@ -99,23 +99,20 @@ static class MemoryDatabaseEmitter
             }
 
             writer.Line();
-            using (writer.Block($"public {model.ImmutableBuilderName} ToImmutableBuilder()"))
-            {
-                writer.Line($"return new {model.ImmutableBuilderName}(this);");
-            }
-
-            writer.Line();
+            writer.Line("/// <summary>");
+            writer.Line("/// A builder that has every table of this database, to change some of them and make another database");
+            writer.Line("/// (ToMemoryDatabase) or a database binary (Build). This database stays as it is.");
+            writer.Line("/// </summary>");
             using (writer.Block($"public {model.DatabaseBuilderName} ToDatabaseBuilder()"))
             {
-                writer.Line($"var builder = new {model.DatabaseBuilderName}();");
-                EmitAppendTables(writer, tables);
+                writer.Line($"return new {model.DatabaseBuilderName}(this, null);");
             }
 
             writer.Line();
+            writer.Line("/// <inheritdoc cref=\"ToDatabaseBuilder()\"/>");
             using (writer.Block($"public {model.DatabaseBuilderName} ToDatabaseBuilder(MessagePack.MessagePackFormatterFactory formatterFactory)"))
             {
-                writer.Line($"var builder = new {model.DatabaseBuilderName}(formatterFactory);");
-                EmitAppendTables(writer, tables);
+                writer.Line($"return new {model.DatabaseBuilderName}(this, formatterFactory);");
             }
 
             writer.Line();
@@ -184,15 +181,6 @@ static class MemoryDatabaseEmitter
 
     static string ExtractTableData(GenerationContext table)
     {
-        return $"ExtractTableData<{table.FullTypeName}, {table.ClassName}Table>(header, databaseBinary, options, xs => new {table.ClassName}Table(xs))";
-    }
-
-    static void EmitAppendTables(CodeWriter writer, GenerationContext[] tables)
-    {
-        foreach (var table in tables)
-        {
-            writer.Line($"builder.Append(this.{table.ClassName}Table.GetRawDataUnsafe());");
-        }
-        writer.Line("return builder;");
+        return $"ExtractTableData<{table.FullTypeName}, {table.ClassName}Table>(header, databaseBinary, options, {table.MemoryTableNameLiteral}, xs => new {table.ClassName}Table(xs))";
     }
 }

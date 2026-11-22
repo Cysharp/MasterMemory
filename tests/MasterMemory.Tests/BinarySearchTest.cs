@@ -46,7 +46,7 @@ namespace MasterMemory.Tests
                     var firstIndex = Array.IndexOf(array, i);
                     var lastIndex = Array.LastIndexOf(array, i);
 
-                    var f = BinarySearch.FindFirst(array, i, x => x, Comparer<int>.Default);
+                    var f = MasterMemory.Tests.Legacy.LegacyBinarySearch.FindFirst(array, i, x => x, Comparer<int>.Default);
                     var s = BinarySearch.Find(array, new IntKey(i));
                     var l = BinarySearch.LowerBound(array, new IntKey(i));
                     var u = BinarySearch.UpperBound(array, new IntKey(i));
@@ -74,7 +74,7 @@ namespace MasterMemory.Tests
 
             // and empty
             var emptyArray = Enumerable.Empty<int>().ToArray();
-            BinarySearch.FindFirst(emptyArray, 0, x => x, Comparer<int>.Default).ShouldBe(-1);
+            MasterMemory.Tests.Legacy.LegacyBinarySearch.FindFirst(emptyArray, 0, x => x, Comparer<int>.Default).ShouldBe(-1);
             BinarySearch.Find(emptyArray, new IntKey(0)).ShouldBe(-1);
             BinarySearch.LowerBound(emptyArray, new IntKey(0)).ShouldBe(-1);
             BinarySearch.UpperBound(emptyArray, new IntKey(0)).ShouldBe(-1);
