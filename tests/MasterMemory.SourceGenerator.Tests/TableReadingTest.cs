@@ -120,13 +120,13 @@ public class Item
 """);
 
         // one per property: it holds in every key the property is a member of
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex2Selector, System.StringComparer.InvariantCulture)");
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex3Selector, System.StringComparer.InvariantCulture)");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex2Selector, System.StringComparer.InvariantCulture, ref sortBuffer)");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex3Selector, System.StringComparer.InvariantCulture, ref sortBuffer)");
 
         table.ShouldContain("return string.Compare(key, other.Id, System.StringComparison.OrdinalIgnoreCase);");
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, System.StringComparer.InvariantCultureIgnoreCase)");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, System.StringComparer.InvariantCultureIgnoreCase, ref sortBuffer)");
         table.ShouldContain("return string.Compare(key, other.A, System.StringComparison.InvariantCultureIgnoreCase);");
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex1Selector, System.StringComparer.OrdinalIgnoreCase)");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex1Selector, System.StringComparer.OrdinalIgnoreCase, ref sortBuffer)");
 
         var builder = Helper.GenerateCode("""
 [MemoryTable("item")]
@@ -296,15 +296,14 @@ public class Number
         WriteLine(composite);
         composite.ShouldContain(": base(SortedByPrimaryKey(sortedData))");
         composite.ShouldContain("if (ComparePrimaryKey(rows[i - 1], rows[i]) > 0)");
-        composite.ShouldContain("var sorted = (global::Composite[])rows.Clone();");
-        composite.ShouldContain("for (var j = 0; j < sorted.Length; j++) { keys[j] = (sorted[j].Code, sorted[j].No); }");
-        composite.ShouldContain("System.Array.Sort(keys, sorted, 0, sorted.Length, PrimaryIndexKeyComparer.Instance);");
+        composite.ShouldContain("return CloneAndSortBy(rows, x => (x.Code, x.No), default(PrimaryIndexKeyComparer));");
         composite.ShouldContain("c = string.CompareOrdinal(x.Code, y.Code); if (c != 0) { return c; }");
 
         var text = codes["MasterMemory.TextTable.g.cs"];
         text.ShouldContain(": base(SortedByPrimaryKey(sortedData))");
         text.ShouldContain("return string.Compare(x.Code, y.Code, System.StringComparison.OrdinalIgnoreCase);");
-        text.ShouldContain("System.Array.Sort(keys, sorted, 0, sorted.Length, System.StringComparer.OrdinalIgnoreCase);");
+        text.ShouldContain("return CloneAndSortBy(rows, x => x.Code, System.StringComparer.OrdinalIgnoreCase);");
+        text.ShouldNotContain("sortBuffer"); // no secondary index, nothing to sort when the table is made
 
         // no string in the primary key: one order in both versions, nothing to check (a secondary key is sorted on load anyway)
         var number = codes["MasterMemory.NumberTable.g.cs"];
@@ -403,7 +402,7 @@ public class Item
 
         // A string in a composite key is compared ordinally, as a key of one string is. It used to be compared by the
         // tuple's default comparer, which means by the current culture.
-        table.ShouldContain("internal sealed class PrimaryIndexKeyComparer : System.Collections.Generic.IComparer<(string Name, global::Kind Kind)>, System.Collections.IComparer");
+        table.ShouldContain("internal readonly struct PrimaryIndexKeyComparer : System.Collections.Generic.IComparer<(string Name, global::Kind Kind)>, System.Collections.IComparer");
         table.ShouldContain("c = string.CompareOrdinal(x.Name, y.Name); if (c != 0) { return c; }");
         table.ShouldContain("return ((byte)x.Kind < (byte)y.Kind) ? -1 : ((byte)x.Kind > (byte)y.Kind) ? 1 : 0;");
 
@@ -414,7 +413,7 @@ public class Item
         // [StringComparisonOption] is per member, and no longer ignored on a composite key
         table.ShouldContain("c = string.Compare(x.Code, y.Code, System.StringComparison.OrdinalIgnoreCase); if (c != 0) { return c; }");
         table.ShouldContain("c = string.Compare(key.Code, other.Code, System.StringComparison.OrdinalIgnoreCase); if (c != 0) { return c; }");
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, SecondaryIndex0KeyComparer.Instance)");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, default(SecondaryIndex0KeyComparer), ref sortBuffer)");
 
         // everything that sorts by the key uses that comparer
         table.ShouldNotContain(">.Default)");
@@ -422,9 +421,9 @@ public class Item
         builder.ShouldContain("KeyOfItem(global::Item x) => (x.Name, x.Kind);");
         foreach (var method in new[] { "AppendCore", "ReplaceAllCore", "AddOrReplaceCore" })
         {
-            builder.ShouldContain(method + "(ref entryItem, \"item\", dataSource, KeyOfItem, ItemTable.PrimaryIndexKeyComparer.Instance);");
+            builder.ShouldContain(method + "(ref entryItem, \"item\", dataSource, KeyOfItem, default(ItemTable.PrimaryIndexKeyComparer));");
         }
-        builder.ShouldContain("RemoveCore(ref entryItem, keys, KeyOfItem, ItemTable.PrimaryIndexKeyComparer.Instance);");
+        builder.ShouldContain("RemoveCore(ref entryItem, keys, KeyOfItem, default(ItemTable.PrimaryIndexKeyComparer));");
         builder.ShouldNotContain("Comparer<(");
     }
 
@@ -460,19 +459,19 @@ public class Person
         table.ShouldContain("return key.HasValue ? (other.MaybeGender.HasValue ? (((int)key.GetValueOrDefault() < (int)other.MaybeGender.GetValueOrDefault()) ? -1 : ((int)key.GetValueOrDefault() > (int)other.MaybeGender.GetValueOrDefault()) ? 1 : 0) : 1) : (other.MaybeGender.HasValue ? -1 : 0);");
 
         // the sort of an index
-        table.ShouldContain("internal sealed class PrimaryIndexKeyComparer : System.Collections.Generic.IComparer<global::Rank>, System.Collections.IComparer");
+        table.ShouldContain("internal readonly struct PrimaryIndexKeyComparer : System.Collections.Generic.IComparer<global::Rank>, System.Collections.IComparer");
         table.ShouldContain("return ((ushort)x < (ushort)y) ? -1 : ((ushort)x > (ushort)y) ? 1 : 0;");
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, SecondaryIndex0KeyComparer.Instance)");
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex1Selector, SecondaryIndex1KeyComparer.Instance)");
-        table.ShouldContain("CloneAndSortBy(this.secondaryIndex2Selector, SecondaryIndex2KeyComparer.Instance)");
-        table.ShouldContain("internal sealed class SecondaryIndex2KeyComparer : System.Collections.Generic.IComparer<global::Gender?>, System.Collections.IComparer");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, default(SecondaryIndex0KeyComparer), ref sortBuffer)");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex1Selector, default(SecondaryIndex1KeyComparer), ref sortBuffer)");
+        table.ShouldContain("CloneAndSortBy(this.secondaryIndex2Selector, default(SecondaryIndex2KeyComparer), ref sortBuffer)");
+        table.ShouldContain("internal readonly struct SecondaryIndex2KeyComparer : System.Collections.Generic.IComparer<global::Gender?>, System.Collections.IComparer");
 
         // and nowhere else either: every key of this table is an enum or has one, so no default comparer is left at all
         foreach (var code in codes.Values)
         {
             code.ShouldNotContain(">.Default");
         }
-        codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("AppendCore(ref entryPerson, \"person\", dataSource, KeyOfPerson, PersonTable.PrimaryIndexKeyComparer.Instance);");
+        codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("AppendCore(ref entryPerson, \"person\", dataSource, KeyOfPerson, default(PersonTable.PrimaryIndexKeyComparer));");
         codes["MasterMemory.DatabaseBuilder.g.cs"].ShouldContain("KeyOfPerson(global::Person x) => x.Rank;");
     }
 

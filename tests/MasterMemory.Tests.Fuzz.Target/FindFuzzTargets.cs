@@ -184,6 +184,17 @@ public static class FindFuzzTargets
         }
         while (input.HasMore && ids.Count < MaxProbes);
 
+        // every index in the order of its key, and rows that share the key in the order of the primary key
+        VerifyOrder("Serial", Rows(table.SortBySerial), x => x.Serial, Comparer<long>.Default);
+        VerifyOrder("Group", Rows(table.SortByGroup), x => x.Group, Comparer<int>.Default);
+        VerifyOrder("(Group, Seq)", Rows(table.SortByGroupAndSeq), x => (x.Group, x.Seq), Comparer<(int Group, int Seq)>.Default);
+        VerifyOrder("Name", Rows(table.SortByName), x => x.Name, StringComparer.Ordinal);
+        VerifyOrder("(Name, Kind)", Rows(table.SortByNameAndKind), x => (x.Name, x.Kind), OrdinalTupleComparer.Create<string?, FuzzKind>());
+        VerifyOrder("Kind", Rows(table.SortByKind), x => x.Kind, Comparer<FuzzKind>.Default);
+        VerifyOrder("Code", Rows(table.SortByCode), x => x.Code, StringComparer.OrdinalIgnoreCase);
+        VerifyOrder("Score", Rows(table.SortByScore), x => x.Score, Comparer<double>.Default);
+        VerifyOrder("(Bucket, Kind, Seq)", Rows(table.SortByBucketAndKindAndSeq), x => (x.Bucket, x.Kind, x.Seq), Comparer<(int Bucket, FuzzKind Kind, int Seq)>.Default);
+
         VerifyUnique("Id", rows, x => x.Id, Comparer<int>.Default, ids,
             table.FindById, table.TryFindById, table.FindClosestById, table.FindRangeById);
         VerifyUnique("Serial", Rows(table.SortBySerial), x => x.Serial, Comparer<long>.Default, serials,
@@ -220,6 +231,24 @@ public static class FindFuzzTargets
         VerifyHead("(Bucket, Kind)", bucketIndex, x => (x.Bucket, x.Kind), Comparer<(int Bucket, FuzzKind Kind)>.Default, bucketAndKinds,
             k => table.FindByBucketAndKind(k.Bucket, k.Kind),
             (min, max) => table.FindRangeByBucketAndKind(min.Bucket, min.Kind, max.Bucket, max.Kind));
+    }
+
+    // The order of a secondary index. Where two rows share its key, nothing in the key says which comes first: the
+    // sort that makes the index keeps them in the order of the table, which is the order of Id.
+    static void VerifyOrder<TKey>(string name, FuzzRow[] index, Func<FuzzRow, TKey> selector, IComparer<TKey> comparer)
+    {
+        for (var i = 1; i < index.Length; i++)
+        {
+            var order = comparer.Compare(selector(index[i - 1]), selector(index[i]));
+            if (order > 0)
+            {
+                Fail($"{name}: the index at {i}", "the row of " + Show(selector(index[i])), "a row at or after " + Show(selector(index[i - 1])));
+            }
+            if (order == 0 && index[i - 1].Id > index[i].Id)
+            {
+                Fail($"{name}: the rows of {Show(selector(index[i]))} at {i}", "Id " + index[i].Id + " after Id " + index[i - 1].Id, "the order of Id");
+            }
+        }
     }
 
     // the head of a composite key: every row whose first members equal the key, in the order of the index of the whole key

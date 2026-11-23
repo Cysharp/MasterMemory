@@ -112,10 +112,10 @@ public class Item
         var code = codes["MasterMemory.ItemTable.g.cs"];
         WriteLine(code);
 
-        // sorting: the comparer an index is built with
+        // sorting: the comparer an index is built with, a struct the sort takes as a type argument
         // a composite key has its own, which compares the members as the lookups do (and not the tuple's default one)
-        code.ShouldContain("CloneAndSortBy(this.secondaryIndex2Selector, SecondaryIndex2KeyComparer.Instance)");
-        code.ShouldContain("internal sealed class SecondaryIndex2KeyComparer : System.Collections.Generic.IComparer<(int Level, global::System.DateTime CreatedAt)>, System.Collections.IComparer");
+        code.ShouldContain("CloneAndSortBy(this.secondaryIndex2Selector, default(SecondaryIndex2KeyComparer), ref sortBuffer)");
+        code.ShouldContain("internal readonly struct SecondaryIndex2KeyComparer : System.Collections.Generic.IComparer<(int Level, global::System.DateTime CreatedAt)>, System.Collections.IComparer");
         code.ShouldContain("c = (x.Level < y.Level) ? -1 : (x.Level > y.Level) ? 1 : 0; if (c != 0) { return c; }");
         code.ShouldContain("return System.Collections.Generic.Comparer<global::System.DateTime>.Default.Compare(x.CreatedAt, y.CreatedAt);");
         code.ShouldNotContain("Comparer<(int Level, global::System.DateTime CreatedAt)>.Default");
@@ -128,11 +128,17 @@ public class Item
         code.ShouldContain("c = (key.Level < other.Level) ? -1 : (key.Level > other.Level) ? 1 : 0; if (c != 0) { return c; }");
         code.ShouldContain("return System.Collections.Generic.Comparer<global::System.DateTime>.Default.Compare(key.CreatedAt, other.CreatedAt);");
         // a nullable string is compared like a string: ordinal unless told otherwise, never by the current culture
-        code.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, System.StringComparer.Ordinal)");
-        code.ShouldContain("CloneAndSortBy(this.secondaryIndex3Selector, System.StringComparer.OrdinalIgnoreCase)");
+        code.ShouldContain("CloneAndSortBy(this.secondaryIndex0Selector, System.StringComparer.Ordinal, ref sortBuffer)");
+        code.ShouldContain("CloneAndSortBy(this.secondaryIndex3Selector, System.StringComparer.OrdinalIgnoreCase, ref sortBuffer)");
         code.ShouldContain("Func<global::Item, string?> secondaryIndex0Selector");
         code.ShouldNotContain("Comparer<string?>");
-        code.ShouldContain("CloneAndSortBy(this.secondaryIndex1Selector, System.Collections.Generic.Comparer<long>.Default)");
+        code.ShouldContain("CloneAndSortBy(this.secondaryIndex1Selector, System.Collections.Generic.Comparer<long>.Default, ref sortBuffer)");
+
+        // A key of one member that is not an enum is sorted by a comparer of the runtime, which every key of its type
+        // shares; only the composite key has a comparer generated. The sorts of a table work in one buffer.
+        code.Split("KeyComparer :").Length.ShouldBe(2);
+        code.Split("int[]? sortBuffer = null;").Length.ShouldBe(2);
+        code.ShouldNotContain("System.Array.Sort");
     }
 
     // issue 108: the same file name was added twice, which threw and left the project without any generated code

@@ -68,10 +68,14 @@ static class TableEmitter
                         }
                         """);
                 }
+                if (table.SecondaryKeys.Length != 0)
+                {
+                    writer.Line("int[]? sortBuffer = null; // what the sorts below work in: made by the first, used again by the others");
+                }
                 foreach (var key in table.SecondaryKeys)
                 {
                     writer.Line($"this.{key.SelectorName} = x => {key.BuildKeyAccessor("x")};");
-                    writer.Line($"this.{key.TableName} = CloneAndSortBy(this.{key.SelectorName}, {key.BuildComparer("")});");
+                    writer.Line($"this.{key.TableName} = CloneAndSortBy(this.{key.SelectorName}, {key.BuildComparer("")}, ref sortBuffer);");
                 }
                 writer.Line("OnAfterConstruct();");
             }
@@ -160,11 +164,7 @@ static class TableEmitter
             using (writer.Block("for (var i = 1; i < rows.Length; i++)"))
             using (writer.Block("if (ComparePrimaryKey(rows[i - 1], rows[i]) > 0)"))
             {
-                writer.Line($"var sorted = ({element}[])rows.Clone();");
-                writer.Line($"var keys = new {key.BuildTypeName()}[sorted.Length];");
-                writer.Line($"for (var j = 0; j < sorted.Length; j++) {{ keys[j] = {key.BuildKeyAccessor("sorted[j]")}; }}");
-                writer.Line($"System.Array.Sort(keys, sorted, 0, sorted.Length, {key.BuildComparer("")});");
-                writer.Line("return sorted;");
+                writer.Line($"return CloneAndSortBy(rows, x => {key.BuildKeyAccessor("x")}, {key.BuildComparer("")});");
             }
             writer.Line("return rows;");
         }
@@ -469,16 +469,18 @@ static class TableEmitter
     // comparers are not used for these. That of a tuple compares strings by the current culture: the machine that
     // builds the database and the device that loads it could then disagree on the order of the same rows. That of an
     // enum boxes both values on every comparison under Mono and IL2CPP, which is garbage on every load of a table.
+    // It is a struct: the sort of an index takes it as a type argument and has the comparison compiled in, and where
+    // an IComparer is asked for it is boxed. A key of one member that is not an enum is sorted by a comparer of the
+    // runtime instead, which all keys of its type share: a sort compiled for every such key would cost a table more
+    // to load for the first time than it saves.
     static void EmitKeyComparer(CodeWriter writer, KeyBase key)
     {
         var name = key.KeyComparerName;
         var keyType = key.BuildTypeName();
 
         writer.Line("// the order of the index: the same comparisons a lookup makes");
-        using (writer.Block($"internal sealed class {name} : System.Collections.Generic.IComparer<{keyType}>, System.Collections.IComparer"))
+        using (writer.Block($"internal readonly struct {name} : System.Collections.Generic.IComparer<{keyType}>, System.Collections.IComparer"))
         {
-            writer.Line($"public static readonly {name} Instance = new {name}();");
-            writer.Line();
             using (writer.Block($"public int Compare({keyType} x, {keyType} y)"))
             {
                 if (key.IsComposite)

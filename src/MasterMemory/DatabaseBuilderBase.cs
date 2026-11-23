@@ -79,7 +79,7 @@ namespace MasterMemory
 
             if (dataSource == null) return;
 
-            SetRows(ref entry, tableName, Sort(tableName, dataSource, keySelector, comparer, out _));
+            SetRows(ref entry, tableName, Sort(tableName, dataSource, keySelector, comparer));
         }
 
         /// <summary>The rows of a table, in place of the ones it has.</summary>
@@ -88,7 +88,7 @@ namespace MasterMemory
         {
             if (dataSource == null) throw new ArgumentNullException(nameof(dataSource));
 
-            SetRows(ref entry, tableName, Sort(tableName, dataSource, keySelector, comparer, out _));
+            SetRows(ref entry, tableName, Sort(tableName, dataSource, keySelector, comparer));
         }
 
         /// <summary>
@@ -229,49 +229,48 @@ namespace MasterMemory
 
         // ---- sorting ----
 
-        // the rows in a new array, in the order of the key, and their keys beside them
-        static TRow[] Sort<TRow, TKey>(string tableName, IEnumerable<TRow> dataSource, Func<TRow, TKey> keySelector, IComparer<TKey> comparer, out TKey[] keys)
+        // The rows in a new array, in the order of the key. Rows that share a key, which a primary key marked NonUnique
+        // allows, are in the order they came in.
+        static TRow[] Sort<TRow, TKey>(string tableName, IEnumerable<TRow> dataSource, Func<TRow, TKey> keySelector, IComparer<TKey> comparer)
         {
-            var rows = ToNewArray(dataSource);
-            keys = KeysOf(tableName, rows, keySelector);
-            Array.Sort(keys, rows, 0, rows.Length, comparer);
+            var source = ToNewArray(dataSource);
+            var keys = KeysOf(tableName, source, keySelector);
+            int[]? positions = null;
+            var first = StableSort.Positions(keys, comparer, ref positions);
+            if (first < 0) return source; // in order as they came, and the array is a new one already
+
+            var rows = new TRow[source.Length];
+            for (var i = 0; i < rows.Length; i++)
+            {
+                rows[i] = source[positions![first + i]];
+            }
             return rows;
         }
 
-        // The same, with one row for each key: of the rows that share one, the last in dataSource. The sort does not
-        // keep rows of one key in the order they came in, so it is the positions that are sorted, and the highest
-        // position of each key that is taken.
+        // The same, with one row for each key and the keys beside the rows: of the rows that share a key, the last in
+        // dataSource. The sort has them in the order they came in, so each takes the place of the one before it.
         static TRow[] SortLastOfEachKey<TRow, TKey>(string tableName, IEnumerable<TRow> dataSource, Func<TRow, TKey> keySelector, IComparer<TKey> comparer, out TKey[] keys)
         {
             var source = ToNewArray(dataSource);
             var sourceKeys = KeysOf(tableName, source, keySelector);
-            var positions = new int[source.Length];
-            for (var i = 0; i < positions.Length; i++)
-            {
-                positions[i] = i;
-            }
-            Array.Sort(sourceKeys, positions, 0, positions.Length, comparer);
+            int[]? positions = null;
+            var first = StableSort.Positions(sourceKeys, comparer, ref positions);
 
             var rows = new TRow[source.Length];
             keys = new TKey[source.Length];
             var count = 0;
-            for (var i = 0; i < positions.Length; i++)
+            for (var i = 0; i < source.Length; i++)
             {
-                if (count != 0 && comparer.Compare(keys[count - 1], sourceKeys[i]) == 0)
+                var position = (first < 0) ? i : positions![first + i];
+                var key = sourceKeys[position];
+                if (count != 0 && comparer.Compare(keys[count - 1], key) == 0)
                 {
-                    if (positions[i] > positions[i - 1])
-                    {
-                        rows[count - 1] = source[positions[i]];
-                    }
-                    else
-                    {
-                        positions[i] = positions[i - 1]; // the latest of this key so far, for the next row to be held against
-                    }
+                    rows[count - 1] = source[position];
                     continue;
                 }
 
-                rows[count] = source[positions[i]];
-                keys[count] = sourceKeys[i];
+                rows[count] = source[position];
+                keys[count] = key;
                 count++;
             }
 
@@ -282,6 +281,7 @@ namespace MasterMemory
             }
             return rows;
         }
+
 
         static TRow[] ToNewArray<TRow>(IEnumerable<TRow> dataSource)
         {

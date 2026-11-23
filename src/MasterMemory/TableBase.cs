@@ -58,18 +58,41 @@ namespace MasterMemory
 
         // Util
 
-        protected TElement[] CloneAndSortBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
+        /// <summary>
+        /// A secondary index: the rows of the table in a new array, in the order of another key. Rows that share that
+        /// key are in the order they have in the table, the order of the primary key.
+        /// </summary>
+        /// <param name="sortBuffer">
+        /// What the sort works in. The constructor of a table declares one, null, and hands it to the sort of each of
+        /// its indexes: the first makes the buffer and the others use it again.
+        /// </param>
+        protected TElement[] CloneAndSortBy<TKey, TComparer>(Func<TElement, TKey> indexSelector, TComparer comparer, ref int[]? sortBuffer)
+            where TComparer : IComparer<TKey>
         {
-            var array = new TElement[data.Length];
-            var sortSource = new TKey[data.Length];
-            for (int i = 0; i < data.Length; i++)
+            return CloneAndSortBy(data, indexSelector, comparer, ref sortBuffer);
+        }
+
+        /// <summary>
+        /// The rows in a new array, in the order of a key; rows that share the key in the order they are in
+        /// <paramref name="rows"/>.
+        /// </summary>
+        static protected TElement[] CloneAndSortBy<TKey, TComparer>(TElement[] rows, Func<TElement, TKey> keySelector, TComparer comparer)
+            where TComparer : IComparer<TKey>
+        {
+            int[]? sortBuffer = null;
+            return CloneAndSortBy(rows, keySelector, comparer, ref sortBuffer);
+        }
+
+        static TElement[] CloneAndSortBy<TKey, TComparer>(TElement[] rows, Func<TElement, TKey> keySelector, TComparer comparer, ref int[]? sortBuffer)
+            where TComparer : IComparer<TKey>
+        {
+            var keys = new TKey[rows.Length];
+            for (int i = 0; i < rows.Length; i++)
             {
-                array[i] = data[i];
-                sortSource[i] = indexSelector(data[i]);
+                keys[i] = keySelector(rows[i]);
             }
 
-            Array.Sort(sortSource, array, 0, array.Length, comparer);
-            return array;
+            return StableSort.Sort(rows, keys, comparer, ref sortBuffer);
         }
 
         static protected TElement ThrowKeyNotFound<TKey>(TKey key)

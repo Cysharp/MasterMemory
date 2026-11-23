@@ -109,14 +109,14 @@ internal abstract record KeyBase
 
     /// <summary>
     /// The comparer the index is sorted with. A composite key and an enum key have one generated in their table
-    /// class, which makes exactly the comparisons the lookups do; <paramref name="tableClassQualifier"/> is how the
-    /// caller reaches that class ("ItemTable." from another file, "" from inside it).
+    /// class, a struct, which makes exactly the comparisons the lookups do; <paramref name="tableClassQualifier"/> is
+    /// how the caller reaches that class ("ItemTable." from another file, "" from inside it).
     /// </summary>
     public string BuildComparer(string tableClassQualifier)
     {
         if (HasGeneratedComparer)
         {
-            return tableClassQualifier + KeyComparerName + ".Instance";
+            return "default(" + tableClassQualifier + KeyComparerName + ")";
         }
 
         var property = Properties[0];
