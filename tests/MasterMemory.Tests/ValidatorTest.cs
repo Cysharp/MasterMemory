@@ -116,6 +116,41 @@ namespace MasterMemory.Tests
             faileds[2].Message.ShouldBe("Unique failed: QuestId, value = 4");
         }
 
+        // What one key is, is decided by the comparison its index is sorted and searched by: Alias is compared with
+        // OrdinalIgnoreCase, so "abc", "ABC" and "Abc" are one key, of which a lookup finds one row only.
+        [Fact]
+        public void UniqueByTheComparisonOfTheKey()
+        {
+            var db = new DatabaseBuilder().Append(new[]
+            {
+                new NullableStringKeyMaster { Code = "a", Alias = "abc" },
+                new NullableStringKeyMaster { Code = "b", Alias = "x" },
+                new NullableStringKeyMaster { Code = "c", Alias = "ABC" },
+                new NullableStringKeyMaster { Code = "d", Alias = "Abc" },
+                new NullableStringKeyMaster { Code = "A", Alias = "y" }, // the primary key is ordinal: "a" and "A" are two keys
+                new NullableStringKeyMaster { Code = "e", Alias = null },
+            }).ToMemoryDatabase();
+
+            var validateResult = db.Validate();
+            output.WriteLine(validateResult.FormatFailedResults());
+
+            validateResult.IsValidationFailed.ShouldBeTrue();
+            var messages = validateResult.FailedResults.Select(x => x.Message).ToArray();
+            messages.Length.ShouldBe(2); // the second and the third row of the key
+            foreach (var message in messages)
+            {
+                message.ShouldStartWith("Unique failed: Alias, value = ");
+                message.Substring("Unique failed: Alias, value = ".Length).ToLowerInvariant().ShouldBe("abc");
+            }
+
+            // null is a key like another: once is fine, twice is not
+            db.ToDatabaseBuilder().RemoveNullableStringKeyMaster("c", "d").ToMemoryDatabase().Validate().IsValidationFailed.ShouldBeFalse();
+            db.ToDatabaseBuilder().RemoveNullableStringKeyMaster("c", "d")
+                .AddOrReplace(new[] { new NullableStringKeyMaster { Code = "f", Alias = null } })
+                .ToMemoryDatabase().Validate().FailedResults.Select(x => x.Message).ToArray()
+                .ShouldBe(new[] { "Unique failed: Alias, value = " });
+        }
+
         // test IValidator
 
         /*

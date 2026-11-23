@@ -34,16 +34,25 @@ namespace MasterMemory
 
         // Validate
 
-        static protected void ValidateUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, string message, ValidateResult resultSet)
+        /// <summary>
+        /// Reports every row whose key another row has already. Rows of one key lie next to each other in the index of
+        /// that key, and what one key is, is decided by the comparison the index is sorted and searched by: under
+        /// OrdinalIgnoreCase "abc" and "ABC" are one key, and a lookup finds only one of the two rows.
+        /// </summary>
+        static protected void ValidateUniqueCore<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, string message, ValidateResult resultSet)
         {
-            var set = new HashSet<TKey>();
-            foreach (var item in indexArray)
+            if (indexArray.Length == 0) return;
+
+            var previous = keySelector(indexArray[0]);
+            for (int i = 1; i < indexArray.Length; i++)
             {
+                var item = indexArray[i];
                 var v = keySelector(item);
-                if (!set.Add(v))
+                if (comparer.Compare(previous, v) == 0)
                 {
                     resultSet.AddFail(typeof(TElement), "Unique failed: " + message + ", value = " + v, item!);
                 }
+                previous = v;
             }
         }
 

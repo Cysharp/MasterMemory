@@ -124,7 +124,7 @@ static class TableEmitter
                 {
                     if (!key.IsNonUnique)
                     {
-                        writer.Line($"ValidateUniqueCore({key.TableName}, {key.SelectorName}, \"{key.BuildPropertyTupleName()}\", resultSet);");
+                        writer.Line($"ValidateUniqueCore({key.TableName}, {key.SelectorName}, {key.BuildComparer("")}, \"{key.BuildPropertyTupleName()}\", resultSet);");
                     }
                 }
                 writer.Line();
