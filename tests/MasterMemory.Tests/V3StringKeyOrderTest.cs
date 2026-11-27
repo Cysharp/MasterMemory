@@ -25,7 +25,7 @@ namespace MasterMemory.Tests
     {
         static readonly string[] Codes = { "a_b", "a1", "B", "a", "C", "d", "a-b", "ab" };
 
-        static MemoryDatabase ReadV3() => new MemoryDatabase(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Golden", "v3-string-keys.bin")));
+        static MemoryDatabase ReadV3() => new MemoryDatabase(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Golden", "v3-string-keys.bin")), GoldenData.Lz4);
 
         [Fact]
         public void CompositeKeyWithAString()
@@ -33,17 +33,17 @@ namespace MasterMemory.Tests
             var table = ReadV3().V3CompositeMasterTable;
 
             table.Count.ShouldBe(16);
-            table.All.Select(x => (x.Code, x.No)).ToArray().ShouldBe(table.All.Select(x => (x.Code, x.No)).OrderBy(x => x, OrdinalTupleComparer.Create<string, int>()).ToArray());
-            table.All.Select(x => x.Code).Distinct().ToArray().ShouldBe(new[] { "B", "C", "a", "a-b", "a1", "a_b", "ab", "d" });
+            table.All.AsReadOnlyList().Select(x => (x.Code, x.No)).ToArray().ShouldBe(table.All.AsReadOnlyList().Select(x => (x.Code, x.No)).OrderBy(x => x, OrdinalTupleComparer.Create<string, int>()).ToArray());
+            table.All.AsReadOnlyList().Select(x => x.Code).Distinct().ToArray().ShouldBe(new[] { "B", "C", "a", "a-b", "a1", "a_b", "ab", "d" });
 
             for (var i = 0; i < Codes.Length; i++)
             {
                 table.FindByCodeAndNo(Codes[i], 1).Value.ShouldBe(i * 10 + 1);
                 table.FindByCodeAndNo(Codes[i], 2).Value.ShouldBe(i * 10 + 2);
-                table.FindByCode(Codes[i]).Select(x => x.No).ToArray().ShouldBe(new[] { 1, 2 });
+                table.FindByCode(Codes[i]).AsReadOnlyList().Select(x => x.No).ToArray().ShouldBe(new[] { 1, 2 });
             }
             table.TryFindByCodeAndNo("A", 1, out _).ShouldBeFalse();
-            table.FindRangeByCodeAndNo("a", 2, "a1", 1).Select(x => x.Code + "/" + x.No).ToArray().ShouldBe(new[] { "a/2", "a-b/1", "a-b/2", "a1/1" });
+            table.FindRangeByCodeAndNo("a", 2, "a1", 1).AsReadOnlyList().Select(x => x.Code + "/" + x.No).ToArray().ShouldBe(new[] { "a/2", "a-b/1", "a-b/2", "a1/1" });
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace MasterMemory.Tests
         {
             var table = ReadV3().V3NullableMasterTable;
 
-            table.All.Select(x => x.Code).ToArray().ShouldBe(new[] { "B", "C", "a", "a-b", "a1", "a_b", "ab", "d" });
+            table.All.AsReadOnlyList().Select(x => x.Code).ToArray().ShouldBe(new[] { "B", "C", "a", "a-b", "a1", "a_b", "ab", "d" });
             for (var i = 0; i < Codes.Length; i++)
             {
                 table.FindByCode(Codes[i]).Value.ShouldBe(i);
@@ -64,7 +64,7 @@ namespace MasterMemory.Tests
         {
             var table = ReadV3().V3OptionMasterTable;
 
-            table.All.Select(x => x.Code).ToArray().ShouldBe(Codes.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray());
+            table.All.AsReadOnlyList().Select(x => x.Code).ToArray().ShouldBe(Codes.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray());
             for (var i = 0; i < Codes.Length; i++)
             {
                 table.FindByCode(Codes[i]).Value.ShouldBe(i);
@@ -76,9 +76,9 @@ namespace MasterMemory.Tests
         [Fact]
         public void RebuiltInTheOrderOfV4()
         {
-            var rebuilt = new MemoryDatabase(ReadV3().ToDatabaseBuilder().Build());
+            var rebuilt = new MemoryDatabase(ReadV3().ToDatabaseBuilder().Build(), GoldenData.Lz4); // the builder writes as the database was read: with LZ4
 
-            rebuilt.V3CompositeMasterTable.All.Select(x => x.Code).Distinct().ToArray().ShouldBe(new[] { "B", "C", "a", "a-b", "a1", "a_b", "ab", "d" });
+            rebuilt.V3CompositeMasterTable.All.AsReadOnlyList().Select(x => x.Code).Distinct().ToArray().ShouldBe(new[] { "B", "C", "a", "a-b", "a1", "a_b", "ab", "d" });
             rebuilt.V3NullableMasterTable.FindByCode("a_b").Value.ShouldBe(0);
             rebuilt.V3OptionMasterTable.FindByCode("AB").Value.ShouldBe(7);
         }
@@ -95,7 +95,7 @@ namespace MasterMemory.Tests
             var table = new V3NullableMasterTable(unsorted);
             table.GetRawDataUnsafe().ShouldNotBeSameAs(unsorted);
             unsorted.Select(x => x.Code).ToArray().ShouldBe(Codes);
-            table.All.Select(x => x.Code).ToArray().ShouldBe(Codes.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+            table.All.AsReadOnlyList().Select(x => x.Code).ToArray().ShouldBe(Codes.OrderBy(x => x, StringComparer.Ordinal).ToArray());
 
             new V3NullableMasterTable(Array.Empty<V3NullableMaster>()).Count.ShouldBe(0);
         }

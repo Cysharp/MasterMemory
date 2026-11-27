@@ -10,17 +10,38 @@ namespace MasterMemory
 {
     public abstract class MemoryDatabaseBase
     {
-        protected MemoryDatabaseBase()
-        {
+        /// <summary>
+        /// What the database was read with, or what the builder it was made from writes with. A builder made by the
+        /// generated ToDatabaseBuilder writes with these, unless it is given others.
+        /// </summary>
+        public MemoryDatabaseOptions Options { get; }
 
+        /// <summary>A database whose tables the generated constructor sets itself: the one made from a builder.</summary>
+        /// <param name="options">The options of the builder; null is <see cref="MemoryDatabaseOptions.Default"/>.</param>
+        protected MemoryDatabaseBase(MemoryDatabaseOptions? options)
+        {
+            Options = options ?? MemoryDatabaseOptions.Default;
         }
 
         /// <param name="databaseBinary">The database, as <see cref="DatabaseBuilderBase.Build"/> wrote it.</param>
-        /// <param name="internString">Intern every string read from the tables.</param>
-        /// <param name="tableFormatterFactory">The generated factory that serves the array of each table type.</param>
-        /// <param name="formatterFactory">The formatters of the table types and their members; null is <see cref="MessagePackFormatterFactory.DefaultAot"/>.</param>
+        /// <param name="options">
+        /// How every table is read: the formatters of the rows and their members, the processor if the tables are
+        /// compressed, whether strings are interned. Null is <see cref="MemoryDatabaseOptions.Default"/>.
+        /// </param>
         /// <param name="maxDegreeOfParallelism">How many tables are deserialized at the same time.</param>
-        protected MemoryDatabaseBase(byte[] databaseBinary, bool internString, MessagePackFormatterFactory tableFormatterFactory, MessagePackFormatterFactory? formatterFactory, int maxDegreeOfParallelism)
+        protected MemoryDatabaseBase(byte[] databaseBinary, MemoryDatabaseOptions? options, int maxDegreeOfParallelism)
+            : this(new ReadOnlyMemory<byte>(databaseBinary ?? throw new ArgumentNullException(nameof(databaseBinary))), options, maxDegreeOfParallelism)
+        {
+        }
+
+        /// <summary>
+        /// The database from memory that need not be an array of its own: a part of a larger buffer, a rented array,
+        /// native memory behind a <see cref="MemoryManager{T}"/>. The memory is read until the constructor returns and
+        /// not kept; every row is an object of its own.
+        /// </summary>
+        /// <inheritdoc cref="MemoryDatabaseBase(byte[], MemoryDatabaseOptions, int)"/>
+        protected MemoryDatabaseBase(ReadOnlyMemory<byte> databaseBinary, MemoryDatabaseOptions? options, int maxDegreeOfParallelism)
+            : this(options)
         {
             var header = DatabaseHeader.Read(databaseBinary, out var headerLength);
             if (maxDegreeOfParallelism < 1)
@@ -28,17 +49,42 @@ namespace MasterMemory
                 maxDegreeOfParallelism = 1;
             }
 
-            var options = SerializerOptionsCache.Get(tableFormatterFactory, formatterFactory, internString);
-            Init(header, databaseBinary.AsMemory(headerLength), options, maxDegreeOfParallelism);
+            Init(header, databaseBinary.Slice(headerLength), Options.GetReadOptions(), maxDegreeOfParallelism);
+        }
+
+        /// <summary>
+        /// The database from a span, which can be over anything: native memory, a stack buffer. The tables are read one
+        /// after another; reading them at the same time takes memory that can be handed to other threads, which is what
+        /// the other constructors are given. The span is not kept.
+        /// </summary>
+        /// <inheritdoc cref="MemoryDatabaseBase(byte[], MemoryDatabaseOptions, int)"/>
+        protected MemoryDatabaseBase(ReadOnlySpan<byte> databaseBinary, MemoryDatabaseOptions? options)
+            : this(options)
+        {
+            var header = DatabaseHeader.Read(databaseBinary, out var headerLength);
+            Init(header, databaseBinary.Slice(headerLength), Options.GetReadOptions());
+        }
+
+        protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, string tableName, Func<T[], TView> createView)
+        {
+            return ExtractTableData(header, databaseBinary.Span, options, tableName, createView);
         }
 
         // tableName is the name the table has in the header: what its [MemoryTable] says, which the generated code knows
-        protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, string tableName, Func<T[], TView> createView)
+        protected static TView ExtractTableData<T, TView>(Dictionary<string, (int offset, int count)> header, ReadOnlySpan<byte> databaseBinary, MessagePackSerializerOptions options, string tableName, Func<T[], TView> createView)
         {
             if (header.TryGetValue(tableName, out var segment))
             {
                 DatabaseHeader.ThrowIfOutside(tableName, segment.offset, segment.count, databaseBinary.Length);
-                var data = MessagePackSerializer.Deserialize<T[]>(databaseBinary.Span.Slice(segment.offset, segment.count), options);
+                var table = databaseBinary.Slice(segment.offset, segment.count);
+
+                // The formatter of the rows would say only that an ext is where an array should be.
+                if (options.MessageProcessor == null && TableSerialization.LooksCompressed(table))
+                {
+                    throw TableSerialization.CompressedWithoutProcessor(tableName);
+                }
+
+                var data = MessagePackSerializer.Deserialize<T[]>(table, options);
 
                 // A table is an array of rows. Nil in place of the array or of a row is well-formed MessagePack and so
                 // gets this far, where a table would fail on it with a NullReferenceException somewhere inside.
@@ -63,9 +109,19 @@ namespace MasterMemory
             }
         }
 
+        /// <summary>Reads the tables, one after another or <paramref name="maxDegreeOfParallelism"/> at the same time.</summary>
         protected abstract void Init(Dictionary<string, (int offset, int count)> header, ReadOnlyMemory<byte> databaseBinary, MessagePackSerializerOptions options, int maxDegreeOfParallelism);
 
+        /// <summary>Reads the tables one after another.</summary>
+        protected abstract void Init(Dictionary<string, (int offset, int count)> header, ReadOnlySpan<byte> databaseBinary, MessagePackSerializerOptions options);
+
         public static TableInfo[] GetTableInfo(byte[] databaseBinary, bool storeTableData = true)
+        {
+            if (databaseBinary == null) throw new ArgumentNullException(nameof(databaseBinary));
+            return GetTableInfo(new ReadOnlySpan<byte>(databaseBinary), storeTableData);
+        }
+
+        public static TableInfo[] GetTableInfo(ReadOnlySpan<byte> databaseBinary, bool storeTableData = true)
         {
             var header = DatabaseHeader.Read(databaseBinary, out var headerLength);
 
@@ -74,10 +130,18 @@ namespace MasterMemory
             {
                 DatabaseHeader.ThrowIfOutside(item.Key, item.Value.offset, item.Value.count, databaseBinary.Length - headerLength);
             }
-            return header.Select(x => new TableInfo(x.Key, x.Value.count, storeTableData ? databaseBinary : null, headerLength + x.Value.offset)).ToArray();
+
+            var tables = new TableInfo[header.Count];
+            var index = 0;
+            foreach (var item in header)
+            {
+                var data = storeTableData ? databaseBinary.Slice(headerLength + item.Value.offset, item.Value.count).ToArray() : null;
+                tables[index++] = new TableInfo(item.Key, item.Value.count, data);
+            }
+            return tables;
         }
 
-        protected void ValidateTable<TElement>(IReadOnlyList<TElement> table, ValidationDatabase database, string pkName, Delegate pkSelector, ValidateResult result)
+        protected void ValidateTable<TElement>(RangeView<TElement> table, ValidationDatabase database, string pkName, Delegate pkSelector, ValidateResult result)
         {
             var onceCalled = new System.Runtime.CompilerServices.StrongBox<bool>(false);
             foreach (var item in table)
@@ -100,6 +164,14 @@ namespace MasterMemory
         public int Size { get; }
         byte[]? binaryData;
 
+        // binaryData is the table alone, and this TableInfo's own
+        internal TableInfo(string tableName, int size, byte[]? binaryData)
+        {
+            TableName = tableName;
+            Size = size;
+            this.binaryData = binaryData;
+        }
+
         public TableInfo(string tableName, int size, byte[]? rawBinary, int offset)
         {
             TableName = tableName;
@@ -111,15 +183,35 @@ namespace MasterMemory
             }
         }
 
+        /// <summary>The table as JSON. A table that is compressed needs the processor it was written with: <see cref="DumpAsJson(MemoryDatabaseOptions)"/>.</summary>
         public string DumpAsJson()
+        {
+            return DumpAsJson(null);
+        }
+
+        /// <summary>
+        /// The table as JSON, read with the processor of <paramref name="options"/>: the options the database was
+        /// built with, for a table that is compressed. A table that is not compressed is read with or without one.
+        /// </summary>
+        public string DumpAsJson(MemoryDatabaseOptions? options)
         {
             if (binaryData == null)
             {
                 throw new InvalidOperationException("DumpAsJson can only call from GetTableInfo(storeTableData = true).");
             }
 
-            // a small table is stored without the Lz4Block envelope, and TryDecode says so
-            if (!SerializerOptionsCache.TableProcessor.TryDecode(binaryData, out var decoded))
+            var processor = options?.MessageProcessor;
+            if (processor == null)
+            {
+                if (TableSerialization.LooksCompressed(binaryData))
+                {
+                    throw TableSerialization.CompressedWithoutProcessor(TableName);
+                }
+                return MessagePackSerializer.ConvertToJson(binaryData);
+            }
+
+            // a processor leaves a message that is not its own as it is, and says so: a table that was too small to compress
+            if (!processor.TryDecode(binaryData, out var decoded))
             {
                 return MessagePackSerializer.ConvertToJson(binaryData);
             }

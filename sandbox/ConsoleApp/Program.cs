@@ -2,6 +2,8 @@
 #pragma warning disable CS8602
 #pragma warning disable CS8603
 
+using ConsoleApp;
+using ConsoleApp.Tables;
 using MasterMemory;
 using MessagePack;
 using System;
@@ -13,13 +15,38 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+
+
+
 
 
 [assembly: MasterMemoryGeneratorOptions(
     Namespace = "ConsoleApp" // ,
-    // IsReturnNullIfKeyNotFound = true,
-    // PrefixClassName = "Foo"
+                             // IsReturnNullIfKeyNotFound = true,
+                             // PrefixClassName = "Foo"
 )]
+
+
+
+var db = new MemoryDatabase(new byte[] { 1, 2, 3 });
+
+
+
+// new MemoryDatabase(
+
+
+// MessagePackSerializerOptions.Default.Resolver.
+
+
+
+// db.QuestTable.All
+
+// db.TestTestTest2Table.FindByAddressAndName(
+
+
+
+
 
 public class FooItem
 {
@@ -29,6 +56,29 @@ public class FooItem
         return true;
     }
 }
+
+
+[MemoryTable(nameof(TestTestTest2))]
+public class TestTestTest2
+{
+    [PrimaryKey(keyOrder: 1)]
+    public int Name { get; set; }
+
+    [PrimaryKey(keyOrder: 0)]
+
+    [SecondaryKey(0)]
+    public int Address { get; set; }
+
+
+    [SecondaryKey(0)]
+    public MyEnum4 Others { get; set; }
+}
+
+public enum MyEnum4
+{
+    A, B, C
+}
+
 
 [MemoryTable("quest_master"), MessagePackObject(true)]
 public class Quest : IValidatable<Quest>
@@ -81,7 +131,7 @@ namespace ConsoleApp.Tables
 
         partial void OnAfterConstruct()
         {
-            maxHp = All.Select(x => x.MaxHp).Max();
+            maxHp = All.AsReadOnlyList().Select(x => x.MaxHp).Max();
         }
     }
 }

@@ -37,7 +37,7 @@ global using MasterMemory;
 
         static IEnumerable<MetadataReference> GetSelfReferences()
         {
-            // MasterMemory.Annotations
+            // MasterMemory, where the attributes are
             yield return MetadataReference.CreateFromFile(typeof(MasterMemory.MemoryTableAttribute).Assembly.Location);
         }
     }

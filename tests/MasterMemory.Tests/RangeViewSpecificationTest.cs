@@ -107,7 +107,7 @@ namespace MasterMemory.Tests
                 view.Contains(value).ShouldBe(expected.Contains(value), context + " Contains " + value);
             }
 
-            CheckInterfaces(view, expected, context);
+            CheckList(view.AsReadOnlyList(), expected, context);
         }
 
         static void CheckReverse(ReverseRangeView<int> view, int[] expected, int[] data, string context)
@@ -156,15 +156,14 @@ namespace MasterMemory.Tests
                 view.Contains(value).ShouldBe(expected.Contains(value), context + " Contains " + value);
             }
 
-            CheckInterfaces(view, expected, context);
+            CheckList(view.AsReadOnlyList(), expected, context);
         }
 
-        // what the two views have in common: the interfaces, and what LINQ makes of them
-        static void CheckInterfaces<TView>(TView view, int[] expected, string context)
-            where TView : IList<int>, IReadOnlyList<int>
+        // What AsReadOnlyList() of either view gives: the interfaces, and what LINQ makes of them. It is returned as an
+        // IReadOnlyList<T> and is an IList<T> too, which is what LINQ looks for to count, index and copy.
+        static void CheckList(IReadOnlyList<int> readOnlyList, int[] expected, string context)
         {
-            var list = (IList<int>)view;
-            var readOnlyList = (IReadOnlyList<int>)view;
+            var list = readOnlyList.ShouldBeAssignableTo<IList<int>>(context)!;
 
             list.Count.ShouldBe(expected.Length, context);
             readOnlyList.Count.ShouldBe(expected.Length, context);
@@ -175,8 +174,8 @@ namespace MasterMemory.Tests
             }
             Should.Throw<ArgumentOutOfRangeException>(() => list[expected.Length], context);
 
-            ((IEnumerable<int>)view).Select(x => x).ToArray().ShouldBe(expected, context);
-            ((IEnumerable)view).Cast<int>().ToArray().ShouldBe(expected, context);
+            readOnlyList.Select(x => x).ToArray().ShouldBe(expected, context);
+            ((IEnumerable)readOnlyList).Cast<int>().ToArray().ShouldBe(expected, context);
             Enumerable.ToArray(list).ShouldBe(expected, context);
             Enumerable.ToList(list).ToArray().ShouldBe(expected, context);
             new List<int>(list).ToArray().ShouldBe(expected, context);
@@ -189,7 +188,7 @@ namespace MasterMemory.Tests
             }
 
             // an enumerator behind the interface: to the end, past it, and again after Reset
-            using (var enumerator = ((IEnumerable<int>)view).GetEnumerator())
+            using (var enumerator = readOnlyList.GetEnumerator())
             {
                 for (var round = 0; round < 2; round++)
                 {
@@ -231,6 +230,50 @@ namespace MasterMemory.Tests
 
             default(RangeView<int>).AsSpan().IsEmpty.ShouldBeTrue();
             default(ReverseRangeView<int>).Reverse.AsSpan().IsEmpty.ShouldBeTrue();
+        }
+
+        // A view implements no interface. Read through one, a struct is boxed, and LINQ over it allocates: that must not
+        // happen without the code asking for it, and AsReadOnlyList() is the asking.
+        [Fact]
+        public void ViewsImplementNoInterface()
+        {
+            typeof(RangeView<int>).GetInterfaces().ShouldBeEmpty();
+            typeof(ReverseRangeView<int>).GetInterfaces().ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void AsReadOnlyListIsOneObjectAndCopiesNoRow()
+        {
+            static long Allocated(Action action)
+            {
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                action();
+                return GC.GetAllocatedBytesForCurrentThread() - before;
+            }
+
+            var data = Enumerable.Range(0, 1000).ToArray();
+            var view = new RangeView<int>(data, 10, 900);
+            var reverse = view.Reverse;
+            var empty = new RangeView<int>(data, 5, 0);
+
+            // once before measuring, so that nothing of the first call is counted
+            view.AsReadOnlyList();
+            reverse.AsReadOnlyList();
+            empty.AsReadOnlyList();
+
+            // one small object, whatever the number of rows
+            Allocated(() => view.AsReadOnlyList()).ShouldBeInRange(1L, 64L);
+            Allocated(() => reverse.AsReadOnlyList()).ShouldBeInRange(1L, 64L);
+
+            // and none for a view without rows: one list serves all of them
+            Allocated(() => empty.AsReadOnlyList()).ShouldBe(0);
+            Allocated(() => empty.Reverse.AsReadOnlyList()).ShouldBe(0);
+            default(RangeView<int>).AsReadOnlyList().ShouldBeSameAs(empty.Reverse.AsReadOnlyList());
+
+            // LINQ over the list gives the rows of the view, in the order of the view
+            view.AsReadOnlyList().Where(x => x % 100 == 0).ToArray().ShouldBe(new[] { 100, 200, 300, 400, 500, 600, 700, 800, 900 });
+            reverse.AsReadOnlyList().Take(3).ToArray().ShouldBe(new[] { 909, 908, 907 });
+            view.AsReadOnlyList().Count().ShouldBe(900);
         }
 
         [Fact]

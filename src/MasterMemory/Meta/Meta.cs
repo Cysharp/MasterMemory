@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -35,13 +36,23 @@ namespace MasterMemory.Meta
 
     public class MetaTable
     {
+        /// <summary>
+        /// What an importer does with the row type of a table: makes a row (Activator.CreateInstance, or
+        /// RuntimeHelpers.GetUninitializedObject) and sets its properties. The annotation tells the trimmer and the
+        /// Native AOT compiler to keep the constructors and public properties of every row type the metadata is
+        /// generated for, and lets code that does this with <see cref="DataType"/> pass their analysis.
+        /// </summary>
+        internal const DynamicallyAccessedMemberTypes RowMembers =
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties;
+
+        [DynamicallyAccessedMembers(RowMembers)]
         public Type DataType { get; }
         public Type TableType { get; }
         public string TableName { get; }
         public IReadOnlyList<MetaProperty> Properties { get; }
         public IReadOnlyList<MetaIndex> Indexes { get; }
 
-        public MetaTable(Type dataType, Type tableType, string tableName, IReadOnlyList<MetaProperty> properties, IReadOnlyList<MetaIndex> Indexes)
+        public MetaTable([DynamicallyAccessedMembers(RowMembers)] Type dataType, Type tableType, string tableName, IReadOnlyList<MetaProperty> properties, IReadOnlyList<MetaIndex> Indexes)
         {
             this.DataType = dataType;
             this.TableType = tableType;

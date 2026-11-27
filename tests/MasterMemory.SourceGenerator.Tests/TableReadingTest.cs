@@ -541,8 +541,13 @@ public class Item
 }
 """)["MasterMemory.MemoryDatabase.g.cs"];
 
-        database.ShouldContain("public MemoryDatabase(");
-        database.ShouldNotContain("internal");
+        database.ShouldContain("public MemoryDatabase(byte[] databaseBinary");
+        database.ShouldContain("public ItemTable ItemTable { get; private set; }");
+
+        // The one thing that is internal whatever the tables are: the constructor that takes the builder, which is
+        // what DatabaseBuilder.ToMemoryDatabase() calls.
+        database.ShouldContain("internal MemoryDatabase(DatabaseBuilder builder)");
+        (database.Split("internal").Length - 1).ShouldBe(1);
     }
 
     // ---- the metadata ----

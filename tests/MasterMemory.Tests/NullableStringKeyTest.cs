@@ -24,7 +24,7 @@ namespace MasterMemory.Tests
         {
             var table = new MemoryDatabase(new DatabaseBuilder().Append(CreateData()).Build()).NullableStringKeyMasterTable;
 
-            table.All.Select(x => x.Code).ToArray().ShouldBe(new[] { "B", "a", "a1", "a_b" });
+            table.All.AsReadOnlyList().Select(x => x.Code).ToArray().ShouldBe(new[] { "B", "a", "a1", "a_b" });
             foreach (var item in CreateData())
             {
                 table.FindByCode(item.Code).Value.ShouldBe(item.Value);

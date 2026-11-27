@@ -32,10 +32,10 @@ namespace MasterMemory.Tests
                 new RecordMaster(2, "b", 20),
             })).RecordMasterTable;
 
-            table.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2, 3 });
+            table.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2, 3 });
             table.FindById(2).ShouldBe(new RecordMaster(2, "b", 20));
             table.TryFindById(4, out _).ShouldBeFalse();
-            table.FindByGroup("b").Select(x => x.Level).ToArray().ShouldBe(new[] { 20, 30 });
+            table.FindByGroup("b").AsReadOnlyList().Select(x => x.Level).ToArray().ShouldBe(new[] { 20, 30 });
 
             var meta = RecordMasterTable.CreateMetaTable();
             meta.Properties.Select(x => x.Name).ToArray().ShouldBe(new[] { "Id", "Group", "Level" });
@@ -52,7 +52,7 @@ namespace MasterMemory.Tests
             })).DerivedMasterTable;
 
             table.FindById(20).Name.ShouldBe("b");
-            table.FindByTenant(2).Select(x => x.Name).ToArray().ShouldBe(new[] { "b", "c" });
+            table.FindByTenant(2).AsReadOnlyList().Select(x => x.Name).ToArray().ShouldBe(new[] { "b", "c" });
             table.FindClosestById(25, selectLower: true)!.Name.ShouldBe("b");
 
             var meta = DerivedMasterTable.CreateMetaTable();
@@ -69,7 +69,7 @@ namespace MasterMemory.Tests
                 new PartialMaster { Category = 1, No = 1, Name = "a" },
             })).PartialMasterTable;
 
-            table.All.Select(x => x.Name).ToArray().ShouldBe(new[] { "a", "b", "c" });
+            table.All.AsReadOnlyList().Select(x => x.Name).ToArray().ShouldBe(new[] { "a", "b", "c" });
             table.FindByCategoryAndNo(1, 2).Name.ShouldBe("b");
             table.TryFindByCategoryAndNo(2, 2, out _).ShouldBeFalse();
         }
@@ -111,13 +111,13 @@ namespace MasterMemory.Tests
 
             table.FindById(2).Name.ShouldBe("BETA");                      // an alias of int: [PrimaryKeyAttribute] MyId
             table.FindByclass(-5).Id.ShouldBe(3);                         // short, a keyword as the name, the index from a constant
-            table.SortByclass.Select(x => (int)x.@class).ToArray().ShouldBe(new[] { -5, 7, 300 });
+            table.SortByclass.AsReadOnlyList().Select(x => (int)x.@class).ToArray().ShouldBe(new[] { -5, 7, 300 });
             table.FindByName("beta").Id.ShouldBe(2);                      // the option in front of its key
             table.FindByName("ALPHA").Id.ShouldBe(1);
             table.FindByLetter('M').Id.ShouldBe(2);                       // char
-            table.SortByLetter.Select(x => x.Letter).ToArray().ShouldBe(new[] { 'M', 'a', 'z' });
+            table.SortByLetter.AsReadOnlyList().Select(x => x.Letter).ToArray().ShouldBe(new[] { 'M', 'a', 'z' });
             table.FindClosestByLetter('b', selectLower: true)!.Id.ShouldBe(1);
-            table.FindRangeByclass(0, 1000).Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2 });
+            table.FindRangeByclass(0, 1000).AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2 });
         }
 
         // ---- composite keys with strings ----
@@ -139,8 +139,8 @@ namespace MasterMemory.Tests
         {
             var table = Load(x => x.Append(CreateData())).CompositeNameMasterTable;
 
-            table.All.Select(x => (x.Code, x.No)).ToArray().ShouldBe(new[] { ("B", 1), ("a", 3), ("a", 9), ("a1", 1), ("a1", 2), ("a_b", 1) });
-            table.All.Select(x => (x.Code, x.No)).ToArray().ShouldBe(CreateData().Select(x => (x.Code, x.No)).OrderBy(x => x, OrdinalTupleComparer.Create<string, int>()).ToArray());
+            table.All.AsReadOnlyList().Select(x => (x.Code, x.No)).ToArray().ShouldBe(new[] { ("B", 1), ("a", 3), ("a", 9), ("a1", 1), ("a1", 2), ("a_b", 1) });
+            table.All.AsReadOnlyList().Select(x => (x.Code, x.No)).ToArray().ShouldBe(CreateData().Select(x => (x.Code, x.No)).OrderBy(x => x, OrdinalTupleComparer.Create<string, int>()).ToArray());
 
             foreach (var item in CreateData())
             {
@@ -152,7 +152,7 @@ namespace MasterMemory.Tests
             table.FindClosestByCodeAndNo("a", 5, selectLower: true)!.Value.ShouldBe(5);
             table.FindClosestByCodeAndNo("a", 5, selectLower: false)!.Value.ShouldBe(4);
             table.FindClosestByCodeAndNo("C", 0, selectLower: true)!.Value.ShouldBe(3);   // "C" is between "B" and "a"
-            table.FindRangeByCodeAndNo("a", 0, "a1", 1).Select(x => x.Value).ToArray().ShouldBe(new[] { 5, 4, 6 });
+            table.FindRangeByCodeAndNo("a", 0, "a1", 1).AsReadOnlyList().Select(x => x.Value).ToArray().ShouldBe(new[] { 5, 4, 6 });
         }
 
         // [StringComparisonOption] belongs to the member it is written on, and was ignored on a composite key
@@ -161,11 +161,11 @@ namespace MasterMemory.Tests
         {
             var table = Load(x => x.Append(CreateData())).CompositeNameMasterTable;
 
-            table.FindByLabelAndRank("ALPHA", 2).Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
-            table.FindByLabelAndRank("alpha", 1).Select(x => x.Value).ToArray().ShouldBe(new[] { 4 });
-            table.FindByLabelAndRank("Beta", 1).Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 5 });
+            table.FindByLabelAndRank("ALPHA", 2).AsReadOnlyList().Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
+            table.FindByLabelAndRank("alpha", 1).AsReadOnlyList().Select(x => x.Value).ToArray().ShouldBe(new[] { 4 });
+            table.FindByLabelAndRank("Beta", 1).AsReadOnlyList().Select(x => x.Value).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 5 });
             table.FindByLabelAndRank("beta", 2).Count.ShouldBe(0);
-            table.SortByLabelAndRank.Select(x => x.Label.ToLowerInvariant() + x.Rank).ToArray().ShouldBe(new[] { "alpha1", "alpha2", "alpha2", "beta1", "beta1", "gamma5" });
+            table.SortByLabelAndRank.AsReadOnlyList().Select(x => x.Label.ToLowerInvariant() + x.Rank).ToArray().ShouldBe(new[] { "alpha1", "alpha2", "alpha2", "beta1", "beta1", "gamma5" });
         }
 
         // the order does not depend on where the database is built or loaded
@@ -184,18 +184,18 @@ namespace MasterMemory.Tests
                 Thread.CurrentThread.CurrentCulture = new CultureInfo(loadCulture);
                 var table = new MemoryDatabase(bin).CompositeNameMasterTable;
 
-                table.All.Select(x => x.Code).ToArray().ShouldBe(new[] { "B", "a", "a", "a1", "a1", "a_b" });
+                table.All.AsReadOnlyList().Select(x => x.Code).ToArray().ShouldBe(new[] { "B", "a", "a", "a1", "a1", "a_b" });
                 foreach (var item in CreateData())
                 {
                     table.FindByCodeAndNo(item.Code, item.No).Value.ShouldBe(item.Value);
-                    table.FindByLabelAndRank(item.Label, item.Rank).Select(x => x.Value).ShouldContain(item.Value);
+                    table.FindByLabelAndRank(item.Label, item.Rank).AsReadOnlyList().Select(x => x.Value).ShouldContain(item.Value);
                 }
 
                 // every writer of the table sorts by the same order: a change to a table that is there too
                 var builder = new MemoryDatabase(bin).ToDatabaseBuilder();
                 builder.AddOrReplace(new[] { new CompositeNameMaster { Code = "A", No = 1, Label = "x", Rank = 0, Value = 7 } });
                 var rebuilt = builder.ToMemoryDatabase().CompositeNameMasterTable;
-                rebuilt.All.Select(x => x.Code).ToArray().ShouldBe(new[] { "A", "B", "a", "a", "a1", "a1", "a_b" });
+                rebuilt.All.AsReadOnlyList().Select(x => x.Code).ToArray().ShouldBe(new[] { "A", "B", "a", "a", "a1", "a1", "a_b" });
                 rebuilt.FindByCodeAndNo("A", 1).Value.ShouldBe(7);
             }
             finally

@@ -88,7 +88,7 @@ namespace Foo
 """);
 
         codes["MasterMemory.InnerTable.g.cs"].ShouldContain("public sealed partial class InnerTable : TableBase<global::Foo.Outer.Inner>");
-        codes["MasterMemory.MasterMemoryFormatterFactory.g.cs"].ShouldContain(".Add<global::Foo.Outer.Inner>()");
+        codes["MasterMemory.MasterMemoryTableFormatters.g.cs"].ShouldContain("registry.RegisterHarvested<global::Foo.Outer.Inner[]>(new global::MessagePack.Formatters.ArrayFormatterFactory<global::Foo.Outer.Inner>());");
     }
 
     // how a key is sorted and searched: a database is stored in the order of its primary key, so none of this may move
@@ -311,16 +311,70 @@ public class T{{i:D3}}
         ShouldHaveNoSyntaxError(eighty);
 
         // eight times the tables: eight times the code, not sixty-four times
-        foreach (var file in new[] { "MasterMemory.DatabaseBuilder.g.cs", "MasterMemory.MemoryDatabase.g.cs", "MasterMemory.MasterMemoryFormatterFactory.g.cs" })
+        foreach (var file in new[] { "MasterMemory.DatabaseBuilder.g.cs", "MasterMemory.MemoryDatabase.g.cs", "MasterMemory.MasterMemoryTableFormatters.g.cs" })
         {
             ((double)eighty[file].Length / ten[file].Length).ShouldBeLessThan(8.5, file);
         }
 
-        // the one place that names every table is there once
+        // the database is made from the builder itself, and no constructor has a parameter per table
         var builder = eighty["MasterMemory.DatabaseBuilder.g.cs"];
+        builder.ShouldContain("return new MemoryDatabase(this);");
         (builder.Split("new MemoryDatabase(").Length - 1).ShouldBe(1);
         (builder.Split("T079Table").Length - 1).ShouldBeLessThan(12);
 
+        // AppendDynamic goes through a branch per table that names its row type: no reflection, for trimming and Native AOT
+        builder.ShouldContain("protected override bool AppendDynamicCore(Type dataType, System.Collections.Generic.IList<object> tableData)");
+        builder.ShouldContain("if (dataType == typeof(global::T079)) { Append(CastRows<global::T079>(tableData)); return true; }");
+        builder.ShouldNotContain("GetMethod");
+
+        var database = eighty["MasterMemory.MemoryDatabase.g.cs"];
+        database.ShouldContain("internal MemoryDatabase(DatabaseBuilder builder)");
+        database.ShouldContain("this.T079Table = builder.BuildT079Table();");
+        database.ShouldNotContain("T078Table T078Table,");
+
+        // The formatter of every table array goes into MessagePack's own registry of generated formatters, which its
+        // chains look in first: a line per table, in the static constructor of a class of its own. RegisterHarvested
+        // leaves an entry that is already there alone, so a formatter the application declared for an array stays.
+        var formatters = eighty["MasterMemory.MasterMemoryTableFormatters.g.cs"];
+        formatters.ShouldContain("internal static class MasterMemoryTableFormatters");
+        formatters.ShouldContain("static MasterMemoryTableFormatters()");
+        formatters.ShouldContain("var registry = global::MessagePack.SourceGeneratedFormatterFactory.Instance;");
+        formatters.ShouldContain("registry.RegisterHarvested<global::T079[]>(new global::MessagePack.Formatters.ArrayFormatterFactory<global::T079>());");
+        (formatters.Split("RegisterHarvested<").Length - 1).ShouldBe(80);
+        formatters.ShouldContain("internal static global::MasterMemory.MemoryDatabaseOptions? Registered(global::MasterMemory.MemoryDatabaseOptions? options)");
+
+        // no factory of MasterMemory's own any more, no module initializer, and nothing that depends on the target framework
+        eighty.Keys.ShouldNotContain("MasterMemory.MasterMemoryFormatterFactory.g.cs");
+        foreach (var code in eighty)
+        {
+            code.Value.ShouldNotContain("ModuleInitializer", customMessage: code.Key);
+            code.Value.ShouldNotContain("#if", customMessage: code.Key);
+            code.Value.ShouldNotContain("MasterMemoryFormatterFactory", customMessage: code.Key);
+
+            // no processor is named in the code: the comments of the constructors say which one to pass
+            var withoutComments = string.Join("\n", code.Value.Split('\n').Where(x => !x.TrimStart().StartsWith("//", StringComparison.Ordinal)));
+            withoutComments.Contains("Lz4Block", StringComparison.Ordinal).ShouldBeFalse(code.Key);
+        }
+
+        // A database is read from an array, from memory (both can be read in parallel) and from a span. How it is read
+        // is in MemoryDatabaseOptions, which is optional and goes through the registration to the base class as it is.
+        const string options = "MasterMemory.MemoryDatabaseOptions? options";
+        database.ShouldContain($"public MemoryDatabase(byte[] databaseBinary, {options} = null, int maxDegreeOfParallelism = 1)");
+        database.ShouldContain($"public MemoryDatabase(System.ReadOnlyMemory<byte> databaseBinary, {options} = null, int maxDegreeOfParallelism = 1)");
+        database.ShouldContain($"public MemoryDatabase(System.ReadOnlySpan<byte> databaseBinary, {options} = null)");
+        (database.Split("public MemoryDatabase(").Length - 1).ShouldBe(3);
+        (database.Split(": base(databaseBinary, MasterMemoryTableFormatters.Registered(options)").Length - 1).ShouldBe(3);
+
+        // a builder made from a database writes with the options of the database unless it is given others, and a
+        // database made from a builder has the options of the builder
+        database.ShouldContain($"public DatabaseBuilder ToDatabaseBuilder({options} = null)");
+        database.ShouldContain("return new DatabaseBuilder(this, options ?? Options);");
+        database.ShouldContain(": base(builder.Options)");
+
+        // new() finds the builder without parameters
+        builder.ShouldContain("public DatabaseBuilder() : this(null) { }");
+        builder.ShouldContain($"public DatabaseBuilder({options}) : base(MasterMemoryTableFormatters.Registered(options)) {{ }}");
+        builder.ShouldContain($"internal DatabaseBuilder(MemoryDatabase database, {options}) : base(MasterMemoryTableFormatters.Registered(options))");
         eighty.Keys.ShouldNotContain("MasterMemory.ImmutableBuilder.g.cs");
     }
 }

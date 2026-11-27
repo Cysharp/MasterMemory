@@ -140,3 +140,7 @@ tests/MasterMemory.Tests.Fuzz/publish/
 tests/MasterMemory.Tests.Fuzz/corpus/
 tests/MasterMemory.Tests.Fuzz/findings/
 tests/MasterMemory.Tests.Fuzz/libfuzzer-dotnet-windows.exe
+
+# BenchmarkDotNet (sandbox/Benchmark): the reports of a run and the project it generates to run the benchmarks
+BenchmarkDotNet.Artifacts/
+.bdn/

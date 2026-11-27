@@ -38,7 +38,7 @@ public static class DatabaseFuzzTargets
         MemoryDatabase database;
         try
         {
-            database = new MemoryDatabase(data, internString: false);
+            database = new MemoryDatabase(data, new MemoryDatabaseOptions { InternString = false });
         }
         catch (Exception ex) when (IsRejection(ex))
         {
@@ -105,7 +105,7 @@ public static class DatabaseFuzzTargets
         GC.KeepAlive(count);
     }
 
-    /// <summary>Databases as they are built: none, one row, tables below and above the size that is stored compressed.</summary>
+    /// <summary>Databases as they are built: no table, one row, several tables, and a table of more rows. None is compressed: a builder writes a table as it is unless it is given a processor.</summary>
     public static byte[][] SeedCorpus()
     {
         static FuzzRow Row(int i) => new FuzzRow

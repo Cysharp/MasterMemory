@@ -7,8 +7,8 @@ namespace MasterMemory.GeneratorCore;
 /// and AddOrReplace / Remove where the primary key is unique), and ToMemoryDatabase.
 /// </summary>
 /// <remarks>
-/// What is emitted grows with the number of tables and no faster: a method names its own table only, and the one place
-/// that names them all, the call of the database constructor, is there once.
+/// What is emitted grows with the number of tables and no faster: a method names its own table only. The database is
+/// made by handing it the builder, and asks for each table through a method of that table (BuildTable).
 /// </remarks>
 static class DatabaseBuilderEmitter
 {
@@ -28,12 +28,26 @@ static class DatabaseBuilderEmitter
             }
 
             writer.Line();
+            // The options go through the generated registration class on their way to the base class, as in the
+            // database: the formatter of each table array is registered before a table is written.
+            var options = $"{model.TableFormattersName}.Registered(options)";
+
+            writer.Line("/// <summary>A builder that writes with MessagePack's source-generated formatters and without compression.</summary>");
             writer.Line($"public {name}() : this(null) {{ }}");
-            writer.Line($"public {name}(MessagePack.MessagePackFormatterFactory? formatterFactory) : base({model.FormatterFactoryName}.Instance, formatterFactory) {{ }}");
+            writer.Line();
+            writer.Lines("""
+                /// <summary>A builder that writes as the options say.</summary>
+                /// <param name="options">
+                /// How the tables are written: the formatters of the rows, and the processor if the tables are to be compressed
+                /// (new MemoryDatabaseOptions { MessageProcessor = new Lz4BlockProcessor() }, with the MessagePack.LZ4 package).
+                /// Null is MemoryDatabaseOptions.Default. Give the same options to the MemoryDatabase that reads the binary.
+                /// </param>
+                """);
+            writer.Line($"public {name}(MasterMemory.MemoryDatabaseOptions? options) : base({options}) {{ }}");
 
             // what MemoryDatabase.ToDatabaseBuilder calls
             writer.Line();
-            writer.Line($"internal {name}({database} database, MessagePack.MessagePackFormatterFactory? formatterFactory) : this(formatterFactory)");
+            writer.Line($"internal {name}({database} database, MasterMemory.MemoryDatabaseOptions? options) : base({options})");
             using (writer.OpenScope())
             {
                 foreach (var table in tables)
@@ -49,15 +63,26 @@ static class DatabaseBuilderEmitter
             writer.Line("/// </summary>");
             using (writer.Block($"public {database} ToMemoryDatabase()"))
             {
-                writer.Line($"return new {database}(");
-                writer.Indent();
-                for (var i = 0; i < tables.Length; i++)
+                writer.Line($"return new {database}(this);");
+            }
+
+            // what the constructor of the database that ToMemoryDatabase calls asks for, table by table
+            writer.Line();
+            foreach (var table in tables)
+            {
+                writer.Line($"internal {table.ClassName}Table {BuildTable(table)}() => GetTable({Entry(table)}, x => new {table.ClassName}Table(x));");
+            }
+
+            // What AppendDynamic calls with a row type known only at run time. Each branch names its type, so the
+            // Append it calls is bound at compile time: no reflection, which trimming and Native AOT could not follow.
+            writer.Line();
+            using (writer.Block("protected override bool AppendDynamicCore(Type dataType, System.Collections.Generic.IList<object> tableData)"))
+            {
+                foreach (var table in tables)
                 {
-                    var separator = (i == tables.Length - 1) ? "" : ",";
-                    writer.Line($"GetTable({Entry(tables[i])}, x => new {tables[i].ClassName}Table(x)){separator}");
+                    writer.Line($"if (dataType == typeof({table.FullTypeName})) {{ Append(CastRows<{table.FullTypeName}>(tableData)); return true; }}");
                 }
-                writer.Unindent();
-                writer.Line(");");
+                writer.Line("return false;");
             }
 
             foreach (var table in tables)
@@ -118,5 +143,14 @@ static class DatabaseBuilderEmitter
     static string Entry(GenerationContext table)
     {
         return "entry" + table.ClassName;
+    }
+
+    /// <summary>
+    /// The internal method of the builder that gives the table of one class for a database. Class names are unique, and
+    /// the other members named after a class are Remove***, so the name is no other member's.
+    /// </summary>
+    public static string BuildTable(GenerationContext table)
+    {
+        return "Build" + table.ClassName + "Table";
     }
 }

@@ -6,7 +6,7 @@ Source Generator based Embedded Typed Readonly In-Memory Document Database for .
 
 ![image](https://user-images.githubusercontent.com/46207/61031896-61890800-a3fb-11e9-86b7-84c821d347a4.png)
 
-**4700** times faster than SQLite and achieves zero allocation per query. Also the DB size is small. When SQLite is 3560kb then MasterMemory is only 222kb.
+A lookup by primary key allocates nothing and, in a table of 10,000 rows, takes about 40 nanoseconds: about **75** times faster than SQLite queried the usual way, with a command created for every query, and still about **25** times faster than SQLite with a prepared statement that is kept and reused (SQLite in memory, both sides returning the row as an object; SQLite allocates 1.3 to 2.3 KB for every row it returns). When the ids are consecutive (1, 2, 3, ...) MasterMemory reads the row at its position without a search, in about a nanosecond. The DB size is small, too: for the same 10,000 rows SQLite is 4,196 KB and MasterMemory is 4,078 KB, the size of the rows as MessagePack, or 1,823 KB with LZ4 plugged in (see "Compression"). The benchmark is in [sandbox/Benchmark](sandbox/Benchmark).
 
 Source Generator automatically generates a typed database structure from schemas (classes), which ensures that all queries are type-safe with full autocompletion support.
 
@@ -31,6 +31,8 @@ This ensures both optimal performance and excellent usability.
 - [Metadata](#metadata)
 - [Inheritance](#inheritance)
 - [Optimization](#optimization)
+- [Compression](#compression)
+- [Native AOT](#native-aot)
 - [MasterMemoryGeneratorOptions](#mastermemorygeneratoroptions)
 - [v3 -> v4 migration](#v3---v4-migration)
 - [v2 -> v3 migration](#v2---v3-migration)
@@ -195,19 +197,19 @@ public record Person
 }
 ```
 
-No serializer setup is needed for IL2CPP: the generated `MemoryDatabase` and `DatabaseBuilder` already carry the formatters of every table, and by default they run on `MessagePackFormatterFactory.DefaultAot`, which never creates a generic formatter at run time. The table types themselves are served by the MessagePack for C# source generator, which runs in every assembly that references MessagePack.
+No serializer setup is needed for IL2CPP: the generated `MemoryDatabase` and `DatabaseBuilder` register the formatter of every table themselves, and by default they run on `MessagePackFormatterFactory.DefaultAot`, which never creates a generic formatter at run time. The table types themselves are served by the MessagePack for C# source generator, which runs in every assembly that references MessagePack.
 
 If your tables contain types that need their own formatters (the `UnityEngine` value types, for example), pass the factory that serves them:
 
 ```csharp
 // Vector3 and friends: the MessagePack.Unity package
-var factory = MessagePackFormatterFactory.DefaultAot.WithUnity();
+var options = new MemoryDatabaseOptions { FormatterFactory = MessagePackFormatterFactory.DefaultAot.WithUnity() };
 
-var bin = new DatabaseBuilder(factory).Append(data).Build();
-var db = new MemoryDatabase(bin, formatterFactory: factory);
+var bin = new DatabaseBuilder(options).Append(data).Build();
+var db = new MemoryDatabase(bin, options);
 ```
 
-Every table is compressed with LZ4 through the `MessagePack.LZ4` package, which uses the native libraries of [NativeCompressions](https://github.com/Cysharp/NativeCompressions). In Unity it needs the NuGetForUnity runtime settings and, for iOS, the `NativeCompressions.Unity` editor package, as described in the [NativeCompressions README](https://github.com/Cysharp/NativeCompressions#unity).
+Nothing is compressed by default, and MasterMemory itself has no native library. If you plug in LZ4 (see "Compression"), the `MessagePack.LZ4` package uses the native libraries of [NativeCompressions](https://github.com/Cysharp/NativeCompressions): in Unity it needs the NuGetForUnity runtime settings and, for iOS, the `NativeCompressions.Unity` editor package, as described in the [NativeCompressions README](https://github.com/Cysharp/NativeCompressions#unity).
 
 DataTable configuration
 ---
@@ -358,11 +360,49 @@ MemoryDatabase/RangeView
 ---
 In default, `MemoryDatabase` do all string data automatically interning(see: [Wikipedia/String interning](https://en.wikipedia.org/wiki/String_interning)). If multiple same string value exists in database(ex: "goblin","goblin", "goblin", "goblin", "goblin"....), standard database creates string value per query or store multiple same values. But MasterMemory stores single string value reference, it can save much memory if data is denormalized.
 
-Use intern or not is selected in constructor. If you want to disable automatically interning, use `internString:false`.
+The strings are interned per database: a string is one object within a database, wherever it occurs (in two rows, in two tables). The pool that finds it is made for the load and gone with it, so nothing but the database keeps its strings alive, and a database that is dropped takes them with it. Interning is done by [MessagePack for C#'s `StringInterningFormatterFactory`](https://github.com/MessagePack-CSharp/MessagePack-CSharp); on .NET 9 and later a string the pool already has is found by its characters and not allocated a second time, so interning also makes loading a database with repeated values cheaper.
 
-`MemoryDatabase(byte[] databaseBinary, bool internString = true, MessagePack.MessagePackFormatterFactory formatterFactory = null, int maxDegreeOfParallelism = 1)`.
+How a database is read is said by `MemoryDatabaseOptions`, which is optional: `new MemoryDatabase(bin)` reads with `MemoryDatabaseOptions.Default`.
 
-`formatterFactory` supplies the formatters of the table types and their members. The default is `MessagePackFormatterFactory.DefaultAot` (source-generated and built-in formatters only, the same on the JIT as under IL2CPP and Native AOT); pass `MessagePackFormatterFactory.Default` for types that only the reflection-based formatters can serve, or your own chain for custom formatters. Use the same factory for `DatabaseBuilder`.
+```csharp
+public sealed record MemoryDatabaseOptions
+{
+    public bool InternString { get; init; } = true;
+    public bool ShareInternedStrings { get; init; } = false;
+    public MessagePackFormatterFactory? FormatterFactory { get; init; } = null;   // null: MessagePackFormatterFactory.DefaultAot
+    public MessagePackMessageProcessor? MessageProcessor { get; init; } = null;   // null: the tables are not compressed
+}
+
+// make the options once, and give the same ones to the database and to the builder
+static readonly MemoryDatabaseOptions options = new MemoryDatabaseOptions { InternString = false };
+
+var db = new MemoryDatabase(bin, options);
+var builder = new DatabaseBuilder(options);
+```
+
+* `InternString`: if you want to disable automatically interning, set it to false.
+* `ShareInternedStrings`: by default each database has a pool of its own, as said above. Set to true, the pool is the options' own, and every database that is read with those options shares it: a database that is loaded again while the application runs (master data that is reloaded) gets the string objects of the one before it for every string that did not change. In return a string stays alive as long as the options do, also when no database has it any more.
+* `FormatterFactory` supplies the formatters of the table types and their members. The default is `MessagePackFormatterFactory.DefaultAot` (source-generated and built-in formatters only, the same on the JIT as under IL2CPP and Native AOT); give `MessagePackFormatterFactory.Default` for types that only the reflection-based formatters can serve, or your own chain for custom formatters. Interning works with any of them: MasterMemory puts it in front of the factory you give.
+* `MessageProcessor` is what the tables are compressed with; the default leaves them as they are, see "Compression".
+
+The options hold what MessagePack has made for the formatters, which is why they are worth making once and keeping: a second builder with the same options does not make it again, and neither does a second database where strings are not interned or the pool is shared (a pool of its own is made for each database, and the formatters with it, which costs a kilobyte or two). A changed copy is made with `with` (`options with { MessageProcessor = lz4 }`) and starts on its own. `db.Options` and `builder.Options` are the options a database or a builder has.
+
+`MemoryDatabase(byte[] databaseBinary, MemoryDatabaseOptions options = null, int maxDegreeOfParallelism = 1)`.
+
+The database binary need not be an array of its own. There is a constructor for `ReadOnlyMemory<byte>` with the same parameters, and one for `ReadOnlySpan<byte>` without `maxDegreeOfParallelism` (reading tables at the same time hands the binary to other threads, which a span cannot do):
+
+```csharp
+// a part of a rented buffer
+var buffer = ArrayPool<byte>.Shared.Rent(length);
+stream.ReadExactly(buffer, 0, length);
+var db = new MemoryDatabase(buffer.AsMemory(0, length), maxDegreeOfParallelism: Environment.ProcessorCount);
+ArrayPool<byte>.Shared.Return(buffer);
+
+// Unity: the bytes of a TextAsset without the copy that TextAsset.bytes makes
+var db = new MemoryDatabase(textAsset.GetData<byte>().AsReadOnlySpan());
+```
+
+The binary is read until the constructor returns and is not kept, so the buffer can be reused or released right after.
 
 MemoryDatabase has three(or four) query methods.
 
@@ -383,7 +423,7 @@ And has some utility properties.
 * `RangeView<T>` SortBy***
 * `T[] GetRawDataUnsafe()`
 
-`struct RangeView<T> : IReadOnlyList<T>` is the view of database elements: rows that lie together in an index, in the order of that index. It is a window on the array of the index and copies nothing. It has following property/method.
+`struct RangeView<T>` is the view of database elements: rows that lie together in an index, in the order of that index. It is a window on the array of the index and copies nothing. It has following property/method.
 
 * `T` [int index]
 * `int` Count
@@ -394,19 +434,27 @@ And has some utility properties.
 * `bool` Any()
 * `ReadOnlySpan<T>` AsSpan()
 * `T[]` ToArray()
+* `IReadOnlyList<T>` AsReadOnlyList()
 * `ReverseRangeView<T>` Reverse
 * `Enumerator` GetEnumerator()
 
-`Reverse` is the same rows from the last to the first. It is a type of its own, `struct ReverseRangeView<T> : IReadOnlyList<T>`, with the same members except `AsSpan()` (a span runs one way only), and its `Reverse` is the `RangeView<T>` again. `AllReverse` of a table is one, too.
+`Reverse` is the same rows from the last to the first. It is a type of its own, `struct ReverseRangeView<T>`, with the same members except `AsSpan()` (a span runs one way only), and its `Reverse` is the `RangeView<T>` again. `AllReverse` of a table is one, too.
 
 ```csharp
 RangeView<Person> twenties = db.PersonTable.FindRangeByAge(20, 29);   // in order of Age
 ReverseRangeView<Person> oldestFirst = twenties.Reverse;              // the same rows, the other way
 ReadOnlySpan<Person> span = twenties.AsSpan();                        // the rows as a span of the index
 Person? youngest = twenties.FirstOrDefault();                         // null when there is none
+
+foreach (var person in twenties) { }                                  // no allocation
+
+// LINQ, and anything else that takes an IEnumerable<T>, goes through AsReadOnlyList()
+string[] names = twenties.AsReadOnlyList().Where(x => x.Gender == Gender.Female).Select(x => x.Name).ToArray();
 ```
 
-`foreach`, the indexer and the members above do not allocate (`ToArray()` allocates its array). LINQ works on both views, at the cost of boxing the view once per query.
+`foreach`, the indexer and the members above do not allocate (`ToArray()` allocates its array, `AsReadOnlyList()` one small object).
+
+A view implements no interface, `IEnumerable<T>` included. A struct that is read through an interface is boxed, and LINQ over it allocates on top of that; if a view were an `IEnumerable<T>`, a `Where` written after a lookup would do both without a sign of it in the code. So LINQ does not compile on a view, and `AsReadOnlyList()` is how to say that a list is wanted: it allocates one object, copies no row, and what it returns cannot be changed. For a loop that has to stay free of allocation, read the view with `foreach` or as a span.
 
 Extend Table
 ---
@@ -427,15 +475,15 @@ public sealed partial class MonsterTable
     // called after constructed
     partial void OnAfterConstruct()
     {
-        maxHp = All.Select(x => x.MaxHp).Max();
+        maxHp = All.AsReadOnlyList().Select(x => x.MaxHp).Max();
         // you can use Unsafe.AsRef to set readonly field
-        Unsafe.AsRef(minHp) = All.Select(x => x.MaxHp).Min();
+        Unsafe.AsRef(minHp) = All.AsReadOnlyList().Select(x => x.MaxHp).Min();
     }
     
     // add custom method other than standard Find method
     public IEnumerable<Monster> GetRangedMonster(int arg1)
     {
-        return All.Where....();
+        return All.AsReadOnlyList().Where....();
     }
 }
 ```
@@ -484,6 +532,7 @@ var newBinary = builder.Build(); // or use WriteToStream
 * `AddOrReplace` and `Remove***` are generated for tables whose primary key is unique. `AddOrReplace` takes its rows in order: of two rows with one key, the later one stays.
 * `Remove***` takes a composite key as a tuple: `builder.RemoveSkill((1, 2), (3, 1))`.
 * A change is one pass over the rows of its table. The indexes of a changed table are built when a database is made from the builder, once, however many changes there were.
+* A builder from `ToDatabaseBuilder` writes with the options the database was read with (`db.Options`): the same formatters, and compressed if the database was. `db.ToDatabaseBuilder(options)` writes with others.
 
 MemoryDatabase's reference can use as snapshot.
 
@@ -876,10 +925,57 @@ var database = new MemoryDatabase(bin, maxDegreeOfParallelism: Environment.Proce
 
 The use of Parallel can greatly improve the construct performance. Recommend to use `Environment.ProcessorCount`.
 
-If you want to reduce code size of generated code, Validator and MetaDatabase info can omit in runtime. Generated code has two symbols `DISABLE_MASTERMEMORY_VALIDATOR` and `DISABLE_MASTERMEMORY_METADATABASE`.  By defining them, can be erased from the build code.
+If you want to reduce code size of generated code, the Validator and the MetaDatabase can be left out of it with `GenerateValidator = false` and `GenerateMetaDatabase = false` of `[MasterMemoryGeneratorOptions]`, see below. To leave them out of one build only (the client, but not the tool that imports and validates the data), write the attribute twice, inside `#if`:
 
-The database generation/loading speed and size are affected by MessagePack's serialization format. Using `[MessagePackObject]` with `[Key]` attributes instead of `[MessagePackObject(true)]` can improve loading speed and reduce size. However, regarding size, since LZ4 compression is used by default, the difference may not be significant.
+```csharp
+#if UNITY_EDITOR
+[assembly: MasterMemoryGeneratorOptions(Namespace = "MyProj")]
+#else
+[assembly: MasterMemoryGeneratorOptions(Namespace = "MyProj", GenerateMetaDatabase = false, GenerateValidator = false)]
+#endif
+```
 
+The database generation/loading speed and size are affected by MessagePack's serialization format. With `[MessagePackObject(true)]` every row carries the name of every member; with `[MessagePackObject]` and `[Key(0)]`, `[Key(1)]`, ... a row is an array of its values. In a table of mostly numeric columns the names are most of the binary, so integer keys make it several times smaller and faster to load, which is more than compressing the string-keyed table gains. In a table that is mostly text (dialogue, descriptions) the keys hardly matter, and compression is what makes it smaller, see "Compression". Integer keys are numbered by hand, and a column that is added takes a new number.
+
+Compression
+---
+A database binary is not compressed: a table is stored as the MessagePack bytes of its rows, and MasterMemory depends on no compression library. Where the size of the binary matters more than the time to load it, plug in a `MessagePackMessageProcessor` of MessagePack for C# with the `MessageProcessor` of the options. LZ4 is in the `MessagePack.LZ4` package:
+
+```csharp
+// dotnet add package MessagePack.LZ4
+var options = new MemoryDatabaseOptions { MessageProcessor = new Lz4BlockProcessor() };
+
+var bin = new DatabaseBuilder(options).Append(data).Build();
+var db = new MemoryDatabase(bin, options);
+```
+
+* Each table is compressed by itself, and a table too small to gain from it is left as it is
+* A database is read with the processor it was written with, which is what giving the same options to both sees to. A compressed database read without one throws an `InvalidOperationException` that names the table and says what to pass. The other way round works: a processor leaves a table that is not compressed as it is, so a database that is given the processor reads both
+* `Lz4BlockProcessor` writes what MasterMemory v3 wrote, so this is also how a database built by v3 is read, see "v3 -> v4 migration"
+* `new Lz4BlockProcessor()` refuses a table that says it decompresses to more than 64 MB, which guards against data from outside. Master data is your own: `new Lz4BlockProcessor(maxDecompressedSize)` raises the limit for a table that is larger
+* A builder made by `db.ToDatabaseBuilder()` writes with the options the database was read with, so a database that was read with a processor is written compressed again. `db.ToDatabaseBuilder(MemoryDatabaseOptions.Default)` writes it as it is
+* `TableInfo.DumpAsJson(options)` shows a compressed table
+* `MessagePack.LZ4` uses the native libraries of [NativeCompressions](https://github.com/Cysharp/NativeCompressions); see its supported platforms, and "Getting Started(Unity)" for Unity
+
+What compression gains depends on the data. The table of [the benchmark](sandbox/Benchmark) (10,000 rows of an id, a name and a paragraph of text) is 4,078 KB as it is and 1,823 KB with LZ4. Before reaching for it, look at how the rows are serialized: with `[MessagePackObject(true)]` every row carries the name of every member, and integer keys take that away without compressing anything, see "Optimization".
+
+Native AOT
+---
+MasterMemory runs in an application that is trimmed or compiled with Native AOT (`PublishAot`), and is marked so (`IsAotCompatible`): the library and the code the source generator emits produce no trimming or AOT warning. Nothing in them looks a member up by its name or makes a type at run time.
+
+* **Loading and lookups** read through formatters and comparisons that are generated at compile time. The default formatters are `MessagePackFormatterFactory.DefaultAot`, see "MemoryDatabase/RangeView"
+* **`Validate()`** works. A check written as an expression (`validator.Validate(x => x.MaxHp > 0)`) is run by the expression interpreter, as Native AOT has no JIT to compile it with; that is slower than on the JIT and gives the same result and the same message
+* **The metadata** (`GetMetaDatabase()`) works, and so does an importer that goes by it: `MetaTable.DataType` is annotated, so the constructors and public properties of every row type are kept, and making a row with `RuntimeHelpers.GetUninitializedObject(table.DataType)` and setting it through `PropertyInfo.SetValue` passes the analysis
+* **`AppendDynamic`** does not use reflection: the generated `DatabaseBuilder` has a branch for each table that names its row type
+
+What the row types need is what MessagePack for C# needs of them: a source-generated formatter, which `[MessagePackObject]` gives.
+
+`tests/MasterMemory.Tests.Aot` is an application that exercises all of this and returns the number of checks that failed. It is how the above is verified, and a template for trying your own tables:
+
+```
+dotnet publish tests/MasterMemory.Tests.Aot -c Release -r win-x64 -o artifacts/aot
+artifacts/aot/MasterMemory.Tests.Aot
+```
 MasterMemoryGeneratorOptions
 ---
 The Source Generator settings are configured using the assembly attribute `[MasterMemoryGeneratorOptions]`. By placing it in any file, you can configure the following settings.
@@ -888,23 +984,27 @@ The Source Generator settings are configured using the assembly attribute `[Mast
 [assembly: MasterMemoryGeneratorOptions(
     Namespace = "MyConsoleApp",
     IsReturnNullIfKeyNotFound = true,
-    PrefixClassName = "Foo"
+    PrefixClassName = "Foo",
+    GenerateMetaDatabase = false,
+    GenerateValidator = false
 )]
 ```
 
 * `Namespace`: Changes the namespace of generated files. If not specified, it tries to get the `RootNamespace` set in the csproj file; if that's not available, it defaults to `MasterMemory`
 * `IsReturnNullIfKeyNotFound`: By default, the `Find` method throws a `KeyNotFoundException` when a key is not found. If set to true, the return type becomes `T?` and returns null instead
 * `PrefixClassName`: Adds a prefix to the class names of generated files. For example, `DatabaseBuilder` becomes `FooDatabaseBuilder`. This allows you to distinguish between multiple MasterMemory projects by name.
+* `GenerateMetaDatabase`: By default (true), `MemoryDatabase.GetMetaDatabase()` and the `CreateMetaTable()` of every table are generated, see "Metadata". If set to false they are not, which makes the generated code smaller where nothing reads the metadata
+* `GenerateValidator`: By default (true), `MemoryDatabase.Validate()` is generated, see "Validator". If set to false it is not, and the `Validate` methods of your `IValidatable<T>` classes are called by nothing
 
 v3 -> v4 migration
 ---
-MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-CSharp/MessagePack-CSharp). The database binary format is unchanged: v4 reads a database built by v3, and v3 reads a database built by v4. The one thing that changed is the order some tables are stored in: those whose primary key has a string member that v3 did not compare the way it was declared (a `string?`, a string in a composite key, a `[StringComparisonOption]` that was not applied). v4 reads such a table from a database built by v3 and puts its rows in order while loading; v3 cannot read one from a database built by v4. See below.
+MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-CSharp/MessagePack-CSharp). The database binary format is unchanged: v4 reads a database built by v3 (with the LZ4 processor, as v4 does not compress by itself; see the second item below), and v3 reads a database built by v4. The one other thing that changed is the order some tables are stored in: those whose primary key has a string member that v3 did not compare the way it was declared (a `string?`, a string in a composite key, a `[StringComparisonOption]` that was not applied). v4 reads such a table from a database built by v3 and puts its rows in order while loading; v3 cannot read one from a database built by v4. See below.
 
-* `IFormatterResolver` parameters became `MessagePackFormatterFactory`: `new MemoryDatabase(bin, formatterFactory: factory)`, `new DatabaseBuilder(factory)`, `ToDatabaseBuilder(factory)`
-* The generated `MasterMemoryResolver` is gone, and so is its registration (`StaticCompositeResolver`, `MessagePackSerializer.DefaultOptions`). The table formatters are composed by `MemoryDatabase` and `DatabaseBuilder` themselves; the generated `MasterMemoryFormatterFactory.Instance` exists if you serialize a table array on your own
-* With no factory given, the formatters come from `MessagePackFormatterFactory.DefaultAot` instead of the process-wide default options, which v4 no longer has. A type that has no source-generated formatter (declared in an assembly built without the MessagePack package, or without attributes) needs `MessagePackFormatterFactory.Default` or `Default.WithContractless()` passed explicitly
-* `TableInfo.DumpAsJson(MessagePackSerializerOptions)` is removed; use `DumpAsJson()`
-* LZ4 comes from the `MessagePack.LZ4` package (native, [NativeCompressions](https://github.com/Cysharp/NativeCompressions)); see its supported platforms
+* **How a database is read and written is in `MemoryDatabaseOptions`, and the constructors take that one object**: `new MemoryDatabase(bin, internString: false)` becomes `new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false })`, and an `IFormatterResolver` given to the database or the builder becomes a `MessagePackFormatterFactory` in the options: `new MemoryDatabaseOptions { FormatterFactory = factory }`. The same options go to `new DatabaseBuilder(options)`, so make them once and keep them. `maxDegreeOfParallelism` is still a parameter of the constructor, and `new MemoryDatabase(bin)` and `new MemoryDatabase(bin, maxDegreeOfParallelism: n)` are unchanged. A builder made by `db.ToDatabaseBuilder()` writes with the options the database was read with. See "MemoryDatabase/RangeView"
+* The generated `MasterMemoryResolver` is gone, and so is its registration (`StaticCompositeResolver`, `MessagePackSerializer.DefaultOptions`). The generated code registers the formatter of each table array with MessagePack itself, when the first `MemoryDatabase` or `DatabaseBuilder` is made, so it is found through `DefaultAot`, `Default` and any factory built around them: there is nothing of MasterMemory's to put into a chain of your own
+* With no factory given, the formatters come from `MessagePackFormatterFactory.DefaultAot` instead of the process-wide default options, which v4 no longer has. A type that has no source-generated formatter (declared in an assembly built without the MessagePack package, or without attributes) needs `MessagePackFormatterFactory.Default` or `Default.WithContractless()` as the `FormatterFactory` of the options
+* `TableInfo.DumpAsJson(MessagePackSerializerOptions)` became `DumpAsJson(MemoryDatabaseOptions)`: `DumpAsJson()` for a table that is not compressed, `DumpAsJson(options)` with the options that have the processor for one that is
+* **Tables are not compressed unless you say so, and a database built by v3 needs the LZ4 processor to be read.** v3 compressed every table with LZ4, which MessagePack for C# v3 had built in. In MessagePack for C# v4 LZ4 is a package of its own, `MessagePack.LZ4`, with native libraries ([NativeCompressions](https://github.com/Cysharp/NativeCompressions)); MasterMemory does not reference it and writes a table as it is. To read a database built by v3, reference `MessagePack.LZ4` and give its processor in the options: `new MemoryDatabase(bin, new MemoryDatabaseOptions { MessageProcessor = new Lz4BlockProcessor() })`. Without it the constructor throws an `InvalidOperationException` that says so. A builder given the same options writes what v3 wrote, compressed. The processor also reads a table that is not compressed, so it can stay in place while the databases are rebuilt. See "Compression", also for the 64 MB a table may decompress to by default
 * The table types follow MessagePack for C# v4's rules, see [Migrating from v3](https://github.com/MessagePack-CSharp/MessagePack-CSharp/tree/v4#migrating-from-v3). The ones master data meets most: in a `#nullable enable` context a `null` in a member declared non-nullable is refused on both build and load (declare it `string?`), and constructor parameters bind to members by name
 * A key declared `string?` is compared like a `string` key: `StringComparer.Ordinal`, or what `[StringComparisonOption]` says. Before, it was compared by the current culture and the attribute was ignored. A table is stored in the order of its primary key, so such a table is stored in another order now; see "the order of a primary key with a string member" below. Secondary keys are sorted on load and need nothing
 * A string in a composite key is compared ordinally, like a key of one string. Before, a composite key was compared by the default comparer of its tuple, which compares strings by the current culture: the machine that built a database and the device that loaded it could disagree on the order of the same rows. Such a primary key is stored in another order now, see below
@@ -924,7 +1024,7 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * `FindRangeBy***` of a `[NonUnique]` string key no longer returns an empty range for a valid one: whether `min` is after `max` was decided by the culture, not by the ordinal order the index is in (`FindRangeByName("B", "a")`)
 * `RangeView<T>.CopyTo` of an empty view does nothing instead of throwing `ArgumentNullException`
 * `RangeView<T>.GetEnumerator()` returns a struct, so `foreach` over a range no longer allocates
-* **A view runs one way, and its reverse is a type of its own**: `RangeView<T>` is always in the order of its index, and `Reverse` and `AllReverse` return a `ReverseRangeView<T>`. `FindRangeBy***` no longer takes `ascendant`: `FindRangeByAge(20, 29, ascendant: false)` becomes `FindRangeByAge(20, 29).Reverse`. A variable or parameter declared `RangeView<T>` that was given a reversed view becomes a `ReverseRangeView<T>` (or an `IReadOnlyList<T>`, which both are). The compiler points at each of these. In return a `RangeView<T>` can always be read as a span, and reading a view costs less: it no longer asks which way it runs for every row
+* **A view runs one way, and its reverse is a type of its own**: `RangeView<T>` is always in the order of its index, and `Reverse` and `AllReverse` return a `ReverseRangeView<T>`. `FindRangeBy***` no longer takes `ascendant`: `FindRangeByAge(20, 29, ascendant: false)` becomes `FindRangeByAge(20, 29).Reverse`. A variable or parameter declared `RangeView<T>` that was given a reversed view becomes a `ReverseRangeView<T>` (or an `IReadOnlyList<T>`, which `AsReadOnlyList()` of both gives). The compiler points at each of these. In return a `RangeView<T>` can always be read as a span, and reading a view costs less: it no longer asks which way it runs for every row
 * `RangeView<T>.AsSpan()` is new, and so are `FirstOrDefault()`, `LastOrDefault()` and `ToArray()` on both views. The methods of LINQ with these names were what a call bound to before, and they boxed the view; after a recompile the same call binds to the view's own method, which does not
 * The constructor of `RangeView<T>` is `(array)` or `(array, offset, count)` and checks its arguments; it was `(array, left, right, ascendant)`
 * `Validate()` finds the rows that share a unique key by the comparison of that key. Before, it compared keys by their default equality, so with `[StringComparisonOption(StringComparison.OrdinalIgnoreCase)]` the rows "abc" and "ABC" passed as two keys, while a lookup found only one of them
@@ -943,6 +1043,13 @@ MasterMemory v4 runs on [MessagePack for C# v4](https://github.com/MessagePack-C
 * A null row given to `Append` is an `ArgumentException` that says which table and which index, instead of a `NullReferenceException`
 * The name of a table is no longer read from its `[MemoryTable]` attribute by reflection when a database is loaded or a table is appended; the generated code passes it
 * Target frameworks are `netstandard2.0`, `netstandard2.1` and `net9.0`
+* **A view is not an `IEnumerable<T>`**: `RangeView<T>` and `ReverseRangeView<T>` no longer implement `IReadOnlyList<T>` and `IList<T>`, so LINQ on the result of a lookup does not compile, and neither does passing a view where an `IEnumerable<T>` is taken. Write `AsReadOnlyList()` there: `FindByGender(Gender.Female).Where(...)` becomes `FindByGender(Gender.Female).AsReadOnlyList().Where(...)`. The compiler points at each place, though what it says is only that `Where` is not found. Until v3 every such place boxed the view; now the ones that are left are the ones written out. `foreach`, the indexer, `Count`, `First`/`Last`, `FirstOrDefault()`, `ToArray()`, `Contains`, `IndexOf` and `CopyTo` are members of the views and are unchanged
+* `MemoryDatabase` is also read from a `ReadOnlyMemory<byte>` and from a `ReadOnlySpan<byte>`, and so is `GetTableInfo` from a span; see "MemoryDatabase/RangeView". `new MemoryDatabase(bytes)` with a `byte[]` is unchanged. An `ArraySegment<byte>` converts to both and has to say which: `segment.AsMemory()` or `segment.AsSpan()`
+* The constructor of `MemoryDatabase` that took every table as a parameter (`new MemoryDatabase(itemTable, personTable, ...)`) is gone; a database from rows is made by `DatabaseBuilder.ToMemoryDatabase()`. With hundreds of tables that constructor had hundreds of parameters
+* Strings are interned by MessagePack for C#'s `StringInterningFormatterFactory`, into a pool of the database that is being loaded, and no longer with `string.Intern`. Within a database a string is one object as before. What changed: the strings are not in the runtime's intern pool (`string.IsInterned` says no, and a string of a database is not the same object as an equal literal in your code), two databases do not share their strings, and the strings of a database that is dropped are collected, where they used to stay for the life of the process. A pool that several databases share is there again for those who ask for it, `ShareInternedStrings` of `MemoryDatabaseOptions`: it is the pool of those options and lives as long as they do
+* MasterMemory is compatible with trimming and Native AOT and says so (`IsAotCompatible`), see "Native AOT". `AppendDynamic` no longer finds `Append` by reflection and no longer converts the rows with `Convert.ChangeType`: a row has to be an instance of the row type, which is what an importer makes
+* The symbols `DISABLE_MASTERMEMORY_METADATABASE` and `DISABLE_MASTERMEMORY_VALIDATOR` are no longer read: the generated code has no `#if` in it. Set `GenerateMetaDatabase = false` and `GenerateValidator = false` in `[MasterMemoryGeneratorOptions]` instead, see "Optimization" for one build among several. A project that still defines one of the symbols builds as before, with that code generated, and gets the warning `MAM012` for it
+* The attributes (`[MemoryTable]`, `[PrimaryKey]`, `[SecondaryKey]`, `[NonUnique]`, `[StringComparisonOption]`) are in the `MasterMemory` package itself, in the same namespace. `MasterMemory.Annotations` is kept as a shim that has no types of its own and type-forwards to `MasterMemory`, so an assembly compiled against the v3 one keeps working; it depends on `MasterMemory` now, the other way round from v3. Reference `MasterMemory` alone in new projects, and drop a `MasterMemory.Annotations` reference where you have one
 
 v2 -> v3 migration
 ---

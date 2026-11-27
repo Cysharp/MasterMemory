@@ -197,7 +197,7 @@ namespace MasterMemory.Tests
 
         static void VerifySample(Failures failures, string prefix, Sample[] rows)
         {
-            VerifySampleTable(failures, prefix, new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), internString: false).SampleTable);
+            VerifySampleTable(failures, prefix, new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), new MemoryDatabaseOptions { InternString = false }).SampleTable);
         }
 
         static void VerifySampleTable(Failures failures, string prefix, Tables.SampleTable table)
@@ -314,7 +314,7 @@ namespace MasterMemory.Tests
             var probes = new[] { null, "", " ", "0", "A", "B", "C", "Z", "_", "a", "a1", "a2", "aZ", "a_", "a_b", "a_c", "aa", "b", "c", "~" };
             var aliasProbes = new[] { null, "", "ALPHA", "Alpha", "alpha", "alphb", "BETA", "beta", "betz", "DELTA", "delta", "EPSILON", "f", "GAMMA", "gamma", "h", "ZETA", "zeta", "zz" };
 
-            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), internString: false).NullableStringKeyMasterTable;
+            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), new MemoryDatabaseOptions { InternString = false }).NullableStringKeyMasterTable;
 
             VerifyUnique(failures, "Code (ordinal)", table.All.ToArray(), x => x.Code, StringComparer.Ordinal, probes, x => "#" + x.Value,
                 table.FindByCode, table.TryFindByCode, table.FindClosestByCode, table.FindRangeByCode);
@@ -330,7 +330,7 @@ namespace MasterMemory.Tests
                 new FileScopedMaster { Id = 4, Element = Element.Fire, Code = "d" },
             };
             var elements = new[] { (Element)(-1), Element.Fire, Element.Water, Element.Wind, (Element)3, (Element)int.MaxValue };
-            var elementTable = new MemoryDatabase(new DatabaseBuilder().Append(elementRows).Build(), internString: false).FileScopedMasterTable;
+            var elementTable = new MemoryDatabase(new DatabaseBuilder().Append(elementRows).Build(), new MemoryDatabaseOptions { InternString = false }).FileScopedMasterTable;
 
             VerifyShared(failures, "Element", elementTable.SortByElement.ToArray(), x => x.Element, Comparer<Element>.Default, elements, x => "#" + x.Id,
                 elementTable.FindByElement, elementTable.FindClosestByElement, elementTable.FindRangeByElement);
@@ -368,7 +368,7 @@ namespace MasterMemory.Tests
                 No = i,
             }).ToArray();
 
-            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), internString: false).OtherKeyTypesMasterTable;
+            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), new MemoryDatabaseOptions { InternString = false }).OtherKeyTypesMasterTable;
             Func<OtherKeyTypesMaster, string> describe = x => "#" + x.No;
 
             var ids = rows.Select(x => x.Id).Concat(new[] { Guid.Empty, new Guid(4, 99, 3, 4, 5, 6, 7, 8, 9, 10, 11), new Guid(int.MaxValue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }).ToArray();
@@ -465,7 +465,7 @@ namespace MasterMemory.Tests
         {
             var failures = new Failures();
             var rows = PrefixRows(count);
-            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), internString: false).PrefixMasterTable;
+            var table = new MemoryDatabase(new DatabaseBuilder().Append(rows).Build(), new MemoryDatabaseOptions { InternString = false }).PrefixMasterTable;
             Func<PrefixMaster, string> describe = x => "#" + x.No;
 
             // the primary key (Category, Sub ignoring case, No)
@@ -498,9 +498,9 @@ namespace MasterMemory.Tests
             // what a head is for: the rows of one value, already in the order of the other members
             if (count == 23)
             {
-                table.FindByKind(SmallKind.B).Select(x => x.Level).ToArray().ShouldBe(table.FindByKind(SmallKind.B).Select(x => x.Level).OrderBy(x => x).ToArray());
+                table.FindByKind(SmallKind.B).AsReadOnlyList().Select(x => x.Level).ToArray().ShouldBe(table.FindByKind(SmallKind.B).AsReadOnlyList().Select(x => x.Level).OrderBy(x => x).ToArray());
                 table.FindByKind(SmallKind.B).Count.ShouldBe(rows.Count(x => x.Kind == SmallKind.B));
-                table.FindByCategory(1).Select(x => x.No).OrderBy(x => x).ToArray().ShouldBe(rows.Where(x => x.Category == 1).Select(x => x.No).ToArray());
+                table.FindByCategory(1).AsReadOnlyList().Select(x => x.No).OrderBy(x => x).ToArray().ShouldBe(rows.Where(x => x.Category == 1).Select(x => x.No).ToArray());
             }
         }
 
@@ -510,8 +510,8 @@ namespace MasterMemory.Tests
         public void TablesChangedThroughTheBuilder()
         {
             var failures = new Failures();
-            var original = new MemoryDatabase(new DatabaseBuilder().Append(SampleRows()).Append(new[] { new UserLevel(1, 100), new UserLevel(2, 200) }).Build(), internString: false);
-            var originalIds = original.SampleTable.All.Select(x => x.Id).ToArray();
+            var original = new MemoryDatabase(new DatabaseBuilder().Append(SampleRows()).Append(new[] { new UserLevel(1, 100), new UserLevel(2, 200) }).Build(), new MemoryDatabaseOptions { InternString = false });
+            var originalIds = original.SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray();
 
             MemoryDatabase Apply(Action<DatabaseBuilder> change)
             {
@@ -522,12 +522,12 @@ namespace MasterMemory.Tests
 
             void ShouldHoldIds(MemoryDatabase database, string name, IEnumerable<int> expectedIds)
             {
-                database.SampleTable.All.Select(x => x.Id).ToArray().ShouldBe(expectedIds.OrderBy(x => x).ToArray(), name);
+                database.SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(expectedIds.OrderBy(x => x).ToArray(), name);
                 VerifySampleTable(failures, name + ": ", database.SampleTable);
 
                 // the table that was not touched is shared, the database that was changed from is as it was
                 ReferenceEquals(database.UserLevelTable, original.UserLevelTable).ShouldBeTrue(name);
-                original.SampleTable.All.Select(x => x.Id).ToArray().ShouldBe(originalIds, name);
+                original.SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(originalIds, name);
             }
 
             // Remove: rows that exist, a key that does not, a key given twice, no key at all, every key
@@ -549,8 +549,8 @@ namespace MasterMemory.Tests
             var afterReplace = Apply(x => x.AddOrReplace(new[] { replaced }));
             ShouldHoldIds(afterReplace, "add or replace: replace", originalIds);
             afterReplace.SampleTable.FindById(7).LastName.ShouldBe("changed");
-            afterReplace.SampleTable.FindByAge(39).Select(x => x.Id).ToArray().ShouldBe(new[] { 14 }); // 7 left its old age
-            afterReplace.SampleTable.FindByAge(1).Select(x => x.Id).ToArray().ShouldBe(new[] { 7 });
+            afterReplace.SampleTable.FindByAge(39).AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 14 }); // 7 left its old age
+            afterReplace.SampleTable.FindByAge(1).AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 7 });
             original.SampleTable.FindById(7).LastName.ShouldBe("foo");
 
             ShouldHoldIds(Apply(x => x.AddOrReplace(new[] { replaced, added })), "add or replace: replace and add", originalIds.Append(11));

@@ -12,9 +12,14 @@ namespace MasterMemory
     /// copies nothing. The same rows from the last to the first are its <see cref="Reverse"/>, a type of its own, so
     /// that reading this one never has to ask which way it runs, and it can always be read as a span.
     /// </summary>
+    /// <remarks>
+    /// A view implements no interface. Read through one, a struct is boxed, and LINQ over it allocates: here that happens
+    /// only where the code asks for it, with <see cref="AsReadOnlyList"/>. foreach, the indexer, Count, AsSpan and the
+    /// members of the view allocate nothing.
+    /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(RangeViewDebugView<>))]
-    public readonly struct RangeView<T> : IReadOnlyList<T>, IList<T>
+    public readonly struct RangeView<T>
     {
         public static RangeView<T> Empty => default;
 
@@ -103,21 +108,21 @@ namespace MasterMemory
             return result;
         }
 
-        /// <summary>Enumerates without allocating: foreach binds to this struct, not to the interface.</summary>
+        /// <summary>
+        /// The rows as a list, for what takes an interface: LINQ, a method with an IEnumerable&lt;T&gt; parameter. It
+        /// allocates one object (none for an empty view) and copies no row. Nothing can be changed through the list.
+        /// </summary>
+        public IReadOnlyList<T> AsReadOnlyList()
+        {
+            return (count == 0) ? Internal.RangeViewList<T>.Empty : new Internal.RangeViewList<T>(this, reverse: false);
+        }
+
+        /// <summary>Enumerates without allocating: foreach binds to this struct.</summary>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(array, offset, count);
         }
 
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
 
         public struct Enumerator : IEnumerator<T>
         {
@@ -192,46 +197,6 @@ namespace MasterMemory
             throw new ArgumentOutOfRangeException("index");
         }
 
-        // IList<T>, which LINQ looks for to count, index and copy without enumerating. Read-only.
-
-        bool ICollection<T>.IsReadOnly => true;
-
-        T IList<T>.this[int index]
-        {
-            get
-            {
-                return this[index];
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        void IList<T>.Insert(int index, T item)
-        {
-            throw new NotSupportedException();
-        }
-
-        void IList<T>.RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        void ICollection<T>.Add(T item)
-        {
-            throw new NotSupportedException();
-        }
-
-        void ICollection<T>.Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        bool ICollection<T>.Remove(T item)
-        {
-            throw new NotSupportedException();
-        }
     }
 
     // What the debugger shows for a view: its rows, not the whole array of the index and two numbers.

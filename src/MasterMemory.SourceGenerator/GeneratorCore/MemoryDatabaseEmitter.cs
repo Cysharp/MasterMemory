@@ -8,7 +8,11 @@ namespace MasterMemory.GeneratorCore;
 /// </summary>
 static class MemoryDatabaseEmitter
 {
-    const string InitParameters = "Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism";
+    // The tables are read one after another from a span, which can be over any memory. Reading several at the same
+    // time hands the binary to other threads, and that takes a ReadOnlyMemory.
+    const string SequentialParameters = "Dictionary<string, (int offset, int count)> header, System.ReadOnlySpan<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options";
+    const string ParallelParameters = "Dictionary<string, (int offset, int count)> header, System.ReadOnlyMemory<byte> databaseBinary, MessagePack.MessagePackSerializerOptions options, int maxDegreeOfParallelism";
+    const string Options = "MasterMemory.MemoryDatabaseOptions? options";
 
     public static string Emit(DatabaseModel model)
     {
@@ -24,53 +28,101 @@ static class MemoryDatabaseEmitter
                 writer.Line($"{table.Accessibility} {table.ClassName}Table {table.ClassName}Table {{ get; private set; }} = default!;");
             }
 
-            // from tables that already exist: what DatabaseBuilder.ToMemoryDatabase calls. It names every table, so it
-            // is internal as soon as one of them is.
-            var allTablesAccessibility = tables.Any(x => x.Accessibility != "public") ? "internal" : "public";
+            // From the tables of a builder: what DatabaseBuilder.ToMemoryDatabase calls. It takes the builder and asks
+            // it for each table, so that no constructor has a parameter per table. The options of the builder are the
+            // options of the database.
             writer.Line();
-            writer.Line($"{allTablesAccessibility} {name}(");
+            writer.Line($"internal {name}({model.DatabaseBuilderName} builder)");
             writer.Indent();
-            for (var i = 0; i < tables.Length; i++)
-            {
-                var separator = (i == tables.Length - 1) ? "" : ",";
-                writer.Line($"{tables[i].ClassName}Table {tables[i].ClassName}Table{separator}");
-            }
+            writer.Line(": base(builder.Options)");
             writer.Unindent();
-            writer.Line(")");
             using (writer.OpenScope())
             {
                 foreach (var table in tables)
                 {
-                    writer.Line($"this.{table.ClassName}Table = {table.ClassName}Table;");
+                    writer.Line($"this.{table.ClassName}Table = builder.{DatabaseBuilderEmitter.BuildTable(table)}();");
                 }
             }
 
+            // Every constructor that reads a binary passes its options through the generated registration class, which
+            // registers the formatter of each table array before the base class reads a table (TableFormattersEmitter).
+            //
+            // How the tables are read is in one object, MemoryDatabaseOptions: the formatters, the processor the tables
+            // were compressed with, whether strings are interned. The same object is given to the builder. With none
+            // given the tables are read with MessagePack's source-generated formatters, as they are (no compression),
+            // and the strings are interned within the database.
+            var options = $"{model.TableFormattersName}.Registered(options)";
+
             writer.Line();
-            writer.Line($"public {name}(byte[] databaseBinary, bool internString = true, MessagePack.MessagePackFormatterFactory? formatterFactory = null, int maxDegreeOfParallelism = 1)");
+            writer.Lines("""
+                /// <summary>The database from its binary.</summary>
+                /// <param name="databaseBinary">What DatabaseBuilder.Build returned.</param>
+                /// <param name="options">
+                /// How the tables are read: the formatters of the rows, the processor the tables were compressed with, whether
+                /// strings are interned. The default is MemoryDatabaseOptions.Default: MessagePack's source-generated formatters,
+                /// no compression, strings interned within the database. A database built by MasterMemory v3 is compressed with
+                /// LZ4 and takes new MemoryDatabaseOptions { MessageProcessor = new Lz4BlockProcessor() }, with the processor of
+                /// the MessagePack.LZ4 package. Make the options once and give the same ones to DatabaseBuilder.
+                /// </param>
+                /// <param name="maxDegreeOfParallelism">How many tables are deserialized at the same time.</param>
+                """);
+            writer.Line($"public {name}(byte[] databaseBinary, {Options} = null, int maxDegreeOfParallelism = 1)");
             writer.Indent();
-            writer.Line($": base(databaseBinary, internString, {model.FormatterFactoryName}.Instance, formatterFactory, maxDegreeOfParallelism)");
+            writer.Line($": base(databaseBinary, {options}, maxDegreeOfParallelism)");
             writer.Unindent();
             using (writer.OpenScope())
             {
             }
 
             writer.Line();
+            writer.Line("/// <summary>");
+            writer.Line("/// The database from memory that need not be an array of its own: a part of a larger buffer, a rented array,");
+            writer.Line("/// native memory. The memory is read until the constructor returns and is not kept.");
+            writer.Line("/// </summary>");
+            writer.Line($"/// <inheritdoc cref=\"{name}(byte[], MasterMemory.MemoryDatabaseOptions, int)\" path=\"/param\"/>");
+            writer.Line($"public {name}(System.ReadOnlyMemory<byte> databaseBinary, {Options} = null, int maxDegreeOfParallelism = 1)");
+            writer.Indent();
+            writer.Line($": base(databaseBinary, {options}, maxDegreeOfParallelism)");
+            writer.Unindent();
+            using (writer.OpenScope())
+            {
+            }
+
+            writer.Line();
+            writer.Line("/// <summary>");
+            writer.Line("/// The database from a span, which can be over any memory. The tables are read one after another: reading");
+            writer.Line("/// them at the same time (maxDegreeOfParallelism) takes a byte[] or a ReadOnlyMemory. The span is not kept.");
+            writer.Line("/// </summary>");
+            writer.Line($"/// <inheritdoc cref=\"{name}(byte[], MasterMemory.MemoryDatabaseOptions, int)\" path=\"/param\"/>");
+            writer.Line($"public {name}(System.ReadOnlySpan<byte> databaseBinary, {Options} = null)");
+            writer.Indent();
+            writer.Line($": base(databaseBinary, {options})");
+            writer.Unindent();
+            using (writer.OpenScope())
+            {
+            }
+            writer.Line();
             writer.Lines($$"""
-                protected override void Init({{InitParameters}})
+                protected override void Init({{ParallelParameters}})
                 {
                     if (maxDegreeOfParallelism == 1)
                     {
-                        InitSequential(header, databaseBinary, options, maxDegreeOfParallelism);
+                        InitSequential(header, databaseBinary.Span, options);
                     }
                     else
                     {
                         InitParallel(header, databaseBinary, options, maxDegreeOfParallelism);
                     }
                 }
+
+                protected override void Init({{SequentialParameters}})
+                {
+                    InitSequential(header, databaseBinary, options);
+                }
                 """);
 
             writer.Line();
-            using (writer.Block($"void InitSequential({InitParameters})"))
+            using (writer.Block($"void InitSequential({SequentialParameters})"))
             {
                 foreach (var table in tables)
                 {
@@ -79,7 +131,7 @@ static class MemoryDatabaseEmitter
             }
 
             writer.Line();
-            using (writer.Block($"void InitParallel({InitParameters})"))
+            using (writer.Block($"void InitParallel({ParallelParameters})"))
             {
                 writer.Line("var extracts = new Action[]");
                 using (writer.OpenScope(";"))
@@ -103,46 +155,41 @@ static class MemoryDatabaseEmitter
             writer.Line("/// A builder that has every table of this database, to change some of them and make another database");
             writer.Line("/// (ToMemoryDatabase) or a database binary (Build). This database stays as it is.");
             writer.Line("/// </summary>");
-            using (writer.Block($"public {model.DatabaseBuilderName} ToDatabaseBuilder()"))
+            writer.Line("/// <param name=\"options\">");
+            writer.Line("/// What the builder writes with. The default is the options of this database: a database that was read with a");
+            writer.Line("/// processor is written with it again.");
+            writer.Line("/// </param>");
+            using (writer.Block($"public {model.DatabaseBuilderName} ToDatabaseBuilder({Options} = null)"))
             {
-                writer.Line($"return new {model.DatabaseBuilderName}(this, null);");
+                writer.Line($"return new {model.DatabaseBuilderName}(this, options ?? Options);");
             }
 
-            writer.Line();
-            writer.Line("/// <inheritdoc cref=\"ToDatabaseBuilder()\"/>");
-            using (writer.Block($"public {model.DatabaseBuilderName} ToDatabaseBuilder(MessagePack.MessagePackFormatterFactory formatterFactory)"))
+            // GenerateValidator = false leaves this out, and the ITableUniqueValidate of every table with it
+            if (model.GenerateValidator)
             {
-                writer.Line($"return new {model.DatabaseBuilderName}(this, formatterFactory);");
-            }
-
-            writer.Line();
-            writer.Directive("#if !DISABLE_MASTERMEMORY_VALIDATOR");
-            writer.Line();
-            using (writer.Block("public ValidateResult Validate()"))
-            {
-                writer.Line("var result = new ValidateResult();");
-                writer.Line("var database = new ValidationDatabase(new object[]");
-                using (writer.OpenScope(");"))
+                writer.Line();
+                using (writer.Block("public ValidateResult Validate()"))
                 {
+                    writer.Line("var result = new ValidateResult();");
+                    writer.Line("var database = new ValidationDatabase(new object[]");
+                    using (writer.OpenScope(");"))
+                    {
+                        foreach (var table in tables)
+                        {
+                            writer.Line($"{table.ClassName}Table,");
+                        }
+                    }
+                    writer.Line();
                     foreach (var table in tables)
                     {
-                        writer.Line($"{table.ClassName}Table,");
+                        writer.Line($"((ITableUniqueValidate){table.ClassName}Table).ValidateUnique(result);");
+                        writer.Line($"ValidateTable({table.ClassName}Table.All, database, \"{table.PrimaryKey.BuildPropertyTupleName()}\", {table.ClassName}Table.PrimaryKeySelector, result);");
                     }
+                    writer.Line();
+                    writer.Line("return result;");
                 }
-                writer.Line();
-                foreach (var table in tables)
-                {
-                    writer.Line($"((ITableUniqueValidate){table.ClassName}Table).ValidateUnique(result);");
-                    writer.Line($"ValidateTable({table.ClassName}Table.All, database, \"{table.PrimaryKey.BuildPropertyTupleName()}\", {table.ClassName}Table.PrimaryKeySelector, result);");
-                }
-                writer.Line();
-                writer.Line("return result;");
             }
-            writer.Line();
-            writer.Directive("#endif");
 
-            writer.Line();
-            writer.Line("static MasterMemory.Meta.MetaDatabase? metaTable;");
             writer.Line();
             using (writer.Block($"public static object? GetTable({name} db, string tableName)"))
             using (writer.Block("switch (tableName)"))
@@ -156,24 +203,26 @@ static class MemoryDatabaseEmitter
                 writer.Indent().Line("return null;").Unindent();
             }
 
-            writer.Line();
-            writer.Directive("#if !DISABLE_MASTERMEMORY_METADATABASE");
-            writer.Line();
-            using (writer.Block("public static MasterMemory.Meta.MetaDatabase GetMetaDatabase()"))
+            // GenerateMetaDatabase = false leaves this out, and the CreateMetaTable of every table with it
+            if (model.GenerateMetaDatabase)
             {
-                writer.Line("if (metaTable != null) return metaTable;");
                 writer.Line();
-                writer.Line("var dict = new Dictionary<string, MasterMemory.Meta.MetaTable>();");
-                foreach (var table in tables)
+                writer.Line("static MasterMemory.Meta.MetaDatabase? metaTable;");
+                writer.Line();
+                using (writer.Block("public static MasterMemory.Meta.MetaDatabase GetMetaDatabase()"))
                 {
-                    writer.Line($"dict.Add({table.MemoryTableNameLiteral}, {model.Namespace}.Tables.{table.ClassName}Table.CreateMetaTable());");
+                    writer.Line("if (metaTable != null) return metaTable;");
+                    writer.Line();
+                    writer.Line("var dict = new Dictionary<string, MasterMemory.Meta.MetaTable>();");
+                    foreach (var table in tables)
+                    {
+                        writer.Line($"dict.Add({table.MemoryTableNameLiteral}, {model.Namespace}.Tables.{table.ClassName}Table.CreateMetaTable());");
+                    }
+                    writer.Line();
+                    writer.Line("metaTable = new MasterMemory.Meta.MetaDatabase(dict);");
+                    writer.Line("return metaTable;");
                 }
-                writer.Line();
-                writer.Line("metaTable = new MasterMemory.Meta.MetaDatabase(dict);");
-                writer.Line("return metaTable;");
             }
-            writer.Line();
-            writer.Directive("#endif");
         }
 
         return writer.ToStringAndReturn();

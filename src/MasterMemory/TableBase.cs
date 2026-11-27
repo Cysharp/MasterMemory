@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace MasterMemory
 {
-    public abstract class TableBase<TElement>
+    public abstract class TableBase<TElement> : Validation.IValidationTable
     {
         protected readonly TElement[] data;
 
@@ -26,6 +26,9 @@ namespace MasterMemory
         public RangeView<TElement> All => new RangeView<TElement>(data);
         public ReverseRangeView<TElement> AllReverse => new RangeView<TElement>(data).Reverse;
         public TElement[] GetRawDataUnsafe() => data;
+
+        Type Validation.IValidationTable.ElementType => typeof(TElement);
+        object Validation.IValidationTable.Rows => All.AsReadOnlyList();
 
         public TableBase(TElement[] sortedData)
         {

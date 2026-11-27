@@ -45,9 +45,9 @@ namespace MasterMemory.Tests
 
             Enumerate(view).ToArray().ShouldBe(expected);
 
-            // the interface paths box the same enumerator
-            ((IEnumerable<int>)view).ToArray().ShouldBe(expected);
-            ((IEnumerable)view).Cast<int>().ToArray().ShouldBe(expected);
+            // the list of the view enumerates the same rows
+            view.AsReadOnlyList().ToArray().ShouldBe(expected);
+            ((IEnumerable)view.AsReadOnlyList()).Cast<int>().ToArray().ShouldBe(expected);
             Enumerate(view.Reverse.Reverse).ToArray().ShouldBe(expected);
 
             var reverse = view.Reverse;
@@ -55,8 +55,8 @@ namespace MasterMemory.Tests
             expectedReverse.ShouldBe(expected.Reverse().ToArray());
 
             Enumerate(reverse).ToArray().ShouldBe(expectedReverse);
-            ((IEnumerable<int>)reverse).ToArray().ShouldBe(expectedReverse);
-            ((IEnumerable)reverse).Cast<int>().ToArray().ShouldBe(expectedReverse);
+            reverse.AsReadOnlyList().ToArray().ShouldBe(expectedReverse);
+            ((IEnumerable)reverse.AsReadOnlyList()).Cast<int>().ToArray().ShouldBe(expectedReverse);
         }
 
         [Fact]

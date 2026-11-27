@@ -5,6 +5,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<!-- MasterMemory does not reference it: compression is what an application plugs in. The tests do, to read the
+		     databases of v3 (Golden/*.bin), which are compressed, and to write compressed ones. -->
+		<PackageReference Include="MessagePack.LZ4" Version="4.0.0-rc.1" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
 		<PackageReference Include="Shouldly" Version="4.2.1" />
 		<PackageReference Include="xunit" Version="2.9.2" />
@@ -13,6 +16,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
+		<!-- the checks of the Native AOT application, which AotChecksTest runs on the JIT -->
+		<ProjectReference Include="..\MasterMemory.Tests.Aot\MasterMemory.Tests.Aot.csproj" />
+		<!-- the type-forwarding shim, see AnnotationsForwardTest -->
+		<ProjectReference Include="..\..\src\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
 		<!-- the fuzz targets of the lookups, which FindFuzzTest runs on fixed inputs -->
 		<ProjectReference Include="..\MasterMemory.Tests.Fuzz.Target\MasterMemory.Tests.Fuzz.Target.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj">

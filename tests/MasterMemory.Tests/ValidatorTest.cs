@@ -31,7 +31,7 @@ namespace MasterMemory.Tests
                 .Append(data1)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(SingleMaster[] data1)
@@ -41,7 +41,7 @@ namespace MasterMemory.Tests
                 .Append(data1)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(SequentialCheckMaster[] data1)
@@ -51,7 +51,7 @@ namespace MasterMemory.Tests
                 .Append(data1)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(QuestMaster[] data1, ItemMaster[] data2)
@@ -62,7 +62,7 @@ namespace MasterMemory.Tests
                 .Append(data2)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(QuestMasterEmptyValidate[] data1, ItemMasterEmptyValidate[] data2)
@@ -73,7 +73,7 @@ namespace MasterMemory.Tests
                 .Append(data2)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         [Fact]

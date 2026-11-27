@@ -22,7 +22,7 @@ namespace MasterMemory.Tests
             return new Sample(id, n % 90, "first" + n, "last" + n);
         }
 
-        static string[] Rows(MemoryDatabase database) => database.SampleTable.All.Select(x => x.ToString()).ToArray();
+        static string[] Rows(MemoryDatabase database) => database.SampleTable.All.AsReadOnlyList().Select(x => x.ToString()).ToArray();
 
         // ---- out: the database, and the binary ----
 
@@ -31,7 +31,7 @@ namespace MasterMemory.Tests
         {
             var builder = GoldenData.CreateBuilder();
             var direct = builder.ToMemoryDatabase();
-            var loaded = new MemoryDatabase(builder.Build(), internString: false);
+            var loaded = new MemoryDatabase(builder.Build(), new MemoryDatabaseOptions { InternString = false });
 
             // table by table, what the binary holds: the same rows in the same order
             var fromDirect = MemoryDatabase.GetTableInfo(direct.ToDatabaseBuilder().Build()).ToDictionary(x => x.TableName, x => x.DumpAsJson());
@@ -44,10 +44,10 @@ namespace MasterMemory.Tests
 
             // and the indexes are there
             direct.SampleTable.FindById(8).Age.ShouldBe(49);
-            direct.SampleTable.FindByAge(89).Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 4 });
-            direct.SampleTable.SortByAge.Select(x => x.Age).ToArray().ShouldBe(loaded.SampleTable.SortByAge.Select(x => x.Age).ToArray());
+            direct.SampleTable.FindByAge(89).AsReadOnlyList().Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 4 });
+            direct.SampleTable.SortByAge.AsReadOnlyList().Select(x => x.Age).ToArray().ShouldBe(loaded.SampleTable.SortByAge.AsReadOnlyList().Select(x => x.Age).ToArray());
             direct.SkillMasterTable.FindBySkillIdAndSkillLevel(2, 2).AttackPower.ShouldBe(30);
-            direct.PersonModelTable.All.Select(x => x.RandomId).ToArray().ShouldBe(loaded.PersonModelTable.All.Select(x => x.RandomId).ToArray());
+            direct.PersonModelTable.All.AsReadOnlyList().Select(x => x.RandomId).ToArray().ShouldBe(loaded.PersonModelTable.All.AsReadOnlyList().Select(x => x.RandomId).ToArray());
 
             // the rows are the ones that were handed in, not copies of them
             var rows = GoldenData.Samples();
@@ -163,7 +163,7 @@ namespace MasterMemory.Tests
             // any sequence, read once
             var enumerated = 0;
             IEnumerable<Sample> Lazy() { enumerated++; yield return rows[0]; yield return rows[1]; }
-            builder.ReplaceAll(Lazy()).ToMemoryDatabase().SampleTable.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 10, 30 });
+            builder.ReplaceAll(Lazy()).ToMemoryDatabase().SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 10, 30 });
             enumerated.ShouldBe(1);
         }
 
@@ -196,7 +196,7 @@ namespace MasterMemory.Tests
             var rows = new[] { NewSample(2), NewSample(9), NewSample(2), NewSample(9), NewSample(9), NewSample(2), NewSample(4) };
             var table = builder.AddOrReplace(rows).ToMemoryDatabase().SampleTable;
 
-            table.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2, 4, 9 });
+            table.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2, 4, 9 });
             table.FindById(2).ShouldBeSameAs(rows[5]);
             table.FindById(9).ShouldBeSameAs(rows[4]);
 
@@ -221,7 +221,7 @@ namespace MasterMemory.Tests
         {
             var rows = Enumerable.Range(1, 10).Select(NewSample).ToArray();
             DatabaseBuilder Builder() => new DatabaseBuilder().Append(rows);
-            int[] Ids(DatabaseBuilder builder) => builder.ToMemoryDatabase().SampleTable.All.Select(x => x.Id).ToArray();
+            int[] Ids(DatabaseBuilder builder) => builder.ToMemoryDatabase().SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray();
 
             Ids(Builder().RemoveSample(1)).ShouldBe(Enumerable.Range(2, 9).ToArray());
             Ids(Builder().RemoveSample(10)).ShouldBe(Enumerable.Range(1, 9).ToArray());
@@ -244,7 +244,7 @@ namespace MasterMemory.Tests
         public void CompositeKey()
         {
             var builder = new DatabaseBuilder().Append(GoldenData.Skills()); // (1,1) (1,2) (2,1) (2,2) (3,1)
-            (int, int)[] Keys() => builder.ToMemoryDatabase().SkillMasterTable.All.Select(x => (x.SkillId, x.SkillLevel)).ToArray();
+            (int, int)[] Keys() => builder.ToMemoryDatabase().SkillMasterTable.All.AsReadOnlyList().Select(x => (x.SkillId, x.SkillLevel)).ToArray();
 
             builder.AddOrReplace(new[] { new SkillMaster(2, 1, 999, "changed", ""), new SkillMaster(1, 3, 5, "new", ""), new SkillMaster(0, 9, 5, "first", "") });
             Keys().ShouldBe(new[] { (0, 9), (1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1) });
@@ -263,7 +263,7 @@ namespace MasterMemory.Tests
         {
             static V3NullableMaster Row(string code, int value) => new V3NullableMaster { Code = code, Value = value };
             var builder = new DatabaseBuilder().Append(new[] { Row("a", 1), Row("B", 2), Row("a_b", 3), Row("a1", 4) });
-            string[] Codes() => builder.ToMemoryDatabase().V3NullableMasterTable.All.Select(x => x.Code ?? "(null)").ToArray();
+            string[] Codes() => builder.ToMemoryDatabase().V3NullableMasterTable.All.AsReadOnlyList().Select(x => x.Code ?? "(null)").ToArray();
 
             Codes().ShouldBe(new[] { "B", "a", "a1", "a_b" });
 
@@ -277,7 +277,7 @@ namespace MasterMemory.Tests
             // a key with [StringComparisonOption]: "AB" is the row "ab"
             var option = new DatabaseBuilder().Append(new[] { new V3OptionMaster { Code = "ab", Value = 1 }, new V3OptionMaster { Code = "C", Value = 2 } });
             option.AddOrReplace(new[] { new V3OptionMaster { Code = "AB", Value = 3 } }).RemoveV3OptionMaster("c");
-            option.ToMemoryDatabase().V3OptionMasterTable.All.Select(x => (x.Code, x.Value)).ToArray().ShouldBe(new[] { ("AB", 3) });
+            option.ToMemoryDatabase().V3OptionMasterTable.All.AsReadOnlyList().Select(x => (x.Code, x.Value)).ToArray().ShouldBe(new[] { ("AB", 3) });
         }
 
         // a row cannot be addressed by a key that several rows share: such a table is set as a whole
@@ -342,10 +342,10 @@ namespace MasterMemory.Tests
             builder.ReplaceAll(new[] { NewSample(1) });
 
             held.ShouldBe(heldBefore);
-            first.SampleTable.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 999 });
+            first.SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 999 });
             first.SampleTable.FindById(7).FirstName.ShouldBe("ccc");
-            second.SampleTable.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 4, 5, 6, 7, 8, 9, 10, 100, 999 });
-            builder.ToMemoryDatabase().SampleTable.All.Select(x => x.Id).ToArray().ShouldBe(new[] { 1 });
+            second.SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 4, 5, 6, 7, 8, 9, 10, 100, 999 });
+            builder.ToMemoryDatabase().SampleTable.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(new[] { 1 });
         }
 
         // ---- every change against a dictionary ----
@@ -383,7 +383,7 @@ namespace MasterMemory.Tests
                             foreach (var key in keys) model.Remove(key);
                             break;
                         default: // through the binary and back
-                            builder = new MemoryDatabase(builder.Build(), internString: false).ToDatabaseBuilder();
+                            builder = new MemoryDatabase(builder.Build(), new MemoryDatabaseOptions { InternString = false }).ToDatabaseBuilder();
                             break;
                     }
 
@@ -395,7 +395,7 @@ namespace MasterMemory.Tests
                         database.SampleTable.TryFindById(id, out var found).ShouldBe(model.ContainsKey(id), context);
                         if (found != null) found.ToString().ShouldBe(model[id].ToString(), context);
                     }
-                    database.SampleTable.SortByAge.Select(x => x.Age).ToArray().ShouldBe(model.Values.Select(x => x.Age).OrderBy(x => x).ToArray(), context);
+                    database.SampleTable.SortByAge.AsReadOnlyList().Select(x => x.Age).ToArray().ShouldBe(model.Values.Select(x => x.Age).OrderBy(x => x).ToArray(), context);
 
                     earlier.Add((database, expected));
                 }

@@ -49,9 +49,20 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
                 var @namespace = !string.IsNullOrWhiteSpace(options.Namespace) ? options.Namespace!
                     : !string.IsNullOrWhiteSpace(rootNamespace) ? rootNamespace!
                     : "MasterMemory";
-                return new GeneratorSettings(@namespace, options.PrefixClassName ?? "", ThrowIfKeyNotFound: !options.IsReturnNullIfKeyNotFound); // be careful, reversed
+                // be careful, reversed
+                return new GeneratorSettings(@namespace, options.PrefixClassName ?? "", ThrowIfKeyNotFound: !options.IsReturnNullIfKeyNotFound,
+                    GenerateMetaDatabase: !options.OmitMetaDatabase, GenerateValidator: !options.OmitValidator);
             })
             .WithTrackingName("MasterMemory.Settings");
+
+        // Until v3 the metadata and the validation were taken out by defining a symbol the generated code tested with #if.
+        // The options do that now and the symbols are read by nothing: say so where one is still defined.
+        var obsoleteSymbols = context.ParseOptionsProvider.Select(static (options, _) =>
+            {
+                var symbols = (options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions)?.PreprocessorSymbolNames ?? [];
+                return (MetaDatabase: symbols.Contains(ObsoleteSymbols.DisableMetaDatabase), Validator: symbols.Contains(ObsoleteSymbols.DisableValidator));
+            })
+            .WithTrackingName("MasterMemory.ParseOptions");
 
         // one [MemoryTable] class -> its model, or what is wrong with it
         var tables = context.SyntaxProvider.ForAttributeWithMetadataName("MasterMemory.MemoryTableAttribute",
@@ -86,10 +97,34 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
             }
         });
 
+        // Only for a project that has tables: a symbol is often defined for a whole solution or Unity project, and
+        // the other assemblies in it have nothing generated that the symbol could have taken out.
+        var obsoleteSymbolsInUse = database
+            .Select(static (x, _) => x.Tables.Length != 0)
+            .Combine(obsoleteSymbols)
+            .Combine(settings)
+            .WithTrackingName("MasterMemory.ObsoleteSymbols");
+
+        context.RegisterSourceOutput(obsoleteSymbolsInUse, static (context, value) =>
+        {
+            var ((hasTables, symbols), settings) = value;
+            if (!hasTables) return;
+
+            // where the option is set already, the symbol left behind does no harm
+            if (symbols.MetaDatabase && settings.GenerateMetaDatabase)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.ObsoleteSymbol, Location.None, ObsoleteSymbols.DisableMetaDatabase, MasterMemoryGeneratorOptions.GenerateMetaDatabase));
+            }
+            if (symbols.Validator && settings.GenerateValidator)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.ObsoleteSymbol, Location.None, ObsoleteSymbols.DisableValidator, MasterMemoryGeneratorOptions.GenerateValidator));
+            }
+        });
+
         context.RegisterSourceOutput(eachTable, static (context, value) =>
         {
             var (table, settings) = value;
-            AddSource(context, table.ClassName + "Table", TableEmitter.Emit(settings.Namespace, table, settings.ThrowIfKeyNotFound));
+            AddSource(context, table.ClassName + "Table", TableEmitter.Emit(settings.Namespace, table, settings.ThrowIfKeyNotFound, settings.GenerateMetaDatabase, settings.GenerateValidator));
         });
 
         context.RegisterSourceOutput(databaseEntries, static (context, value) =>
@@ -100,11 +135,11 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
                 return;
             }
 
-            var model = new DatabaseModel(settings.Namespace, settings.PrefixClassName, tables.ToArray());
+            var model = new DatabaseModel(settings.Namespace, settings.PrefixClassName, tables.ToArray(), settings.GenerateMetaDatabase, settings.GenerateValidator);
             AddSource(context, model.DatabaseBuilderName, DatabaseBuilderEmitter.Emit(model));
 
             AddSource(context, model.MemoryDatabaseName, MemoryDatabaseEmitter.Emit(model));
-            AddSource(context, model.FormatterFactoryName, FormatterFactoryEmitter.Emit(model));
+            AddSource(context, model.TableFormattersName, TableFormattersEmitter.Emit(model));
         });
     }
 
@@ -115,7 +150,14 @@ public partial class MasterMemoryGenerator : IIncrementalGenerator
 }
 
 /// <summary>What the options attribute and the project say about all generated code.</summary>
-readonly record struct GeneratorSettings(string Namespace, string PrefixClassName, bool ThrowIfKeyNotFound);
+readonly record struct GeneratorSettings(string Namespace, string PrefixClassName, bool ThrowIfKeyNotFound, bool GenerateMetaDatabase, bool GenerateValidator);
+
+/// <summary>The symbols that took the metadata and the validation out of the generated code until v3.</summary>
+static class ObsoleteSymbols
+{
+    public const string DisableMetaDatabase = "DISABLE_MASTERMEMORY_METADATABASE";
+    public const string DisableValidator = "DISABLE_MASTERMEMORY_VALIDATOR";
+}
 
 /// <summary>
 /// The tables that are generated, in the order everything is emitted in, and every diagnostic of the run.

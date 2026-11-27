@@ -29,13 +29,21 @@ sealed class DatabaseModel
     public string DatabaseBuilderName => PrefixClassName + "DatabaseBuilder";
     public string MemoryDatabaseName => PrefixClassName + "MemoryDatabase";
 
-    public string FormatterFactoryName => PrefixClassName + "MasterMemoryFormatterFactory";
+    public string TableFormattersName => PrefixClassName + "MasterMemoryTableFormatters";
 
-    public DatabaseModel(string @namespace, string prefixClassName, GenerationContext[] tables)
+    /// <summary>Whether GetMetaDatabase() is emitted, see the option of the same name.</summary>
+    public bool GenerateMetaDatabase { get; }
+
+    /// <summary>Whether Validate() is emitted, see the option of the same name.</summary>
+    public bool GenerateValidator { get; }
+
+    public DatabaseModel(string @namespace, string prefixClassName, GenerationContext[] tables, bool generateMetaDatabase, bool generateValidator)
     {
         Namespace = @namespace;
         PrefixClassName = prefixClassName;
         Tables = tables;
+        GenerateMetaDatabase = generateMetaDatabase;
+        GenerateValidator = generateValidator;
         Usings = [.. CommonUsings, "using " + @namespace + ".Tables;"];
     }
 

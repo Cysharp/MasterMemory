@@ -13,7 +13,7 @@ namespace MasterMemory
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(RangeViewDebugView<>))]
-    public readonly struct ReverseRangeView<T> : IReadOnlyList<T>, IList<T>
+    public readonly struct ReverseRangeView<T>
     {
         public static ReverseRangeView<T> Empty => default;
 
@@ -77,21 +77,18 @@ namespace MasterMemory
             return result;
         }
 
-        /// <summary>Enumerates without allocating: foreach binds to this struct, not to the interface.</summary>
+        /// <inheritdoc cref="RangeView{T}.AsReadOnlyList"/>
+        public IReadOnlyList<T> AsReadOnlyList()
+        {
+            return (count == 0) ? Internal.RangeViewList<T>.Empty : new Internal.RangeViewList<T>(Reverse, reverse: true);
+        }
+
+        /// <summary>Enumerates without allocating: foreach binds to this struct.</summary>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(array, offset, count);
         }
 
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
 
         public struct Enumerator : IEnumerator<T>
         {
@@ -169,45 +166,5 @@ namespace MasterMemory
             throw new ArgumentOutOfRangeException("index");
         }
 
-        // IList<T>, which LINQ looks for to count, index and copy without enumerating. Read-only.
-
-        bool ICollection<T>.IsReadOnly => true;
-
-        T IList<T>.this[int index]
-        {
-            get
-            {
-                return this[index];
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        void IList<T>.Insert(int index, T item)
-        {
-            throw new NotSupportedException();
-        }
-
-        void IList<T>.RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        void ICollection<T>.Add(T item)
-        {
-            throw new NotSupportedException();
-        }
-
-        void ICollection<T>.Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        bool ICollection<T>.Remove(T item)
-        {
-            throw new NotSupportedException();
-        }
     }
 }

@@ -106,8 +106,12 @@ namespace MasterMemory.Tests
         [Fact]
         public void DeclaredLengthOfACompressedTableIsNotAnAllocation()
         {
-            // 32 rows: stored as an Lz4Block, which is ext 99 holding the length of the rows as an int32 and then the block
-            var database = DatabaseFuzzTargets.SeedCorpus().Last();
+            // Compression is what the application plugs in: here the LZ4 processor of MessagePack.LZ4, with its default
+            // cap of 64 MB on what a message may say it decompresses to.
+            var lz4 = new MemoryDatabaseOptions { MessageProcessor = new Lz4BlockProcessor() };
+
+            // 32 rows, written as an Lz4Block: ext 99 holding the length of the rows as an int32 and then the block
+            var database = new FuzzDatabase(DatabaseFuzzTargets.SeedCorpus().Last()).ToDatabaseBuilder(lz4).Build();
             var at = -1;
             for (var i = 0; i + 5 < database.Length; i++)
             {
@@ -121,7 +125,7 @@ namespace MasterMemory.Tests
                 damaged[at] = (byte)(length >> 24); damaged[at + 1] = (byte)(length >> 16); damaged[at + 2] = (byte)(length >> 8); damaged[at + 3] = (byte)length;
 
                 Exception? thrown = null;
-                var allocated = Allocated(() => thrown = Record.Exception(() => new FuzzDatabase(damaged)));
+                var allocated = Allocated(() => thrown = Record.Exception(() => new FuzzDatabase(damaged, lz4)));
                 thrown.ShouldNotBeNull($"a table that says it is {length} bytes when it is not");
                 DatabaseFuzzTargets.IsRejection(thrown!).ShouldBeTrue($"{length}: {thrown!.GetType().Name}: {thrown.Message}");
                 allocated.ShouldBeLessThan(64_000_000, $"a declared length of {length}");

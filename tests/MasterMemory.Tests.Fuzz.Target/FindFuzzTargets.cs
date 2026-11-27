@@ -527,12 +527,12 @@ public static class FindFuzzTargets
         string Keys(IEnumerable<TRow> rows) => "[" + string.Join(" ", rows.Select(x => Show(selector(x)))) + "]";
 
         var count = expected.Count;
-        if (view.Count != count) Fail(question, $"{view.Count} rows {Keys(view)}", $"{count} rows {Keys(expected)}");
+        if (view.Count != count) Fail(question, $"{view.Count} rows {Keys(view.AsReadOnlyList())}", $"{count} rows {Keys(expected)}");
 
         var position = 0;
         foreach (var row in view)
         {
-            if (position >= count || !ReferenceEquals(row, expected[position])) Fail(question, Keys(view), Keys(expected));
+            if (position >= count || !ReferenceEquals(row, expected[position])) Fail(question, Keys(view.AsReadOnlyList()), Keys(expected));
             position++;
         }
         if (position != count) Fail(question + " (enumeration)", position + " rows", count + " rows");
@@ -570,7 +570,7 @@ public static class FindFuzzTargets
         position = 0;
         foreach (var row in reverse)
         {
-            if (position >= count || !ReferenceEquals(row, expected[count - 1 - position])) Fail(question, Keys(reverse), Keys(Enumerable.Reverse(expected)));
+            if (position >= count || !ReferenceEquals(row, expected[count - 1 - position])) Fail(question, Keys(reverse.AsReadOnlyList()), Keys(Enumerable.Reverse(expected)));
             position++;
         }
         if (position != count) Fail(question + " (enumeration)", position + " rows", count + " rows");

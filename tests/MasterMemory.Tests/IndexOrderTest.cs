@@ -191,7 +191,7 @@ namespace MasterMemory.Tests
             foreach (var database in new[] { builder.ToMemoryDatabase(), new FuzzDatabase(builder.Build()) })
             {
                 var table = database.FuzzRowTable;
-                table.All.Select(x => x.Id).ToArray().ShouldBe(Enumerable.Range(0, count).Select(i => i * 3).ToArray());
+                table.All.AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBe(Enumerable.Range(0, count).Select(i => i * 3).ToArray());
 
                 CheckIndex("Serial", table, table.SortBySerial, x => x.Serial, Comparer<long>.Default);
                 CheckIndex("Group", table, table.SortByGroup, x => x.Group, Comparer<int>.Default);
@@ -216,8 +216,8 @@ namespace MasterMemory.Tests
                 foreach (var name in Names) CheckAscending(table.FindByName(name), "Name " + name);
                 // 0.0 and -0.0 are one key
                 foreach (var score in Scores) CheckAscending(table.FindByScore(score), "Score " + score);
-                if (count >= 100) table.FindByScore(0.0).Select(x => x.Score).Distinct().Count().ShouldBe(1); // equal, whatever the sign
-                if (count >= 100) table.FindByScore(0.0).Count(x => double.IsNegative(x.Score)).ShouldBeGreaterThan(0);
+                if (count >= 100) table.FindByScore(0.0).AsReadOnlyList().Select(x => x.Score).Distinct().Count().ShouldBe(1); // equal, whatever the sign
+                if (count >= 100) table.FindByScore(0.0).AsReadOnlyList().Count(x => double.IsNegative(x.Score)).ShouldBeGreaterThan(0);
 
                 // a range goes key by key, and within a key by the primary key
                 var range = table.FindRangeByGroup(1, 2).ToArray();
@@ -230,11 +230,11 @@ namespace MasterMemory.Tests
         static void CheckGivenOrder(MemoryDatabase database, TestMaster[] given, string context)
         {
             var table = database.TestMasterTable;
-            table.All.Select(x => (x.TestID, x.Value)).ToArray().ShouldBe(given.OrderBy(x => x.TestID).Select(x => (x.TestID, x.Value)).ToArray(), context);
+            table.All.AsReadOnlyList().Select(x => (x.TestID, x.Value)).ToArray().ShouldBe(given.OrderBy(x => x.TestID).Select(x => (x.TestID, x.Value)).ToArray(), context);
 
             foreach (var id in given.Select(x => x.TestID).Distinct())
             {
-                table.FindByTestID(id).Select(x => x.Value).ToArray().ShouldBe(given.Where(x => x.TestID == id).Select(x => x.Value).ToArray(), context);
+                table.FindByTestID(id).AsReadOnlyList().Select(x => x.Value).ToArray().ShouldBe(given.Where(x => x.TestID == id).Select(x => x.Value).ToArray(), context);
             }
         }
 

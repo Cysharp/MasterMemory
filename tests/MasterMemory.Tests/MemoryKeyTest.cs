@@ -58,7 +58,7 @@ namespace MasterMemory.Tests
 
             var test = table.FindByFirstName("eee");
 
-            table.FindByFirstName("eee").Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBeEquivalentTo(new[] { 1, 10 });
+            table.FindByFirstName("eee").AsReadOnlyList().Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBeEquivalentTo(new[] { 1, 10 });
             table.FindByFirstName("eeee").Count.ShouldBe(0);
 
             table.FindClosestByFirstNameAndLastName("aaa", "takz").Id.ShouldBe(4);

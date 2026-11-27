@@ -22,11 +22,43 @@ namespace MasterMemory
         // in the order the tables were set first, which is the order they are written in
         readonly List<TableEntry> entries = new List<TableEntry>();
 
-        /// <param name="tableFormatterFactory">The generated factory that serves the array of each table type.</param>
-        /// <param name="formatterFactory">The formatters of the table types and their members; null is <see cref="MessagePackFormatterFactory.DefaultAot"/>.</param>
-        protected DatabaseBuilderBase(MessagePackFormatterFactory tableFormatterFactory, MessagePackFormatterFactory? formatterFactory)
+        /// <summary>What the builder writes with. A database made by the generated ToMemoryDatabase has the same.</summary>
+        public MemoryDatabaseOptions Options { get; }
+
+        /// <param name="options">
+        /// How every table is written: the formatters of the rows and their members, and the processor if the tables
+        /// are to be compressed. Null is <see cref="MemoryDatabaseOptions.Default"/>.
+        /// </param>
+        protected DatabaseBuilderBase(MemoryDatabaseOptions? options)
         {
-            this.options = SerializerOptionsCache.Get(tableFormatterFactory, formatterFactory, internString: false);
+            Options = options ?? MemoryDatabaseOptions.Default;
+            this.options = Options.GetWriteOptions();
+        }
+
+        /// <summary>
+        /// Appends the rows of the table whose row type is <paramref name="dataType"/>, and says whether there is one:
+        /// what AppendDynamic calls. The generated builder overrides it with a branch per table, each of which names its
+        /// row type, so that no method is found by reflection and no array is made of a type known only at run time.
+        /// </summary>
+        protected virtual bool AppendDynamicCore(Type dataType, IList<object> tableData)
+        {
+            return false;
+        }
+
+        internal bool TryAppendDynamic(Type dataType, IList<object> tableData)
+        {
+            return AppendDynamicCore(dataType, tableData);
+        }
+
+        /// <summary>The rows as an array of their type: for the generated AppendDynamicCore.</summary>
+        protected static TRow[] CastRows<TRow>(IList<object> tableData)
+        {
+            var rows = new TRow[tableData.Count];
+            for (int i = 0; i < rows.Length; i++)
+            {
+                rows[i] = (TRow)tableData[i];
+            }
+            return rows;
         }
 
         /// <summary>One table of the builder. The generated class has a field of it per table, null until the table is set.</summary>

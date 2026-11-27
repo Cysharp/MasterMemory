@@ -23,6 +23,14 @@
 		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackBuildOutputs</TargetsForTfmSpecificContentInPackage>
 	</PropertyGroup>
 
+	<!-- Native AOT and trimming: the assembly says it is compatible, which turns on the analyzers that hold it to that
+	     (IL2xxx for trimming, IL3xxx for AOT and single-file). What cannot be made safe is annotated with
+	     [RequiresUnreferencedCode] / [RequiresDynamicCode], so the warning shows where it is called. The properties
+	     exist from .NET 7 on; the netstandard builds carry the same annotations as attributes of their own (Polyfill). -->
+	<PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
+
 	<!-- for nuget publish -->
 	<!-- this target runs once per target framework and the generator is the same file each time, so one of them adds it -->
 	<Target Name="PackBuildOutputs" DependsOnTargets="SatelliteDllsProjectOutputGroup;DebugSymbolsProjectOutputGroup" Condition="'$(TargetFramework)' == 'netstandard2.0'">
@@ -36,13 +44,11 @@
 		<!-- PrivateAssets="none": the default would pack these dependencies with exclude="Build,Analyzers" and keep MessagePack's
 		     source generator from a project that references only MasterMemory, whose tables then had no formatter. -->
 		<PackageReference Include="MessagePack" Version="4.0.0-rc.1" PrivateAssets="none" />
-		<!-- every table is stored in the Lz4Block envelope, the format MasterMemory has used since v2 -->
-		<PackageReference Include="MessagePack.LZ4" Version="4.0.0-rc.1" PrivateAssets="none" />
+		<!-- No MessagePack.LZ4 here: a table is written as it is unless the application passes options with a processor
+		     (MessageProcessor), and the package that has one, with its native library, is the application's to reference. -->
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
-
 		<!-- We don't consume the analyzers in this library itself,
          but we reference the project to add a package dependency so users of this library will automatically get the analyzers. -->
 		<ProjectReference Include="..\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj" PrivateAssets="all" />

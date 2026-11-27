@@ -99,4 +99,13 @@ internal static class DiagnosticDescriptors
     public static DiagnosticDescriptor InvalidKeyProperty { get; } = Create(
         11,
         "A key must be an instance property with a getter that is public or internal, generated code reads it from another class: {0}.{1}.");
+
+    // a warning: the project builds as before, with code generated that the symbol used to take out
+    public static DiagnosticDescriptor ObsoleteSymbol { get; } = new DiagnosticDescriptor(
+        id: "MAM012",
+        title: "The symbol is no longer read by MasterMemory",
+        messageFormat: "The symbol {0} is no longer read by MasterMemory and the code it took out is generated. Set {1} = false in [assembly: MasterMemoryGeneratorOptions] instead, and remove the symbol.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

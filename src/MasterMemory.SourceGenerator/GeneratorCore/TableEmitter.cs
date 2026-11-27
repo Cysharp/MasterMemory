@@ -17,15 +17,18 @@ static class TableEmitter
 {
     const string AggressiveInlining = "[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]";
 
-    public static string Emit(string @namespace, GenerationContext table, bool throwIfKeyNotFound)
+    public static string Emit(string @namespace, GenerationContext table, bool throwIfKeyNotFound, bool generateMetaDatabase, bool generateValidator)
     {
         var writer = CodeWriter.Rent();
         var element = table.FullTypeName;
         var primaryKey = table.PrimaryKey;
         var keys = table.Keys;
 
+        // ITableUniqueValidate is what MemoryDatabase.Validate() calls a table through, and is generated with it
+        var interfaces = generateValidator ? ", ITableUniqueValidate" : "";
+
         using (DatabaseModel.BeginFile(writer, DatabaseModel.CommonUsings, @namespace + ".Tables"))
-        using (writer.Block($"{table.Accessibility} sealed partial class {table.ClassName}Table : TableBase<{element}>, ITableUniqueValidate"))
+        using (writer.Block($"{table.Accessibility} sealed partial class {table.ClassName}Table : TableBase<{element}>{interfaces}"))
         {
             writer.Line($"public Func<{element}, {primaryKey.BuildTypeName()}> PrimaryKeySelector => {primaryKey.SelectorName};");
             writer.Line($"readonly Func<{element}, {primaryKey.BuildTypeName()}> {primaryKey.SelectorName};");
@@ -119,28 +122,26 @@ static class TableEmitter
                 EmitPrefixLookups(writer, element, key, length);
             }
 
-            writer.Line();
-            using (writer.Block("void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)"))
+            if (generateValidator)
             {
-                writer.Directive("#if !DISABLE_MASTERMEMORY_VALIDATOR");
                 writer.Line();
-                foreach (var key in keys)
+                using (writer.Block("void ITableUniqueValidate.ValidateUnique(ValidateResult resultSet)"))
                 {
-                    if (!key.IsNonUnique)
+                    foreach (var key in keys)
                     {
-                        writer.Line($"ValidateUniqueCore({key.TableName}, {key.SelectorName}, {key.BuildComparer("")}, \"{key.BuildPropertyTupleName()}\", resultSet);");
+                        if (!key.IsNonUnique)
+                        {
+                            writer.Line($"ValidateUniqueCore({key.TableName}, {key.SelectorName}, {key.BuildComparer("")}, \"{key.BuildPropertyTupleName()}\", resultSet);");
+                        }
                     }
                 }
-                writer.Line();
-                writer.Directive("#endif");
             }
 
-            writer.Line();
-            writer.Directive("#if !DISABLE_MASTERMEMORY_METADATABASE");
-            writer.Line();
-            EmitCreateMetaTable(writer, table);
-            writer.Line();
-            writer.Directive("#endif");
+            if (generateMetaDatabase)
+            {
+                writer.Line();
+                EmitCreateMetaTable(writer, table);
+            }
         }
 
         return writer.ToStringAndReturn();

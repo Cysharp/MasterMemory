@@ -202,7 +202,7 @@ namespace MasterMemory.Tests
         [Fact]
         public void Tables()
         {
-            var table = new MemoryDatabase(new DatabaseBuilder().Append(CreateData()).Build(), internString: false).SampleTable;
+            var table = new MemoryDatabase(new DatabaseBuilder().Append(CreateData()).Build(), new MemoryDatabaseOptions { InternString = false }).SampleTable;
 
             // unique, one integer: the primary key, here with gaps and so searched
             VerifyUnique("Id", table.GetRawDataUnsafe(), x => x.Id, Comparer<int>.Default, Ids,
@@ -276,11 +276,11 @@ namespace MasterMemory.Tests
                 .Build());
 
             var elements = db.FileScopedMasterTable;
-            elements.FindByElement(FileScoped.Element.Fire).Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 4 });
+            elements.FindByElement(FileScoped.Element.Fire).AsReadOnlyList().Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 4 });
             elements.FindByElement(FileScoped.Element.Water).Count.ShouldBe(0);
-            elements.FindByElement(FileScoped.Element.Wind).Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
-            elements.FindClosestByElement(FileScoped.Element.Water, selectLower: true).Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 4 });
-            elements.FindClosestByElement(FileScoped.Element.Water, selectLower: false).Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
+            elements.FindByElement(FileScoped.Element.Wind).AsReadOnlyList().Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
+            elements.FindClosestByElement(FileScoped.Element.Water, selectLower: true).AsReadOnlyList().Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 2, 4 });
+            elements.FindClosestByElement(FileScoped.Element.Water, selectLower: false).AsReadOnlyList().Select(x => x.Id).OrderBy(x => x).ToArray().ShouldBe(new[] { 1, 3 });
             elements.FindRangeByElement(FileScoped.Element.Fire, FileScoped.Element.Water).Count.ShouldBe(2);
             elements.FindRangeByElement(FileScoped.Element.Fire, FileScoped.Element.Wind).Count.ShouldBe(4);
 
@@ -290,7 +290,7 @@ namespace MasterMemory.Tests
             aliases.TryFindByAlias("delta", out _).ShouldBeFalse();
             aliases.FindClosestByAlias("BETZ", selectLower: true).Value.ShouldBe(2);
             aliases.FindClosestByAlias("BETZ", selectLower: false).Value.ShouldBe(3);
-            aliases.FindRangeByAlias("ALPHA", "BETA").Select(x => x.Value).ToArray().ShouldBe(new[] { 1, 2 });
+            aliases.FindRangeByAlias("ALPHA", "BETA").AsReadOnlyList().Select(x => x.Value).ToArray().ShouldBe(new[] { 1, 2 });
         }
     }
 }
