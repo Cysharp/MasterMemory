@@ -18,8 +18,21 @@ jobs:
       - uses: Cysharp/Actions/.github/actions/checkout@main
       - uses: Cysharp/Actions/.github/actions/setup-dotnet@main
         with:
+          # 9.0.x is what the library and the tests run on. 11.0.x is the SDK that builds the solution:
+          # sandbox/Benchmark targets net11.0.
           dotnet-version: |
             9.0.x
+            11.0.x
       - run: dotnet build -c Release
       - run: dotnet test -c Release --no-build
       - run: dotnet pack -c Release --no-build -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -o $GITHUB_WORKSPACE/artifacts
+
+      # MasterMemory under Native AOT. The build above has run the trimming and AOT analyzers already (every warning
+      # of tests/MasterMemory.Tests.Aot is an error) and the tests have run its checks on the JIT. Here the same
+      # checks are compiled to a native executable and run: it prints each check and exits with the number that failed.
+      - name: Native AOT toolchain (clang, zlib), if the runner has none
+        run: dpkg -s clang zlib1g-dev > /dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y --no-install-recommends clang zlib1g-dev)
+      - name: Publish the checks as a native executable
+        run: dotnet publish tests/MasterMemory.Tests.Aot -c Release -r linux-x64 -o $RUNNER_TEMP/aot
+      - name: Run the checks, compiled ahead of time
+        run: $RUNNER_TEMP/aot/MasterMemory.Tests.Aot

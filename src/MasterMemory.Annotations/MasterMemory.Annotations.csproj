@@ -13,8 +13,14 @@
 
 		<!-- NuGet -->
 		<PackageId>MasterMemory.Annotations</PackageId>
-		<Description>Attributes of MasterMemory.</Description>
+		<Description>Migration shim for MasterMemory v3 code: the attributes now live in the MasterMemory package and this package type-forwards to it. Reference MasterMemory directly in new projects.</Description>
 		<IsPackable>true</IsPackable>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- This assembly has no types of its own, only the forwards in TypeForwards.cs.
+		     PrivateAssets="none": a project that references only this package gets the source generator of MasterMemory too. -->
+		<ProjectReference Include="..\MasterMemory\MasterMemory.csproj" PrivateAssets="none" />
+	</ItemGroup>
 
 </Project>

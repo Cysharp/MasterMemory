@@ -1,23 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-		<NoWarn>1701;1702;NU1904</NoWarn>
+		<TargetFramework>net11.0</TargetFramework>
+		<NoWarn>1701;1702</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
-		<PackageReference Include="EnyimMemcachedCore" Version="2.2.4" />
-		<PackageReference Include="FASTER" Version="2019.4.24.4" />
-		<PackageReference Include="LiteDB" Version="4.1.4" />
-		<PackageReference Include="RocksDbNative" Version="5.17.2" />
-		<PackageReference Include="RocksDbSharp" Version="5.17.2" />
-		<PackageReference Include="System.Data.SQLite" Version="1.0.111" />
+		<!-- 0.15.8, the latest stable, does not know .NET 11 and fails before the first benchmark -->
+		<PackageReference Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
+		<!-- DryDB alone: DryDB.MessagePack depends on MessagePack v3, so the values are serialized here -->
+		<PackageReference Include="DryDB" Version="1.1.0" />
+		<PackageReference Include="LiteDB" Version="5.0.21" />
+		<!-- for the size report: MasterMemory itself compresses nothing, a database is built with LZ4 by giving it this processor -->
+		<PackageReference Include="MessagePack.LZ4" Version="4.0.0-rc.1" />
+		<!-- the successor of RocksDbSharp + RocksDbNative, with the native library inside -->
+		<PackageReference Include="RocksDB" Version="11.12.0.7641" />
+		<PackageReference Include="System.Data.SQLite" Version="2.0.4" />
+		<!-- System.Data.SQLite 2.x is the managed provider alone, the native e_sqlite3 comes from this package -->
+		<PackageReference Include="SourceGear.sqlite3" Version="3.53.4" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>

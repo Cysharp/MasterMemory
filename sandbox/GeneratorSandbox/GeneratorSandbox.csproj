@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MessagePack" Version="3.1.3" />
+		<PackageReference Include="MessagePack" Version="4.0.0-rc.1" />
 	</ItemGroup>
 
 	<!-- for testing... -->
@@ -19,7 +19,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
-		<ProjectReference Include="..\..\src\MasterMemory.Annotations\MasterMemory.Annotations.csproj" />
 		<ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>

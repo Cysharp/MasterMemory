@@ -11,6 +11,7 @@ namespace MasterMemory
         public int CurrentOffset => index;
         public ReadOnlySpan<byte> WrittenSpan => buffer.AsSpan(0, index);
         public ReadOnlyMemory<byte> WrittenMemory => new ReadOnlyMemory<byte>(buffer, 0, index);
+        public ArraySegment<byte> WrittenSegment => new ArraySegment<byte>(buffer, 0, index);
 
         public ByteBufferWriter()
         {

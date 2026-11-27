@@ -12,14 +12,13 @@ namespace MasterMemory.Validation
         {
             foreach (var table in tables)
             {
-                // TableBase<T>
-                var baseType = table.GetType().BaseType;
+                // every generated table is a TableBase<T>, which says what its rows are without reflection
+                if (!(table is IValidationTable validationTable))
+                {
+                    throw new ArgumentException("A table of a database is a TableBase<T>, this is not one: " + (table == null ? "null" : table.GetType().FullName), nameof(tables));
+                }
 
-                // RangeView<T>
-                var rangeViewAll = baseType.GetProperty("All").GetGetMethod().Invoke(table, null);
-
-                var elementType = baseType.GetGenericArguments()[0];
-                dataTables.Add(elementType, rangeViewAll);
+                dataTables.Add(validationTable.ElementType, validationTable.Rows);
             }
         }
 
@@ -32,5 +31,14 @@ namespace MasterMemory.Validation
             var data = table as IReadOnlyList<T>;
             return data!;
         }
+    }
+
+    /// <summary>What the validation reads of a table, whatever its row type: implemented by TableBase&lt;T&gt;.</summary>
+    internal interface IValidationTable
+    {
+        Type ElementType { get; }
+
+        /// <summary>An IReadOnlyList&lt;T&gt; of every row, in the order of the primary key.</summary>
+        object Rows { get; }
     }
 }

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- MasterMemory under Native AOT. Published as a native executable, this application runs every part of the library
+	     and of the generated code and returns the number of checks that failed:
+
+	         dotnet publish tests/MasterMemory.Tests.Aot -c Release -r win-x64 -o artifacts/aot
+	         artifacts/aot/MasterMemory.Tests.Aot
+
+	     Building it is a test already. PublishAot turns on the trimming and AOT analyzers for this project, which
+	     compiles the code the source generator emits, and every warning here is an error. MasterMemory.Tests runs the
+	     same checks on the JIT (AotChecksTest), so that a check that fails only when compiled natively is one that
+	     Native AOT broke. -->
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net9.0</TargetFramework>
+		<RootNamespace>MasterMemory.AotTests</RootNamespace>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+
+		<PublishAot>true</PublishAot>
+		<!-- each warning of each assembly by itself, not one line per assembly that has some -->
+		<TrimmerSingleWarn>false</TrimmerSingleWarn>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- MasterMemory does not reference it. One check gives a builder and a database the LZ4 processor, the way an
+		     application that wants compression does. -->
+		<PackageReference Include="MessagePack.LZ4" Version="4.0.0-rc.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
+		<ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj">
+			<OutputItemType>Analyzer</OutputItemType>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
+
+</Project>

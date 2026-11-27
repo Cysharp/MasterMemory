@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/sandbox/">
+    <Project Path="sandbox/Benchmark/Benchmark.csproj" />
+    <Project Path="sandbox/ConsoleApp/ConsoleApp.csproj" />
+    <Project Path="sandbox/GeneratorSandbox/GeneratorSandbox.csproj" />
+    <Project Path="sandbox/PerfTest2/PerfTest2.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/MasterMemory.Annotations/MasterMemory.Annotations.csproj" />
+    <Project Path="src/MasterMemory.SourceGenerator/MasterMemory.SourceGenerator.csproj" />
+    <Project Path="src/MasterMemory/MasterMemory.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MasterMemory.SourceGenerator.Tests/MasterMemory.SourceGenerator.Tests.csproj" />
+    <Project Path="tests/MasterMemory.Tests.Aot/MasterMemory.Tests.Aot.csproj" />
+    <Project Path="tests/MasterMemory.Tests.Fuzz.Target/MasterMemory.Tests.Fuzz.Target.csproj" />
+    <Project Path="tests/MasterMemory.Tests.Fuzz/MasterMemory.Tests.Fuzz.csproj" />
+    <Project Path="tests/MasterMemory.Tests/MasterMemory.Tests.csproj" />
+  </Folder>
+</Solution>

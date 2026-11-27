@@ -3,8 +3,13 @@
 
 namespace MasterMemory.SourceGenerator;
 
-readonly record struct MasterMemoryGeneratorOptions(string? Namespace, string PrefixClassName, bool IsReturnNullIfKeyNotFound)
+// The two Omit* members are the reverse of the attribute's Generate* properties, so that default(MasterMemoryGeneratorOptions),
+// which stands for "no attribute", generates everything.
+readonly record struct MasterMemoryGeneratorOptions(string? Namespace, string PrefixClassName, bool IsReturnNullIfKeyNotFound, bool OmitMetaDatabase, bool OmitValidator)
 {
+    public const string GenerateMetaDatabase = nameof(GenerateMetaDatabase);
+    public const string GenerateValidator = nameof(GenerateValidator);
+
     public static MasterMemoryGeneratorOptions FromAttribute(AttributeData attributeData)
     {
         var args = attributeData.NamedArguments;
@@ -12,8 +17,10 @@ readonly record struct MasterMemoryGeneratorOptions(string? Namespace, string Pr
         var ns = args.FirstOrDefault(x => x.Key == nameof(Namespace)).Value.Value as string ?? null;
         var prefix = args.FirstOrDefault(x => x.Key == nameof(PrefixClassName)).Value.Value as string ?? "";
         var isReturnNull = args.FirstOrDefault(x => x.Key == nameof(IsReturnNullIfKeyNotFound)).Value.Value as bool? ?? null;
+        var generateMetaDatabase = args.FirstOrDefault(x => x.Key == GenerateMetaDatabase).Value.Value as bool? ?? null;
+        var generateValidator = args.FirstOrDefault(x => x.Key == GenerateValidator).Value.Value as bool? ?? null;
 
-        return new MasterMemoryGeneratorOptions(ns, prefix, isReturnNull ?? false);
+        return new MasterMemoryGeneratorOptions(ns, prefix, isReturnNull ?? false, OmitMetaDatabase: !(generateMetaDatabase ?? true), OmitValidator: !(generateValidator ?? true));
     }
 
     public static void EmitAttribute(IncrementalGeneratorPostInitializationContext context)
@@ -33,6 +40,19 @@ namespace MasterMemory
         public string? Namespace { get; set; } = null;
         public string PrefixClassName { get; set; } = "";
         public bool IsReturnNullIfKeyNotFound { get; set; } = false;
+
+        /// <summary>
+        /// Generates the metadata of the tables: MemoryDatabase.GetMetaDatabase() and CreateMetaTable() of every table.
+        /// The default is true. Set it to false where nothing reads the metadata, to make the generated code smaller.
+        /// </summary>
+        public bool GenerateMetaDatabase { get; set; } = true;
+
+        /// <summary>
+        /// Generates the validation of the database: MemoryDatabase.Validate(), which runs IValidatable&lt;T&gt;.Validate
+        /// of every row and checks the unique keys. The default is true. Set it to false where the database is not
+        /// validated, to make the generated code smaller.
+        /// </summary>
+        public bool GenerateValidator { get; set; } = true;
     }
 }
 """);

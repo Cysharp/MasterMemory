@@ -16,13 +16,11 @@ namespace MasterMemory.Tests
         public ValidatorTest()
         {
             this.output = new Xunit.Abstractions.DebugLogTestOutputHelper();
-            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 #else
         public ValidatorTest(Xunit.Abstractions.ITestOutputHelper output)
         {
             this.output = output;
-            MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(MessagePackResolver.Instance);
         }
 #endif
 
@@ -33,7 +31,7 @@ namespace MasterMemory.Tests
                 .Append(data1)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(SingleMaster[] data1)
@@ -43,7 +41,7 @@ namespace MasterMemory.Tests
                 .Append(data1)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(SequentialCheckMaster[] data1)
@@ -53,7 +51,7 @@ namespace MasterMemory.Tests
                 .Append(data1)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(QuestMaster[] data1, ItemMaster[] data2)
@@ -64,7 +62,7 @@ namespace MasterMemory.Tests
                 .Append(data2)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         MemoryDatabase CreateDatabase(QuestMasterEmptyValidate[] data1, ItemMasterEmptyValidate[] data2)
@@ -75,7 +73,7 @@ namespace MasterMemory.Tests
                 .Append(data2)
                 .Build();
 
-            return new MemoryDatabase(bin, internString: false);
+            return new MemoryDatabase(bin, new MemoryDatabaseOptions { InternString = false });
         }
 
         [Fact]
@@ -116,6 +114,41 @@ namespace MasterMemory.Tests
             faileds[0].Message.ShouldBe("Unique failed: ItemId, value = 2");
             faileds[1].Message.ShouldBe("Unique failed: QuestId, value = 1");
             faileds[2].Message.ShouldBe("Unique failed: QuestId, value = 4");
+        }
+
+        // What one key is, is decided by the comparison its index is sorted and searched by: Alias is compared with
+        // OrdinalIgnoreCase, so "abc", "ABC" and "Abc" are one key, of which a lookup finds one row only.
+        [Fact]
+        public void UniqueByTheComparisonOfTheKey()
+        {
+            var db = new DatabaseBuilder().Append(new[]
+            {
+                new NullableStringKeyMaster { Code = "a", Alias = "abc" },
+                new NullableStringKeyMaster { Code = "b", Alias = "x" },
+                new NullableStringKeyMaster { Code = "c", Alias = "ABC" },
+                new NullableStringKeyMaster { Code = "d", Alias = "Abc" },
+                new NullableStringKeyMaster { Code = "A", Alias = "y" }, // the primary key is ordinal: "a" and "A" are two keys
+                new NullableStringKeyMaster { Code = "e", Alias = null },
+            }).ToMemoryDatabase();
+
+            var validateResult = db.Validate();
+            output.WriteLine(validateResult.FormatFailedResults());
+
+            validateResult.IsValidationFailed.ShouldBeTrue();
+            var messages = validateResult.FailedResults.Select(x => x.Message).ToArray();
+            messages.Length.ShouldBe(2); // the second and the third row of the key
+            foreach (var message in messages)
+            {
+                message.ShouldStartWith("Unique failed: Alias, value = ");
+                message.Substring("Unique failed: Alias, value = ".Length).ToLowerInvariant().ShouldBe("abc");
+            }
+
+            // null is a key like another: once is fine, twice is not
+            db.ToDatabaseBuilder().RemoveNullableStringKeyMaster("c", "d").ToMemoryDatabase().Validate().IsValidationFailed.ShouldBeFalse();
+            db.ToDatabaseBuilder().RemoveNullableStringKeyMaster("c", "d")
+                .AddOrReplace(new[] { new NullableStringKeyMaster { Code = "f", Alias = null } })
+                .ToMemoryDatabase().Validate().FailedResults.Select(x => x.Message).ToArray()
+                .ShouldBe(new[] { "Unique failed: Alias, value = " });
         }
 
         // test IValidator

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- The instrumented side of the SharpFuzz split: sharpfuzz rewrites the IL of this assembly and of MasterMemory.dll for
+	     coverage feedback, while the harness exe (MasterMemory.Tests.Fuzz) must stay uninstrumented. The tables are declared
+	     here, not in the harness: the generated lookups compile into the assembly that declares the tables, and they are
+	     half of the code the fuzzer should get coverage on (the other half is the searches in MasterMemory.dll). -->
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\MasterMemory\MasterMemory.csproj" />
+		<ProjectReference Include="..\..\src\MasterMemory.SourceGenerator\MasterMemory.SourceGenerator.csproj">
+			<OutputItemType>Analyzer</OutputItemType>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
+
+</Project>

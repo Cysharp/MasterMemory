@@ -21,7 +21,7 @@ namespace MasterMemory.Tests
         //    var data = builder.Build();
         //    var database = new MemoryDatabase(data);
 
-        //    var entries = database.PersonModelTable.FindClosestByFirstNameAndLastName(("real", "real"), false);
+        //    var entries = database.PersonModelTable.FindClosestByFirstNameAndLastName("real", "real", false);
         //    var firstEntry = entries.FirstOrDefault();
 
         //    var firstIs = firstEntry.FirstName;
@@ -57,9 +57,9 @@ namespace MasterMemory.Tests
             var bin = builder.Build();
             var db = new MemoryDatabase(bin);
 
-            db.SampleTable.FindRangeByAge(2, 2).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
-            db.SampleTable.FindRangeByAge(30, 50).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { 7, 8 });
-            db.SampleTable.FindRangeByAge(100, 100).Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
+            db.SampleTable.FindRangeByAge(2, 2).AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
+            db.SampleTable.FindRangeByAge(30, 50).AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { 7, 8 });
+            db.SampleTable.FindRangeByAge(100, 100).AsReadOnlyList().Select(x => x.Id).ToArray().ShouldBeEquivalentTo(new int[] { });
         }
 
     }
